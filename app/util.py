@@ -2,6 +2,7 @@ import os
 import base64
 import subprocess
 import requests
+import yt_dlp
 from dotenv import load_dotenv
 
 # Load API keys from .env file
@@ -41,6 +42,24 @@ def download_spotify_playlist(link, file_format):
     subprocess.call(["open", DIR])  # open folder after download
 
 
+def download_youtube(link, file_format):
+    """Download YouTube song or playlist from link
+
+    Args:
+        link (str): link to YouTube song or playlist
+        file_format (str): file format to download songs in
+    """
+    ydl_opts = {
+        "outtmpl": f"{DIR}/%(title)s.%(ext)s",
+        "format": f"ba[ext={file_format}]",
+        "embed_thumbnail": True,
+        "addmetadata": True,
+    }
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([link])
+    subprocess.call(["open", DIR])
+
+
 def _download_youtube_search(name, artist, file_format):
     """Download YouTube song from search query
 
@@ -49,46 +68,16 @@ def _download_youtube_search(name, artist, file_format):
         artist (str): artist name
         file_format (str): file format to download song in
     """
-    subprocess.call(
-        [
-            "yt-dlp",
-            "-o",
-            f"{DIR}/%(title)s.%(ext)s",  # file name
-            "-f",
-            f"ba[ext={file_format}]",  # file format
-            "--embed-thumbnail",
-            "--add-metadata",
-            "--default-search",
-            "https://music.youtube.com/search?q=",
-            f"{name} {artist}",  # search query
-            "--playlist-items",
-            "1",
-        ]
-    )
-
-
-def download_youtube(link, file_format):
-    """Download YouTube song or playlist from link
-
-    Args:
-        link (str): link to YouTube song or playlist
-        file_format (str): file format to download songs in
-    """
-    subprocess.call(
-        [
-            "yt-dlp",
-            "-o",
-            f"{DIR}/%(title)s.%(ext)s",
-            "-f",
-            f"ba[ext={file_format}]",
-            "--embed-thumbnail",
-            "--add-metadata",
-            link,
-        ]
-    )
-
-    # Open download directory
-    subprocess.call(["open", DIR])
+    ydl_opts = {
+        "outtmpl": f"{DIR}/%(title)s.%(ext)s",
+        "format": f"ba[ext={file_format}]",
+        "embed_thumbnail": True,
+        "addmetadata": True,
+        "default_search": "https://music.youtube.com/search?q=",
+        "playlist_items": "1",
+    }
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([f"{name} {artist}"])
 
 
 def _get_token():
