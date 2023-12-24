@@ -17,51 +17,63 @@ if DIR not in os.listdir():
 
 
 def download_spotify_song(link, file_format):
-    name, artist = get_spotify_song(link)
+    """Download Spotify song from link
+
+    Args:
+        link (str): link to Spotify song
+        file_format (str): file format to download song in
+    """
+    name, artist = _get_spotify_song(link)
+    _download_youtube_search(name, artist, file_format)
+    subprocess.call(["open", DIR])  # open folder after download
+
+
+def download_spotify_playlist(link, file_format):
+    """Download Spotify playlist from link
+
+    Args:
+        link (str): link to Spotify playlist
+        file_format (str): file format to download songs in
+    """
+    tracks = _get_spotify_playlist(link)
+    for name, artist in tracks:
+        _download_youtube_search(name, artist, file_format)
+    subprocess.call(["open", DIR])  # open folder after download
+
+
+def _download_youtube_search(name, artist, file_format):
+    """Download YouTube song from search query
+
+    Args:
+        name (str): song name
+        artist (str): artist name
+        file_format (str): file format to download song in
+    """
     subprocess.call(
         [
             "yt-dlp",
             "-o",
-            f"{DIR}/%(title)s.%(ext)s",
+            f"{DIR}/%(title)s.%(ext)s",  # file name
             "-f",
-            f"ba[ext={file_format}]",
+            f"ba[ext={file_format}]",  # file format
             "--embed-thumbnail",
             "--add-metadata",
             "--default-search",
             "https://music.youtube.com/search?q=",
-            f"{name} {artist}",
+            f"{name} {artist}",  # search query
             "--playlist-items",
             "1",
         ]
     )
-    subprocess.call(["open", DIR])
-
-
-def download_spotify_playlist(link, file_format):
-    tracks = get_spotify_playlist(link)
-    for name, artist in tracks:
-        # Search each song on YouTube Music and download first result
-        subprocess.call(
-            [
-                "yt-dlp",
-                "-o",
-                f"{DIR}/%(title)s.%(ext)s",
-                "-f",
-                f"ba[ext={file_format}]",
-                "--embed-thumbnail",
-                "--add-metadata",
-                "--default-search",
-                "https://music.youtube.com/search?q=",
-                f"{name} {artist}",
-                "--playlist-items",
-                "1",
-            ]
-        )
-    subprocess.call(["open", DIR])
 
 
 def download_youtube(link, file_format):
-    # Download YouTube playlist
+    """Download YouTube song or playlist from link
+
+    Args:
+        link (str): link to YouTube song or playlist
+        file_format (str): file format to download songs in
+    """
     subprocess.call(
         [
             "yt-dlp",
@@ -98,8 +110,15 @@ def _get_auth_header(token):
     return {"Authorization": "Bearer " + token}
 
 
-def get_spotify_song(link):
-    """Get song name from Spotify track link"""
+def _get_spotify_song(link):
+    """Get song name and artist of Spotify song
+
+    Args:
+        link (str): link to Spotify song
+
+    Returns:
+        list[str, str]: song name and artist
+    """
     request_url = "https://api.spotify.com/v1/tracks/"
     track_id = link.split("track/")[1].split("?")[0]
     response = requests.get(
@@ -112,8 +131,15 @@ def get_spotify_song(link):
     return [name, artist]
 
 
-def get_spotify_playlist(link):
-    """Get list of [name, artist] from Spotify playlist link"""
+def _get_spotify_playlist(link):
+    """Get song name and artist for each track in Spotify playlist
+
+    Args:
+        link (str): link to Spotify playlist
+
+    Returns:
+        list[str, str]: song name and artist for each track in playlist
+    """
     request_url = "https://api.spotify.com/v1/playlists/"
     tracks = []
     playlist_id = link.split("playlist/")[1].split("?")[0]
@@ -131,8 +157,15 @@ def get_spotify_playlist(link):
     return tracks
 
 
-def get_youtube_playlist(link):
-    """Get list of [name, artist] from YouTube playlist link"""
+def _get_youtube_playlist(link):
+    """Get song name and artist for each track in YouTube playlist
+
+    Args:
+        link (str): link to YouTube playlist
+
+    Returns:
+        list[str, str]: song name and artist for each track in playlist
+    """
     request_url = "https://www.googleapis.com/youtube/v3/playlistItems"
     tracks = []
     playlist_id = link.split("list=")[1].split("&")[0]
