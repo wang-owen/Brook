@@ -1,6 +1,6 @@
 {% extends "app/layout.html" %}
 {% block body %}
-    <form action="{% url "scrape" %}" method="post">
+    <form action="{% url "download" %}" method="post">
         {% csrf_token %}
         {{ form }}
         <input type="submit" value="Submit">
