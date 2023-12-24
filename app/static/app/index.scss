@@ -1,11 +1,32 @@
-#link-form {
+#title {
     // Devices smaller than desktops/laptops
     @media only screen and (max-width: 992px) {
     }
 
     margin: 20px;
+    text-align: center;
+}
 
-    #link-input {
-        width: 800px;
+#link-input {
+    // Devices smaller than desktops/laptops
+    @media only screen and (max-width: 992px) {
+    }
+
+    text-align: center;
+
+    #link-form {
+        // Devices smaller than desktops/laptops
+        @media only screen and (max-width: 992px) {
+        }
+
+        margin: 20px;
+
+        #link-input {
+            // Devices smaller than desktops/laptops
+            @media only screen and (max-width: 992px) {
+            }
+
+            width: 750px;
+        }
     }
 }

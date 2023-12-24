@@ -1,8 +1,15 @@
-#link-form {
+#title {
+  margin: 20px;
+  text-align: center;
+}
+#link-input {
+  text-align: center;
+}
+#link-input #link-form {
   margin: 20px;
 }
-#link-form #link-input {
-  width: 800px;
+#link-input #link-form #link-input {
+  width: 750px;
 }
 
 /*# sourceMappingURL=index.css.map */
