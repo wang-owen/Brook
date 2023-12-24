@@ -1,0 +1,11 @@
+#link-form {
+    // Devices smaller than desktops/laptops
+    @media only screen and (max-width: 992px) {
+    }
+
+    margin: 20px;
+
+    #link-input {
+        width: 800px;
+    }
+}
