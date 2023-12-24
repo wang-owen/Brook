@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django import forms
-from .util import run_cmd
+from . import util
 
 
 # Create your views here.
@@ -34,5 +34,13 @@ def download(request):
         if form.is_valid():
             link = form.cleaned_data["link"]
             file_format = form.cleaned_data["file_format"]
-            run_cmd(link=link, file_format=file_format)
+
+            if "spotify" in link:
+                if "playlist" in link:
+                    util.download_spotify_playlist(link, file_format)
+                elif "track" in link:
+                    util.download_spotify_song(link, file_format)
+            elif "youtube" in link:
+                util.download_youtube(link, file_format)
+
     return HttpResponseRedirect(reverse("index"))
