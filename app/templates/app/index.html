@@ -2,11 +2,29 @@
 {% load static %}
 {% block stylesheet %}
     <link rel="stylesheet" href="{% static 'app/index.css' %}">
+    <script src="{% static 'app/index.js' %}"></script>
 {% endblock stylesheet %}
 {% block body %}
-    <form id="link-form" action="{% url "download" %}" method="post">
-        {% csrf_token %}
-        {{ form }}
-        <input type="submit" value="Submit">
-    </form>
+    <h1 id="title">Brook</h1>
+    <div id="link-input">
+        <form id="link-form" action="{% url "download" %}" method="post">
+            {% csrf_token %}
+            {{ form }}
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+    {% block playlist_history %}
+        <div id="playlist-history">
+            <h2>Recent Playlists</h2>
+            {% for playlist in playlists %}
+                <div class="playlist">
+                    <img src="{{ playlist.thumbnail }}"
+                         alt="thumbnail"
+                         height="500"
+                         width="500">
+                    <p>{{ playlist.name }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% endblock playlist_history %}
 {% endblock body %}
