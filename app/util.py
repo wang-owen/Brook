@@ -29,18 +29,22 @@ def download_music(link, file_format):
     if "youtube" in link:
         platform = "youtube"
         if is_playlist:
-            _download_youtube_playlist(link, file_format)
+            result = _download_youtube_playlist(link, file_format)
         else:
-            _download_youtube_track(link, file_format)
+            result = _download_youtube_track(link, file_format)
     elif "spotify" in link:
         platform = "spotify"
         if is_playlist:
-            _download_spotify_playlist(link, file_format)
+            result = _download_spotify_playlist(link, file_format)
         else:
-            _download_spotify_track(link, file_format)
+            result = _download_spotify_track(link, file_format)
+    else:
+        return False
 
-    if is_playlist:
+    if result and is_playlist:
         _log_playlist(link, platform)
+
+    return result
 
 
 def _get_playlist_data(link, platform):
@@ -136,11 +140,15 @@ def _get_youtube_playlist_data(link):
             "key": YOUTUBE_API_KEY,
         },
     )
-    playlist_name = response.json()["items"][0]["snippet"]["title"]
-    playlist_owner = response.json()["items"][0]["snippet"]["channelTitle"]
-    playlist_thumbnails = response.json()["items"][0]["snippet"]["thumbnails"][
-        "standard"
-    ]
+    try:
+        playlist_name = response.json()["items"][0]["snippet"]["title"]
+        playlist_owner = response.json()["items"][0]["snippet"]["channelTitle"]
+        playlist_thumbnails = response.json()["items"][0]["snippet"]["thumbnails"][
+            "standard"
+        ]
+    except IndexError or KeyError:
+        print("Invalid YouTube playlist link")
+        return {}
 
     request_url = "https://www.googleapis.com/youtube/v3/playlistItems"
     tracks = []
@@ -195,18 +203,22 @@ def _get_spotify_track_data(link):
     """
     request_url = "https://api.spotify.com/v1/tracks/"
     track_id = _get_id(link)
-    response = requests.get(
-        request_url + track_id,
-        headers=_get_auth_header(_get_token()),
-    )
-    name = response.json()["name"]
-    artist = response.json()["artists"][0]["name"]
+    try:
+        response = requests.get(
+            request_url + track_id,
+            headers=_get_auth_header(_get_token()),
+        )
+        name = response.json()["name"]
+        artist = response.json()["artists"][0]["name"]
 
-    data = {
-        "track_id": track_id,
-        "name": name,
-        "artist": artist,
-    }
+        data = {
+            "track_id": track_id,
+            "name": name,
+            "artist": artist,
+        }
+    except KeyError:
+        print("Invalid Spotify track link")
+        data = {}
 
     return data
 
@@ -229,24 +241,28 @@ def _get_spotify_playlist_data(link):
     )
 
     # Add each track name and artist to list
-    for item in response.json()["tracks"]["items"]:
-        name = item["track"]["name"]
-        artist = item["track"]["artists"][0]["name"]
-        tracks.append(
-            {
-                "track_id": item["track"]["id"],
-                "name": name,
-                "artist": artist,
-            }
-        )
+    try:
+        for item in response.json()["tracks"]["items"]:
+            name = item["track"]["name"]
+            artist = item["track"]["artists"][0]["name"]
+            tracks.append(
+                {
+                    "track_id": item["track"]["id"],
+                    "name": name,
+                    "artist": artist,
+                }
+            )
 
-    data = {
-        "playlist_id": playlist_id,
-        "name": response.json()["name"],
-        "owner": response.json()["owner"]["display_name"],
-        "thumbnails": response.json()["images"],
-        "tracks": tracks,
-    }
+        data = {
+            "playlist_id": playlist_id,
+            "name": response.json()["name"],
+            "owner": response.json()["owner"]["display_name"],
+            "thumbnails": response.json()["images"],
+            "tracks": tracks,
+        }
+    except KeyError:
+        print("Invalid Spotify playlist link")
+        data = {}
 
     return data
 
@@ -339,6 +355,11 @@ def _download_youtube_playlist(link, file_format):
         file_format (str): file format to download tracks in
     """
     data = _get_youtube_playlist_data(link)
+
+    # If playlist is invalid
+    if len(data) == 0:
+        return False
+
     playlist_name = data["name"]
     playlist_owner = data["owner"]
 
@@ -370,6 +391,7 @@ def _download_youtube_playlist(link, file_format):
     os.remove(os.path.join(dir_, f"{playlist_name}.jpg"))
 
     subprocess.call(["open", dir_])
+    return True
 
 
 def __download_youtube_search(name, artist, file_format, dir_=DIR):
