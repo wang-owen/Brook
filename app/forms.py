@@ -5,7 +5,7 @@ class linkForm(forms.Form):
     link = forms.CharField(
         widget=forms.TextInput(
             attrs={
-                "placeholder": "YouTube or Spotify song/playlist link",
+                "placeholder": "YouTube or Spotify track/playlist link",
                 "id": "link-input",
             }
         ),
