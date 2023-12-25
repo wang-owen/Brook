@@ -16,6 +16,8 @@ SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 # Set download directory
 DIR = os.path.join("Music")
 
+DEFAULT_FILE_FORMAT = "m4a"
+
 
 def download_music(link, file_format):
     if DIR not in os.listdir():
@@ -62,6 +64,7 @@ def _get_playlist_data(link, platform):
 
 def update_playlist(id, file_format):
     if playlist := models.Playlist.objects.get(id=id):
+        dir_ = os.path.join(DIR, f"UPDATED {playlist.name} - {playlist.owner}")
         link = get_playlist_link(playlist.platform, playlist.id)
         data = _get_playlist_data(link, playlist.platform)
 
@@ -80,11 +83,11 @@ def update_playlist(id, file_format):
                 track.save()
                 if playlist.platform == "youtube":
                     _download_youtube_track(
-                        _get_track_link(playlist.platform, track.id), file_format
+                        _get_track_link(playlist.platform, track.id), file_format, dir_
                     )
                 elif playlist.platform == "spotify":
                     _download_spotify_track(
-                        _get_track_link(playlist.platform, track.id), file_format
+                        _get_track_link(playlist.platform, track.id), file_format, dir_
                     )
         # Delete unlisted tracks
         for track in old_tracks:

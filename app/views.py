@@ -1,7 +1,12 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from .util import download_music, get_playlist_link, update_playlist
+from .util import (
+    download_music,
+    get_playlist_link,
+    update_playlist,
+    DEFAULT_FILE_FORMAT,
+)
 from . import models
 
 
@@ -28,7 +33,7 @@ def download(request, playlist_id=None):
     else:
         playlist = models.Playlist.objects.get(id=playlist_id)
         link = get_playlist_link(playlist.platform, playlist.id)
-        file_format = request.GET.get("m4a")
+        file_format = DEFAULT_FILE_FORMAT
 
     try:
         download_music(link, file_format)
@@ -46,7 +51,7 @@ def download(request, playlist_id=None):
 
 def update(request, playlist_id):
     try:
-        update_playlist(playlist_id, "m4a")
+        update_playlist(playlist_id, DEFAULT_FILE_FORMAT)
         request.session["error"] = ""
     except:
         request.session["error"] = "Invalid playlist"
