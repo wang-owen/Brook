@@ -366,6 +366,9 @@ def _download_youtube_playlist(link, file_format):
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([link])
+
+    os.remove(os.path.join(dir_, f"{playlist_name}.jpg"))
+
     subprocess.call(["open", dir_])
 
 
