@@ -20,12 +20,21 @@ def index(request):
 
 
 def download(request):
+    result = None
     if request.method == "POST":
         form = forms.linkForm(request.POST)
         if form.is_valid():
             link = form.cleaned_data["link"]
             file_format = form.cleaned_data["file_format"]
 
-            download_music(link, file_format)
+            result = download_music(link, file_format)
 
-    return HttpResponseRedirect(reverse("index"))
+    return render(
+        request,
+        "app/index.html",
+        {
+            "form": forms.linkForm(),
+            "playlists": models.Playlist.objects.all(),
+            "result": result,
+        },
+    )
