@@ -29,22 +29,22 @@ def download_music(link, file_format):
     if "youtube" in link:
         platform = "youtube"
         if is_playlist:
-            result = _download_youtube_playlist(link, file_format)
+            error = _download_youtube_playlist(link, file_format)
         else:
-            result = _download_youtube_track(link, file_format)
+            error = _download_youtube_track(link, file_format)
     elif "spotify" in link:
         platform = "spotify"
         if is_playlist:
-            result = _download_spotify_playlist(link, file_format)
+            error = _download_spotify_playlist(link, file_format)
         else:
-            result = _download_spotify_track(link, file_format)
+            error = _download_spotify_track(link, file_format)
     else:
         return False
 
-    if result and is_playlist:
+    if not error and is_playlist:
         _log_playlist(link, platform)
 
-    return result
+    return error
 
 
 def _get_playlist_data(link, platform):
@@ -100,23 +100,21 @@ def _get_id(link):
     return ""
 
 
-def _get_link(id_):
-    """Get link from YouTube or Spotify id
+def get_playlist_link(platform, id_):
+    """Get playlist link from YouTube or Spotify id
 
     Args:
-        id (str): id of YouTube or Spotify track or playlist
+        id (str): id of YouTube or Spotify playlist
 
     Returns:
-        str: link to track or playlist
+        str: link to playlist
     """
-    if "youtube" in id_:
-        if "playlist" in id_:
-            return f"https://www.youtube.com/playlist?list={id_}"
-        return f"https://www.youtube.com/watch?v={id_}"
-    elif "spotify" in id_:
-        if "playlist" in id_:
-            return f"https://open.spotify.com/playlist/{id_}"
-        return f"https://open.spotify.com/track/{id_}"
+    if platform == "youtube":
+        return f"https://www.youtube.com/playlist?list={id_}"
+        # return f"https://www.youtube.com/watch?v={id_}"
+    elif platform == "spotify":
+        return f"https://open.spotify.com/playlist/{id_}"
+        # return f"https://open.spotify.com/track/{id_}"
     return ""
 
 

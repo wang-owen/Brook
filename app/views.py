@@ -1,8 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django import forms
-from .util import download_music
+from .util import download_music, get_playlist_link
 from . import models
 from . import forms
 
@@ -15,19 +15,20 @@ def index(request):
         {
             "form": forms.linkForm(),
             "playlists": models.Playlist.objects.all(),
+            "error": False,
         },
     )
 
 
 def download(request):
-    result = None
+    error = False
     if request.method == "POST":
         form = forms.linkForm(request.POST)
         if form.is_valid():
             link = form.cleaned_data["link"]
             file_format = form.cleaned_data["file_format"]
 
-            result = download_music(link, file_format)
+            error = download_music(link, file_format)
 
     return render(
         request,
@@ -35,6 +36,12 @@ def download(request):
         {
             "form": forms.linkForm(),
             "playlists": models.Playlist.objects.all(),
-            "result": result,
+            "error": error,
         },
     )
+
+
+def playlist(request, playlist_platform, playlist_id):
+    id_ = models.Playlist.objects.get(id=playlist_id).id
+    link = get_playlist_link(playlist_platform, id_)
+    return redirect(link)
