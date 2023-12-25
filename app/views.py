@@ -15,7 +15,7 @@ def index(request):
         {
             "form": forms.linkForm(),
             "playlists": models.Playlist.objects.all(),
-            "error": False,
+            "error": request.session["error"] if "error" in request.session else False,
         },
     )
 
@@ -28,16 +28,12 @@ def download(request):
             link = form.cleaned_data["link"]
             file_format = form.cleaned_data["file_format"]
 
-            error = download_music(link, file_format)
+            request.session["error"] = download_music(link, file_format)
 
-    return render(
-        request,
-        "app/index.html",
-        {
-            "form": forms.linkForm(),
-            "playlists": models.Playlist.objects.all(),
-            "error": error,
-        },
+    return HttpResponseRedirect(
+        reverse(
+            "index",
+        )
     )
 
 
