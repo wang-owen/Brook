@@ -93,6 +93,7 @@ def update_playlist(id, file_format):
         for track in old_tracks:
             if not any(track.id == new_track["track_id"] for new_track in new_tracks):
                 track.delete()
+        playlist.save()
 
 
 def _get_token():
@@ -341,7 +342,6 @@ def _log_playlist(playlist_data):
             platform=playlist_platform,
             thumbnail=playlist_thumbnail,
         )
-        playlist.save()
 
         # Create track objects
         for track in playlist_tracks:
@@ -353,6 +353,8 @@ def _log_playlist(playlist_data):
                 playlist=playlist,
             )
             track.save()
+
+    playlist.save()
 
 
 def _download_youtube_track(link, file_format, dir_=DIR):

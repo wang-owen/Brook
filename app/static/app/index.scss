@@ -13,7 +13,12 @@ body {
 }
 
 #brew {
-    margin: 50px;
+    padding: 50px;
+    height: 50vh;
+    background-image: url(img/brook-violin.png);
+    background-repeat: no-repeat;
+    background-position: right;
+    border-bottom: 2px solid black;
 
     #brew-form {
         margin: auto;
@@ -26,6 +31,11 @@ body {
             margin-bottom: 25px;
             width: 100px;
         }
+
+        #error-msg {
+            margin: 20px;
+            color: darkred;
+        }
     }
 }
 
@@ -34,7 +44,7 @@ body {
     justify-content: center;
 
     .playlist {
-        margin-bottom: 50px;
+        margin-bottom: 70px;
         .playlist-thumbnail {
             border: 10px solid lightblue;
         }

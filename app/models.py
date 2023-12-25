@@ -11,6 +11,7 @@ class Playlist(models.Model):
     thumbnail = models.ImageField(
         upload_to=os.path.join("playlist_history", "thumbnails"), blank=True
     )
+    last_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.platform}: {self.name}"
