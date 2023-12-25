@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django import forms
-from . import util
+from .util import download_music
 from . import models
 from . import forms
 
@@ -26,22 +26,6 @@ def download(request):
             link = form.cleaned_data["link"]
             file_format = form.cleaned_data["file_format"]
 
-            is_playlist = False
-            platform = None
-            if "playlist" in link:
-                is_playlist = True
-
-            if "youtube" in link:
-                platform = "youtube"
-                util.download_youtube(link, file_format)
-            elif "spotify" in link:
-                platform = "spotify"
-                if is_playlist:
-                    util.download_spotify_playlist(link, file_format)
-                else:
-                    util.download_spotify_song(link, file_format)
-
-            if is_playlist:
-                util.log_playlist(link, platform)
+            download_music(link, file_format)
 
     return HttpResponseRedirect(reverse("index"))
