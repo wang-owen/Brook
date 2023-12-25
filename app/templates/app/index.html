@@ -21,19 +21,18 @@
                            name="link"
                            class="form-control"
                            id="floatingInput"
-                           placeholder="YouTube or Spotify track/playlist link">
-                    <label for="floatingInput">URL</label>
+                           placeholder="">
+                    <label for="floatingInput">YouTube or Spotify track/playlist URL</label>
                 </div>
                 <!-- Add text-center class here -->
                 <select class="form-select" name="file_format">
                     <option selected value="m4a">m4a</option>
                 </select>
-                {{ error }}
+                <div id="error-msg">{{ error }}</div>
                 <input type="submit" class="btn btn-outline-secondary" value="Brew">
             </form>
         </div>
     </section>
-    <hr>
     {% block playlist_history %}
         <section id="playlist-history">
             <div class="container">

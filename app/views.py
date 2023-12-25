@@ -12,12 +12,18 @@ from . import models
 
 # Create your views here.
 def index(request):
+    error = (
+        request.session["error"]
+        if "error" in request.session and request.session["error"]
+        else ""
+    )
+    request.session["error"] = False
     return render(
         request,
         "app/index.html",
         {
-            "playlists": reversed(models.Playlist.objects.all()),
-            "error": request.session["error"] if "error" in request.session else "",
+            "playlists": models.Playlist.objects.all().order_by("-last_modified"),
+            "error": error,
         },
     )
 
@@ -38,15 +44,11 @@ def download(request, playlist_id=None):
     try:
         download_music(link, file_format)
         request.session["error"] = ""
-    except KeyError or IndexError as e:
+    except (KeyError, IndexError) as e:
         print(e)
         request.session["error"] = "Invalid link"
 
-    return HttpResponseRedirect(
-        reverse(
-            "index",
-        )
-    )
+    return HttpResponseRedirect(reverse("index"))
 
 
 def update(request, playlist_id):
@@ -55,11 +57,7 @@ def update(request, playlist_id):
         request.session["error"] = ""
     except:
         request.session["error"] = "Invalid playlist"
-    return HttpResponseRedirect(
-        reverse(
-            "index",
-        )
-    )
+    return HttpResponseRedirect(reverse("index"))
 
 
 def remove(request, playlist_id):
@@ -68,11 +66,7 @@ def remove(request, playlist_id):
         request.session["error"] = ""
     except:
         request.session["error"] = "Invalid playlist"
-    return HttpResponseRedirect(
-        reverse(
-            "index",
-        )
-    )
+    return HttpResponseRedirect(reverse("index"))
 
 
 def playlist(request, playlist_platform, playlist_id):
