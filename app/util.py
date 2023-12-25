@@ -333,6 +333,7 @@ def _log_playlist(playlist_data):
                     playlist=playlist,
                 )
                 track.save()
+        playlist.save()
     else:
         # Create playlist object
         playlist = models.Playlist(
@@ -342,6 +343,7 @@ def _log_playlist(playlist_data):
             platform=playlist_platform,
             thumbnail=playlist_thumbnail,
         )
+        playlist.save()
 
         # Create track objects
         for track in playlist_tracks:
@@ -353,8 +355,6 @@ def _log_playlist(playlist_data):
                 playlist=playlist,
             )
             track.save()
-
-    playlist.save()
 
 
 def _download_youtube_track(link, file_format, dir_=DIR):
