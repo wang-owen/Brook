@@ -1,10 +1,8 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from django import forms
 from .util import download_music, get_playlist_link, update_playlist
 from . import models
-from . import forms
 
 
 # Create your views here.
@@ -13,22 +11,31 @@ def index(request):
         request,
         "app/index.html",
         {
-            "form": forms.linkForm(),
-            "playlists": models.Playlist.objects.all(),
-            "error": request.session["error"] if "error" in request.session else False,
+            "playlists": reversed(models.Playlist.objects.all()),
+            "error": request.session["error"] if "error" in request.session else "",
         },
     )
 
 
-def download(request):
-    error = False
-    if request.method == "POST":
-        form = forms.linkForm(request.POST)
-        if form.is_valid():
-            link = form.cleaned_data["link"]
-            file_format = form.cleaned_data["file_format"]
+def download(request, playlist_id=None):
+    request.session["error"] = ""
 
-            request.session["error"] = download_music(link, file_format)
+    # If given playlist link
+    if request.method == "POST":
+        print(request.POST)
+        link = request.POST["link"]
+        file_format = request.POST["file_format"]
+    else:
+        playlist = models.Playlist.objects.get(id=playlist_id)
+        link = get_playlist_link(playlist.platform, playlist.id)
+        file_format = request.GET.get("m4a")
+
+    try:
+        download_music(link, file_format)
+        request.session["error"] = ""
+    except KeyError or IndexError as e:
+        print(e)
+        request.session["error"] = "Invalid link"
 
     return HttpResponseRedirect(
         reverse(
@@ -38,7 +45,24 @@ def download(request):
 
 
 def update(request, playlist_id):
-    request.session["error"] = update_playlist(playlist_id, "m4a")
+    try:
+        update_playlist(playlist_id, "m4a")
+        request.session["error"] = ""
+    except:
+        request.session["error"] = "Invalid playlist"
+    return HttpResponseRedirect(
+        reverse(
+            "index",
+        )
+    )
+
+
+def remove(request, playlist_id):
+    try:
+        models.Playlist.objects.get(id=playlist_id).delete()
+        request.session["error"] = ""
+    except:
+        request.session["error"] = "Invalid playlist"
     return HttpResponseRedirect(
         reverse(
             "index",

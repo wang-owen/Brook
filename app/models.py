@@ -20,6 +20,7 @@ class Track(models.Model):
     id = models.CharField(max_length=64, primary_key=True)
     name = models.CharField(max_length=64)
     artist = models.CharField(max_length=64)
+    platform = models.CharField(max_length=64)
     playlist = models.ForeignKey(
         Playlist, on_delete=models.CASCADE, related_name="tracks"
     )
