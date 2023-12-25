@@ -62,6 +62,43 @@ def _get_playlist_data(link, platform):
     return {}
 
 
+def update_playlist(id, file_format):
+    if playlist := models.Playlist.objects.get(id=id):
+        link = get_playlist_link(playlist.platform, playlist.id)
+        data = _get_playlist_data(link, playlist.platform)
+
+        old_tracks = playlist.tracks.all()  # type: ignore
+        try:
+            new_tracks = data["tracks"]
+        except KeyError:
+            return True
+
+        # Add new tracks
+        for track in new_tracks:
+            if not old_tracks.filter(id=track["track_id"]).exists():
+                track = models.Track(
+                    id=track["track_id"],
+                    name=track["name"],
+                    artist=track["artist"],
+                    playlist=playlist,
+                )
+                track.save()
+                if playlist.platform == "youtube":
+                    _download_youtube_track(
+                        _get_track_link(playlist.platform, track.id), file_format
+                    )
+                elif playlist.platform == "spotify":
+                    _download_spotify_track(
+                        _get_track_link(playlist.platform, track.id), file_format
+                    )
+        # Delete unlisted tracks
+        for track in old_tracks:
+            if not any(track.id == new_track["track_id"] for new_track in new_tracks):
+                track.delete()
+        return False
+    return True
+
+
 def _get_token():
     auth_string = SPOTIFY_CLIENT_ID + ":" + SPOTIFY_CLIENT_SECRET  # type: ignore
     auth_bytes = auth_string.encode("utf-8")
@@ -116,6 +153,14 @@ def get_playlist_link(platform, id_):
     elif platform == "spotify":
         return f"https://open.spotify.com/playlist/{id_}"
         # return f"https://open.spotify.com/track/{id_}"
+    return ""
+
+
+def _get_track_link(platform, id_):
+    if platform == "youtube":
+        return f"https://www.youtube.com/watch?v={id_}"
+    elif platform == "spotify":
+        return f"https://open.spotify.com/track/{id_}"
     return ""
 
 
@@ -393,7 +438,7 @@ def _download_youtube_playlist(link, file_format):
     return False
 
 
-def __download_youtube_search(name, artist, file_format, dir_=DIR):
+def _download_youtube_search(name, artist, file_format, dir_=DIR):
     """Download YouTube track from search query
 
     Args:
@@ -430,7 +475,7 @@ def _download_spotify_track(link, file_format):
         file_format (str): file format to download track in
     """
     track_name, track_artist = _get_spotify_track_data(link).values()
-    __download_youtube_search(track_name, track_artist, file_format)
+    _download_youtube_search(track_name, track_artist, file_format)
     subprocess.call(["open", DIR])  # open folder after download
 
 
@@ -457,6 +502,6 @@ def _download_spotify_playlist(link, file_format):
 
     tracks = data["tracks"]
     for track in tracks:
-        __download_youtube_search(track["name"], track["artist"], file_format, dir_)
+        _download_youtube_search(track["name"], track["artist"], file_format, dir_)
     subprocess.call(["open", dir_])  # open folder after download
     return False

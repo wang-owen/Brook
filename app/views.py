@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django import forms
-from .util import download_music, get_playlist_link
+from .util import download_music, get_playlist_link, update_playlist
 from . import models
 from . import forms
 
@@ -30,6 +30,15 @@ def download(request):
 
             request.session["error"] = download_music(link, file_format)
 
+    return HttpResponseRedirect(
+        reverse(
+            "index",
+        )
+    )
+
+
+def update(request, playlist_id):
+    request.session["error"] = update_playlist(playlist_id, "m4a")
     return HttpResponseRedirect(
         reverse(
             "index",
