@@ -21,7 +21,6 @@ def download_music(link, file_format):
     if DIR not in os.listdir():
         os.mkdir(DIR)
 
-    error = False
     is_playlist = False
     platform = None
     if "playlist" in link:
@@ -30,22 +29,21 @@ def download_music(link, file_format):
     if "youtube" in link:
         platform = "youtube"
         if is_playlist:
-            error = _download_youtube_playlist(link, file_format)
+            _download_youtube_playlist(link, file_format)
         else:
             _download_youtube_track(link, file_format)
     elif "spotify" in link:
         platform = "spotify"
         if is_playlist:
-            error = _download_spotify_playlist(link, file_format)
+            _download_spotify_playlist(link, file_format)
         else:
             _download_spotify_track(link, file_format)
-    else:
-        return False
 
-    if not error and is_playlist:
-        _log_playlist(link, platform)
-
-    return error
+    if is_playlist:
+        if models.Playlist.objects.filter(id=_get_id(link)).exists():
+            update_playlist(_get_id(link), file_format)
+        else:
+            _log_playlist(_get_playlist_data(link, platform))
 
 
 def _get_playlist_data(link, platform):
@@ -68,10 +66,7 @@ def update_playlist(id, file_format):
         data = _get_playlist_data(link, playlist.platform)
 
         old_tracks = playlist.tracks.all()  # type: ignore
-        try:
-            new_tracks = data["tracks"]
-        except KeyError:
-            return True
+        new_tracks = data["tracks"]
 
         # Add new tracks
         for track in new_tracks:
@@ -95,8 +90,6 @@ def update_playlist(id, file_format):
         for track in old_tracks:
             if not any(track.id == new_track["track_id"] for new_track in new_tracks):
                 track.delete()
-        return False
-    return True
 
 
 def _get_token():
@@ -184,15 +177,11 @@ def _get_youtube_playlist_data(link):
             "key": YOUTUBE_API_KEY,
         },
     )
-    try:
-        playlist_name = response.json()["items"][0]["snippet"]["title"]
-        playlist_owner = response.json()["items"][0]["snippet"]["channelTitle"]
-        playlist_thumbnail = response.json()["items"][0]["snippet"]["thumbnails"][
-            "standard"
-        ]["url"]
-    except IndexError or KeyError:
-        print("Invalid YouTube playlist link")
-        return {}
+    playlist_name = response.json()["items"][0]["snippet"]["title"]
+    playlist_owner = response.json()["items"][0]["snippet"]["channelTitle"]
+    playlist_thumbnail = response.json()["items"][0]["snippet"]["thumbnails"][
+        "standard"
+    ]["url"]
 
     request_url = "https://www.googleapis.com/youtube/v3/playlistItems"
     tracks = []
@@ -219,6 +208,7 @@ def _get_youtube_playlist_data(link):
                     "track_id": track_id,
                     "name": track_name,
                     "artist": track_artist,
+                    "platform": "youtube",
                 }
             )
 
@@ -229,6 +219,7 @@ def _get_youtube_playlist_data(link):
         "playlist_id": playlist_id,
         "name": playlist_name,
         "owner": playlist_owner,
+        "platform": "youtube",
         "thumbnail": playlist_thumbnail,
         "tracks": tracks,
     }
@@ -247,22 +238,19 @@ def _get_spotify_track_data(link):
     """
     request_url = "https://api.spotify.com/v1/tracks/"
     track_id = _get_id(link)
-    try:
-        response = requests.get(
-            request_url + track_id,
-            headers=_get_auth_header(_get_token()),
-        )
-        name = response.json()["name"]
-        artist = response.json()["artists"][0]["name"]
+    response = requests.get(
+        request_url + track_id,
+        headers=_get_auth_header(_get_token()),
+    )
+    name = response.json()["name"]
+    artist = response.json()["artists"][0]["name"]
 
-        data = {
-            "track_id": track_id,
-            "name": name,
-            "artist": artist,
-        }
-    except KeyError:
-        print("Invalid Spotify track link")
-        data = {}
+    data = {
+        "track_id": track_id,
+        "name": name,
+        "artist": artist,
+        "platform": "spotify",
+    }
 
     return data
 
@@ -285,42 +273,40 @@ def _get_spotify_playlist_data(link):
     )
 
     # Add each track name and artist to list
-    try:
-        for item in response.json()["tracks"]["items"]:
-            name = item["track"]["name"]
-            artist = item["track"]["artists"][0]["name"]
-            tracks.append(
-                {
-                    "track_id": item["track"]["id"],
-                    "name": name,
-                    "artist": artist,
-                }
-            )
+    for item in response.json()["tracks"]["items"]:
+        name = item["track"]["name"]
+        artist = item["track"]["artists"][0]["name"]
+        tracks.append(
+            {
+                "track_id": item["track"]["id"],
+                "name": name,
+                "artist": artist,
+                "platform": "spotify",
+            }
+        )
 
-        data = {
-            "playlist_id": playlist_id,
-            "name": response.json()["name"],
-            "owner": response.json()["owner"]["display_name"],
-            "thumbnail": response.json()["images"][0]["url"],
-            "tracks": tracks,
-        }
-    except KeyError:
-        print("Invalid Spotify playlist link")
-        data = {}
+    data = {
+        "playlist_id": playlist_id,
+        "name": response.json()["name"],
+        "owner": response.json()["owner"]["display_name"],
+        "platform": "spotify",
+        "thumbnail": response.json()["images"][0]["url"],
+        "tracks": tracks,
+    }
 
     return data
 
 
-def _log_playlist(link, platform):
+def _log_playlist(playlist_data):
     """Log playlist data to database and update if playlist already exists
 
     Args:
         playlist_data (dict): dictionary containing playlist title, owner, thumbnail, and tracks ([name, artist]])
     """
-    playlist_data = _get_playlist_data(link, platform)
     playlist_id = playlist_data["playlist_id"]
     playlist_name = playlist_data["name"]
     playlist_owner = playlist_data["owner"]
+    playlist_platform = playlist_data["platform"]
     playlist_thumbnail = playlist_data["thumbnail"]
     playlist_tracks = playlist_data["tracks"]
 
@@ -339,6 +325,7 @@ def _log_playlist(link, platform):
                     id=track["track_id"],
                     name=track["name"],
                     artist=track["artist"],
+                    platform=track["platform"],
                     playlist=playlist,
                 )
                 track.save()
@@ -348,7 +335,7 @@ def _log_playlist(link, platform):
             id=playlist_id,
             name=playlist_name,
             owner=playlist_owner,
-            platform=platform,
+            platform=playlist_platform,
             thumbnail=playlist_thumbnail,
         )
         playlist.save()
@@ -359,12 +346,13 @@ def _log_playlist(link, platform):
                 id=track["track_id"],
                 name=track["name"],
                 artist=track["artist"],
+                platform=track["platform"],
                 playlist=playlist,
             )
             track.save()
 
 
-def _download_youtube_track(link, file_format):
+def _download_youtube_track(link, file_format, dir_=DIR):
     """Download YouTube track or playlist from link
 
     Args:
@@ -372,7 +360,7 @@ def _download_youtube_track(link, file_format):
         file_format (str): file format to download tracks in
     """
     ydl_opts = {
-        "outtmpl": f"{DIR}/%(title)s.%(ext)s",
+        "outtmpl": f"{dir_}/%(title)s.%(ext)s",
         "format": f"ba[ext={file_format}]",
         "writethumbnail": True,
         "embedthumbnail": True,
@@ -388,7 +376,7 @@ def _download_youtube_track(link, file_format):
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([link])
-    subprocess.call(["open", DIR])
+    subprocess.call(["open", dir_])
 
 
 def _download_youtube_playlist(link, file_format):
@@ -399,10 +387,6 @@ def _download_youtube_playlist(link, file_format):
         file_format (str): file format to download tracks in
     """
     data = _get_youtube_playlist_data(link)
-
-    # If playlist is invalid
-    if len(data) == 0:
-        return True
 
     playlist_name = data["name"]
     playlist_owner = data["owner"]
@@ -435,7 +419,6 @@ def _download_youtube_playlist(link, file_format):
     os.remove(os.path.join(dir_, f"{playlist_name}.jpg"))
 
     subprocess.call(["open", dir_])
-    return False
 
 
 def _download_youtube_search(name, artist, file_format, dir_=DIR):
@@ -467,16 +450,17 @@ def _download_youtube_search(name, artist, file_format, dir_=DIR):
         ydl.download([f"{name} {artist}"])
 
 
-def _download_spotify_track(link, file_format):
+def _download_spotify_track(link, file_format, dir_=DIR):
     """Download Spotify track from link
 
     Args:
         link (str): link to Spotify track
         file_format (str): file format to download track in
     """
-    track_name, track_artist = _get_spotify_track_data(link).values()
-    _download_youtube_search(track_name, track_artist, file_format)
-    subprocess.call(["open", DIR])  # open folder after download
+    data = _get_spotify_track_data(link)
+    track_name, track_artist = data["name"], data["artist"]
+    _download_youtube_search(track_name, track_artist, file_format, dir_)
+    subprocess.call(["open", dir_])  # open folder after download
 
 
 def _download_spotify_playlist(link, file_format):
@@ -487,11 +471,8 @@ def _download_spotify_playlist(link, file_format):
         file_format (str): file format to download tracks in
     """
     data = _get_spotify_playlist_data(link)
-    try:
-        playlist_name = data["name"]
-        playlist_owner = data["owner"]
-    except KeyError:
-        return True
+    playlist_name = data["name"]
+    playlist_owner = data["owner"]
 
     # Set download directory
     dir_ = os.path.join(f"{playlist_name} - {playlist_owner}")
@@ -504,4 +485,3 @@ def _download_spotify_playlist(link, file_format):
     for track in tracks:
         _download_youtube_search(track["name"], track["artist"], file_format, dir_)
     subprocess.call(["open", dir_])  # open folder after download
-    return False
