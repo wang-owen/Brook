@@ -1,32 +1,47 @@
-#title {
-    // Devices smaller than desktops/laptops
-    @media only screen and (max-width: 992px) {
-    }
+@import url(https://fonts.googleapis.com/css?family=Open+Sans);
 
-    margin: 20px;
+* {
+    font-family: "Open Sans", sans-serif;
+    --shadow: rgba(0, 0, 0, 0.05) 0px 6px 10px 0px,
+        rgba(0, 0, 0, 0.1) 0px 0px 0px 1px;
+    --gap: 0.5rem;
+    --radius: 5px;
+}
+
+body {
     text-align: center;
 }
 
-#link-input {
-    // Devices smaller than desktops/laptops
-    @media only screen and (max-width: 992px) {
+#brew {
+    margin: 50px;
+
+    #brew-form {
+        margin: auto;
+        margin-top: 50px;
+        width: 50vw;
+
+        select {
+            margin: auto;
+            margin-top: 25px;
+            margin-bottom: 25px;
+            width: 100px;
+        }
     }
+}
 
-    text-align: center;
+#playlist-history {
+    margin-top: 75px;
+    justify-content: center;
 
-    #link-form {
-        // Devices smaller than desktops/laptops
-        @media only screen and (max-width: 992px) {
+    .playlist {
+        margin-bottom: 50px;
+        .playlist-thumbnail {
+            border: 10px solid lightblue;
         }
 
-        margin: 20px;
-
-        #link-input {
-            // Devices smaller than desktops/laptops
-            @media only screen and (max-width: 992px) {
-            }
-
-            width: 750px;
+        .playlist-btns {
+            margin: 5px;
+            scale: 0.85;
         }
     }
 }
