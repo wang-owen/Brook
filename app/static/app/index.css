@@ -1,15 +1,44 @@
-#title {
-  margin: 20px;
+@import url(https://fonts.googleapis.com/css?family=Open+Sans);
+* {
+  font-family: "Open Sans", sans-serif;
+  --shadow: rgba(0, 0, 0, 0.05) 0px 6px 10px 0px,
+      rgba(0, 0, 0, 0.1) 0px 0px 0px 1px;
+  --gap: 0.5rem;
+  --radius: 5px;
+}
+
+body {
   text-align: center;
 }
-#link-input {
-  text-align: center;
+
+#brew {
+  margin: 50px;
 }
-#link-input #link-form {
-  margin: 20px;
+#brew #brew-form {
+  margin: auto;
+  margin-top: 50px;
+  width: 50vw;
 }
-#link-input #link-form #link-input {
-  width: 750px;
+#brew #brew-form select {
+  margin: auto;
+  margin-top: 25px;
+  margin-bottom: 25px;
+  width: 100px;
+}
+
+#playlist-history {
+  margin-top: 75px;
+  justify-content: center;
+}
+#playlist-history .playlist {
+  margin-bottom: 50px;
+}
+#playlist-history .playlist .playlist-thumbnail {
+  border: 10px solid lightblue;
+}
+#playlist-history .playlist .playlist-btns {
+  margin: 5px;
+  scale: 0.85;
 }
 
 /*# sourceMappingURL=index.css.map */

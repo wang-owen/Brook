@@ -1,30 +1,68 @@
 {% extends "app/layout.html" %}
 {% load static %}
-{% block stylesheet %}
+{% block head %}
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+          rel="stylesheet" />
     <link rel="stylesheet" href="{% static 'app/index.css' %}">
     <script src="{% static 'app/index.js' %}"></script>
-{% endblock stylesheet %}
+{% endblock head %}
 {% block body %}
-    <h1 id="title">Brook</h1>
-    <div id="link-input">
-        <form id="link-form" action="{% url "download" %}" method="post">
-            {% csrf_token %}
-            {{ form }}
-            <input type="submit" value="Submit">
-        </form>
-    </div>
-    {% block playlist_history %}
-        <div id="playlist-history">
-            <h2>Recent Playlists</h2>
-            {% for playlist in playlists %}
-                <div class="playlist">
-                    <img src="{{ playlist.thumbnail }}"
-                         alt="thumbnail"
-                         height="500"
-                         width="500">
-                    <p>{{ playlist.name }}</p>
-                </div>
-            {% endfor %}
+    <section id="brew">
+        <div id="title">
+            <h1>Brook</h1>
+            <h5>Yohohoho</h5>
+            <h6>Your barebones music pirate</h6>
         </div>
+        <div id="brew-form">
+            <form action="{% url "download" %}" method="post">
+                {% csrf_token %}
+                <div class="form-floating">
+                    <input type="text"
+                           name="link"
+                           class="form-control"
+                           id="floatingInput"
+                           placeholder="YouTube or Spotify track/playlist link">
+                    <label for="floatingInput">URL</label>
+                </div>
+                <!-- Add text-center class here -->
+                <select class="form-select" name="file_format">
+                    <option selected value="m4a">m4a</option>
+                </select>
+                {{ error }}
+                <input type="submit" class="btn btn-outline-secondary" value="Brew">
+            </form>
+        </div>
+    </section>
+    <hr>
+    {% block playlist_history %}
+        <section id="playlist-history">
+            <div class="container">
+                <div class="row">
+                    {% for playlist in playlists %}
+                        <div class="col">
+                            <div class="playlist">
+                                <h5>{{ playlist.name }}</h5>
+                                <h6>{{ playlist.owner }}</h6>
+                                <a href="{% url "playlist" playlist.platform playlist.id %}"
+                                   target="_blank">
+                                    <img class="playlist-thumbnail"
+                                         src="{{ playlist.thumbnail }}"
+                                         alt="thumbnail"
+                                         height="250"
+                                         width="250">
+                                </a>
+                                <div class="playlist-btns">
+                                    <div class="btn-group">
+                                        <a href="{% url "update" playlist.id %}" class="btn btn-secondary">Update</a>
+                                        <a href="{% url "download" playlist.id %}" class="btn btn-secondary">Download</a>
+                                        <a href="{% url "remove" playlist.id %}" class="btn btn-secondary">Remove</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
     {% endblock playlist_history %}
 {% endblock body %}
