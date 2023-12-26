@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponseRedirect
+from django.http import FileResponse, HttpResponseRedirect
 from django.urls import reverse
 from .util import (
     download_music,
@@ -31,6 +31,7 @@ def index(request):
 def download(request, playlist_id=None):
     request.session["error"] = ""
 
+    path = None
     # If given playlist link
     if request.method == "POST":
         print(request.POST)
@@ -42,12 +43,18 @@ def download(request, playlist_id=None):
         file_format = DEFAULT_FILE_FORMAT
 
     try:
-        download_music(link, file_format)
+        path = download_music(link, file_format)
         request.session["error"] = ""
     except (KeyError, IndexError) as e:
         print(e)
         request.session["error"] = "Invalid link"
 
+    if path:
+        response = FileResponse(open(path, "rb"))
+        response["Content-Disposition"] = f"attachment; filename={path.name}"
+        return response
+
+    request.session["error"] = "Invalid link"
     return HttpResponseRedirect(reverse("index"))
 
 
