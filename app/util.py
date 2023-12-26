@@ -1,4 +1,3 @@
-import json
 import sys
 from os import environ
 import base64
@@ -9,6 +8,7 @@ import yt_dlp
 import pathlib
 from dotenv import load_dotenv
 from . import models
+from django.conf import settings
 
 # Load API keys from .env file
 load_dotenv()
@@ -23,8 +23,7 @@ except KeyError:
     sys.exit(1)
 
 
-MUSIC_ROOT = pathlib.Path("Music")
-
+MUSIC_ROOT = settings.MUSIC_ROOT
 DEFAULT_FILE_FORMAT = "m4a"
 
 
@@ -549,3 +548,7 @@ def _download_spotify_playlist(link, file_format):
     shutil.rmtree(dir_)
 
     return pathlib.Path(str(ARCHIVE_PATH) + ".zip")
+
+
+def clear_files():
+    shutil.rmtree(MUSIC_ROOT)

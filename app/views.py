@@ -5,6 +5,7 @@ from .util import (
     download_music,
     get_playlist_link,
     update_playlist,
+    clear_files,
     DEFAULT_FILE_FORMAT,
 )
 from . import models
