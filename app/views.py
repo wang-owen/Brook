@@ -34,7 +34,6 @@ def download(request, playlist_id=None):
     path = None
     # If given playlist link
     if request.method == "POST":
-        print(request.POST)
         link = request.POST["link"]
         file_format = request.POST["file_format"]
     else:

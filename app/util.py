@@ -407,9 +407,7 @@ def _download_youtube_playlist(link, file_format):
         link (str): link to YouTube track or playlist
         file_format (str): file format to download tracks in
     """
-    data = _get_youtube_playlist_data(link)
-
-    playlist_name = data["name"]
+    playlist_name = _get_youtube_playlist_data(link)["name"]
 
     # Set download directory
     dir_ = pathlib.Path(f"{playlist_name}")
