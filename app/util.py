@@ -77,7 +77,12 @@ def _get_playlist_data(link, platform):
 
 def update_playlist(id, file_format):
     if playlist := models.Playlist.objects.get(id=id):
-        dir_ = pathlib.Path.joinpath(MUSIC_ROOT, f"UPDATED {playlist.name}")
+        dir_ = pathlib.Path.joinpath(
+            MUSIC_ROOT,
+            datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S"),
+            f"UPDATED {playlist.name}",
+        )
+
         link = get_playlist_link(playlist.platform, playlist.id)
         data = _get_playlist_data(link, playlist.platform)
 
@@ -396,8 +401,12 @@ def _download_youtube_track(
             },
         ],
     }
+
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([link])
+        if name := ydl.extract_info(link, download=True):
+            name = name["title"]
+
+    return pathlib.Path.joinpath(dir_, f"{name}.{file_format}")
 
 
 def _download_youtube_playlist(link, file_format):
@@ -440,7 +449,9 @@ def _download_youtube_playlist(link, file_format):
     pathlib.Path.joinpath(dir_, f"{playlist_name}.jpg").unlink()
 
     # Zip folder
-    ARCHIVE_PATH = pathlib.Path.joinpath(MUSIC_ROOT, playlist_name)
+    ARCHIVE_PATH = pathlib.Path.joinpath(
+        MUSIC_ROOT, datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S"), playlist_name
+    )
     shutil.make_archive(str(ARCHIVE_PATH), "zip", dir_)
     shutil.rmtree(dir_)
 
@@ -451,7 +462,9 @@ def _download_youtube_search(
     name,
     artist,
     file_format,
-    dir_=pathlib.Path.joinpath(MUSIC_ROOT, "Tracks"),
+    dir_=pathlib.Path.joinpath(
+        MUSIC_ROOT, "Tracks", datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S")
+    ),
 ):
     """Download YouTube track from search query
 
@@ -477,12 +490,20 @@ def _download_youtube_search(
         "default_search": "https://music.youtube.com/search?q=",
         "playlist_items": "1",
     }
+
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([f"{name} {artist}"])
+        if name := ydl.extract_info(f"{name} {artist}", download=True):
+            name = name["entries"][0]["title"]
+
+    return pathlib.Path.joinpath(dir_, f"{name}.{file_format}")
 
 
 def _download_spotify_track(
-    link, file_format, dir_=pathlib.Path.joinpath(MUSIC_ROOT, "Tracks")
+    link,
+    file_format,
+    dir_=pathlib.Path.joinpath(
+        MUSIC_ROOT, "Tracks", datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S")
+    ),
 ):
     """Download Spotify track from link
 
@@ -492,9 +513,8 @@ def _download_spotify_track(
     """
     data = _get_spotify_track_data(link)
     track_name, track_artist = data["name"], data["artist"]
-    _download_youtube_search(track_name, track_artist, file_format, dir_)
 
-    return pathlib.Path(str(dir_) + f".{file_format}")
+    return _download_youtube_search(track_name, track_artist, file_format, dir_)
 
 
 def _download_spotify_playlist(link, file_format):
@@ -509,7 +529,7 @@ def _download_spotify_playlist(link, file_format):
 
     # Set download directory
     dir_ = pathlib.Path(f"{playlist_name}")
-    if dir_ in MUSIC_ROOT.iterdir():
+    if dir_.exists():
         shutil.rmtree(pathlib.Path.joinpath(MUSIC_ROOT, dir_))
     dir_ = pathlib.Path.joinpath(MUSIC_ROOT, dir_)
 
@@ -522,7 +542,9 @@ def _download_spotify_playlist(link, file_format):
         _download_youtube_search(track["name"], track["artist"], file_format, dir_)
 
     # Zip folder
-    ARCHIVE_PATH = pathlib.Path.joinpath(MUSIC_ROOT, playlist_name)
+    ARCHIVE_PATH = pathlib.Path.joinpath(
+        MUSIC_ROOT, datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S"), playlist_name
+    )
     shutil.make_archive(str(ARCHIVE_PATH), "zip", dir_)
     shutil.rmtree(dir_)
 
