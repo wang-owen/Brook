@@ -1,27 +1,35 @@
-import os
+import sys
+from os import environ
 import base64
 import shutil
 import subprocess
 import requests
 import yt_dlp
+import pathlib
 from dotenv import load_dotenv
 from . import models
 
 # Load API keys from .env file
 load_dotenv()
-YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
-SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
-SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
+
+# Verify API keys
+try:
+    YOUTUBE_API_KEY = environ["YOUTUBE_API_KEY"]
+    SPOTIFY_CLIENT_ID = environ["SPOTIFY_CLIENT_ID"]
+    SPOTIFY_CLIENT_SECRET = environ["SPOTIFY_CLIENT_SECRET"]
+except KeyError:
+    print("ERROR: Missing API keys")
+    sys.exit(1)
 
 # Set download directory
-DIR = os.path.join("Music")
+DIR = pathlib.Path("Music")
 
 DEFAULT_FILE_FORMAT = "m4a"
 
 
 def download_music(link, file_format):
-    if DIR not in os.listdir():
-        os.mkdir(DIR)
+    if not DIR.exists():
+        DIR.mkdir()
 
     is_playlist = False
     platform = None
@@ -64,7 +72,7 @@ def _get_playlist_data(link, platform):
 
 def update_playlist(id, file_format):
     if playlist := models.Playlist.objects.get(id=id):
-        dir_ = os.path.join(DIR, f"UPDATED {playlist.name} - {playlist.owner}")
+        dir_ = pathlib.Path.joinpath(DIR, f"UPDATED {playlist.name}")
         link = get_playlist_link(playlist.platform, playlist.id)
         data = _get_playlist_data(link, playlist.platform)
 
@@ -357,7 +365,9 @@ def _log_playlist(playlist_data):
             track.save()
 
 
-def _download_youtube_track(link, file_format, dir_=DIR):
+def _download_youtube_track(
+    link, file_format, dir_=pathlib.Path.joinpath(DIR, "Tracks").absolute()
+):
     """Download YouTube track or playlist from link
 
     Args:
@@ -394,14 +404,16 @@ def _download_youtube_playlist(link, file_format):
     data = _get_youtube_playlist_data(link)
 
     playlist_name = data["name"]
-    playlist_owner = data["owner"]
 
     # Set download directory
-    dir_ = os.path.join(f"{playlist_name} - {playlist_owner}")
-    if dir_ in os.listdir(DIR):
-        shutil.rmtree(os.path.join(DIR, dir_))
-    dir_ = os.path.join(DIR, dir_)
-    os.mkdir(os.path.join(dir_))
+    dir_ = pathlib.Path(f"{playlist_name}")
+    if dir_.exists():
+        shutil.rmtree(pathlib.Path.joinpath(DIR, dir_))
+    dir_ = pathlib.Path.joinpath(DIR, dir_)
+
+    if dir_.exists():
+        shutil.rmtree(dir_)
+    dir_.mkdir()
 
     ydl_opts = {
         "outtmpl": f"{dir_}/%(title)s.%(ext)s",
@@ -421,12 +433,20 @@ def _download_youtube_playlist(link, file_format):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([link])
 
-    os.remove(os.path.join(dir_, f"{playlist_name}.jpg"))
+    pathlib.Path.joinpath(dir_, f"{playlist_name}.jpg").unlink()
 
-    subprocess.call(["open", dir_])
+    # Zip folder
+    shutil.make_archive(
+        str(pathlib.Path.joinpath(DIR, playlist_name).absolute()), "zip", dir_
+    )
+    shutil.rmtree(dir_)
+
+    subprocess.call(["open", DIR])
 
 
-def _download_youtube_search(name, artist, file_format, dir_=DIR):
+def _download_youtube_search(
+    name, artist, file_format, dir_=pathlib.Path.joinpath(DIR, "Tracks").absolute()
+):
     """Download YouTube track from search query
 
     Args:
@@ -455,7 +475,9 @@ def _download_youtube_search(name, artist, file_format, dir_=DIR):
         ydl.download([f"{name} {artist}"])
 
 
-def _download_spotify_track(link, file_format, dir_=DIR):
+def _download_spotify_track(
+    link, file_format, dir_=pathlib.Path.joinpath(DIR, "Tracks").absolute()
+):
     """Download Spotify track from link
 
     Args:
@@ -477,16 +499,25 @@ def _download_spotify_playlist(link, file_format):
     """
     data = _get_spotify_playlist_data(link)
     playlist_name = data["name"]
-    playlist_owner = data["owner"]
 
     # Set download directory
-    dir_ = os.path.join(f"{playlist_name} - {playlist_owner}")
-    if dir_ in os.listdir(DIR):
-        shutil.rmtree(os.path.join(DIR, dir_))
-    dir_ = os.path.join(DIR, dir_)
-    os.mkdir(os.path.join(dir_))
+    dir_ = pathlib.Path(f"{playlist_name}")
+    if dir_ in DIR.iterdir():
+        shutil.rmtree(pathlib.Path.joinpath(DIR, dir_))
+    dir_ = pathlib.Path.joinpath(DIR, dir_)
+
+    if dir_.exists():
+        shutil.rmtree(dir_)
+    dir_.mkdir()
 
     tracks = data["tracks"]
     for track in tracks:
         _download_youtube_search(track["name"], track["artist"], file_format, dir_)
-    subprocess.call(["open", dir_])  # open folder after download
+
+    # Zip folder
+    shutil.make_archive(
+        str(pathlib.Path.joinpath(DIR, playlist_name).absolute()), "zip", dir_
+    )
+    shutil.rmtree(dir_)
+
+    subprocess.call(["open", DIR])  # open folder after download
