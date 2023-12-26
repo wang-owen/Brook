@@ -1,4 +1,22 @@
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from django.conf import settings
+from django.contrib.auth import authenticate, login, logout, get_user_model
+from django.contrib.auth.decorators import login_required
+from django.urls import reverse
+from pathlib import Path
+from shutil import rmtree
 
 
 # Create your views here.
+@login_required
+def clear_files(request):
+    if request.user.is_superuser:
+        if Path(settings.MUSIC_ROOT).exists():
+            rmtree(settings.MUSIC_ROOT)
+    return HttpResponseRedirect(reverse("index"))
+
+
+def logout_view(request):
+    logout(request)
+    return HttpResponseRedirect(reverse("index"))
