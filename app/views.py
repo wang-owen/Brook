@@ -5,6 +5,8 @@ import json
 from .util import (
     download_music,
     get_playlist_link,
+    log_playlist,
+    get_playlist_data,
     update_playlist,
     DEFAULT_FILE_FORMAT,
 )
@@ -103,3 +105,30 @@ def playlist(request, playlist_platform, playlist_id):
     id_ = models.Playlist.objects.get(id=playlist_id).id
     link = get_playlist_link(playlist_platform, id_)
     return redirect(link)
+
+
+@csrf_exempt
+def watch(request):
+    if request.method == "PUT":
+        data = json.loads(request.body)
+        link = data.get("link")
+        print()
+        print(link)
+        print()
+
+        if "list" not in link:
+            return JsonResponse({"error": "Must be playlist"}, status=400)
+
+        platform = None
+        if "youtube" or "youtu.be" in link:
+            platform = "youtube"
+        elif "spotify" in link:
+            platform = "spotify"
+
+        try:
+            log_playlist(get_playlist_data(link, platform))
+        except (KeyError, IndexError):
+            return JsonResponse({"error": "Invalid link"}, status=400)
+
+        return JsonResponse({"error": False}, status=200)
+    return JsonResponse({"error": "Invalid request"}, status=400)

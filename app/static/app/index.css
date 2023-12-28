@@ -11,6 +11,22 @@ body {
   text-align: center;
 }
 
+form {
+  margin: auto;
+  margin-top: 25px;
+  width: 50vw;
+}
+form select {
+  margin: auto;
+  margin-top: 25px;
+  margin-bottom: 25px;
+  width: 100px;
+}
+form #error-msg {
+  margin: 20px;
+  color: darkred;
+}
+
 #brew {
   padding: 50px;
   height: 50vh;
@@ -19,35 +35,33 @@ body {
   background-position: right;
   border-bottom: 2px solid black;
 }
-#brew #brew-form {
-  margin: auto;
-  margin-top: 50px;
-  width: 50vw;
-}
 #brew #brew-form select {
   margin: auto;
   margin-top: 25px;
   margin-bottom: 25px;
   width: 100px;
 }
-#brew #brew-form #error-msg {
-  margin: 20px;
-  color: darkred;
-}
 
-#playlists {
-  margin-top: 75px;
+#recent-playlists {
+  margin-top: 50px;
   justify-content: center;
 }
-#playlists .playlist {
+#recent-playlists #playlists-grid {
+  margin-top: 50px;
+}
+#recent-playlists #playlists-grid .playlist {
   margin-bottom: 70px;
 }
-#playlists .playlist .playlist-thumbnail {
+#recent-playlists #playlists-grid .playlist .playlist-thumbnail {
   border: 10px solid lightblue;
 }
-#playlists .playlist .playlist-btns {
+#recent-playlists #playlists-grid .playlist .playlist-btns {
   margin: 5px;
   scale: 0.85;
+}
+#recent-playlists #watch #watch-btn {
+  scale: 0.85;
+  margin-top: 10px;
 }
 
 /*# sourceMappingURL=index.css.map */

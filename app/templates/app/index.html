@@ -32,8 +32,26 @@
         </form>
     </section>
     {% block playlists %}
-        <section id="playlists">
-            {% comment %} <div class="container">
+        <section id="recent-playlists">
+            <h3>Recent Playlists</h3>
+            <div id="watch">
+                <button id="watch-btn" class="btn btn-outline-secondary">Add playlist</button>
+                <form id="watch-form" method="post">
+                    {% csrf_token %}
+                    <div class="form-floating">
+                        <input type="text"
+                               name="link"
+                               class="form-control"
+                               id="watch-link"
+                               placeholder="">
+                        <label for="watch-link">YouTube or Spotify playlist URL to watch</label>
+                    </div>
+                    <div id="error-msg">{{ error }}</div>
+                    <input type="submit" class="btn btn-outline-primary" value="Add">
+                </form>
+            </div>
+            <div id="playlists-grid">
+                {% comment %} <div class="container">
                 <div class="row">
                     {% for playlist in playlists %}
                         <div class="col">
@@ -54,7 +72,8 @@
                         </div>
                     {% endfor %}
                 </div>
-            </div> {% endcomment %}
+                </div> {% endcomment %}
+            </div>
         </section>
     {% endblock playlists %}
 {% endblock body %}

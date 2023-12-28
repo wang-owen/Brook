@@ -71,12 +71,12 @@ def download_music(link, file_format):
         if models.Playlist.objects.filter(id=_get_id(link)).exists():
             update_playlist(_get_id(link), file_format)
         else:
-            _log_playlist(_get_playlist_data(link, platform))
+            log_playlist(get_playlist_data(link, platform))
 
     return path
 
 
-def _get_playlist_data(link, platform):
+def get_playlist_data(link, platform):
     """Return track name and artist for each track in playlist
 
     Args:
@@ -99,7 +99,7 @@ def update_playlist(id, file_format):
         )
 
         link = get_playlist_link(playlist.platform, playlist.id)
-        data = _get_playlist_data(link, playlist.platform)
+        data = get_playlist_data(link, playlist.platform)
 
         old_tracks = playlist.tracks.all()  # type: ignore
         new_tracks = data["tracks"]
@@ -332,7 +332,7 @@ def _get_spotify_playlist_data(link):
     return data
 
 
-def _log_playlist(playlist_data):
+def log_playlist(playlist_data):
     """Log playlist data to database and update if playlist already exists
 
     Args:

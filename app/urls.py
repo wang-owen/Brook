@@ -14,4 +14,5 @@ urlpatterns = [
         views.playlist,
         name="playlist",
     ),
+    path("watch", views.watch, name="watch"),
 ]
