@@ -27,9 +27,13 @@
             <select class="form-select" name="file_format">
                 <option id="brew-format" selected value="m4a">m4a</option>
             </select>
-            <div id="error-msg">{{ error }}</div>
             <input type="submit" class="btn btn-outline-secondary" value="Brew">
         </form>
+        <div id="brew-spinner" class="spinner-border" role="status">
+            <span class="visually-hidden">Downloading...</span>
+        </div>
+        <div id="brew-confirm" class="alert alert-info" role="alert"></div>
+        <div id="brew-error" class="alert alert-danger" role="alert"></div>
     </section>
     {% block playlists %}
         <section id="recent-playlists">
@@ -46,9 +50,16 @@
                                placeholder="">
                         <label for="watch-link">YouTube or Spotify playlist URL to watch</label>
                     </div>
-                    <div id="error-msg">{{ error }}</div>
-                    <input type="submit" class="btn btn-outline-primary" value="Add">
+                    <input id="watch-add-btn"
+                           type="submit"
+                           class="btn btn-outline-primary"
+                           value="Add">
                 </form>
+                <div id="watch-spinner" class="spinner-border" role="status">
+                    <span class="visually-hidden">Downloading...</span>
+                </div>
+                <div id="watch-confirm" class="alert alert-info" role="alert"></div>
+                <div id="watch-error" class="alert alert-danger" role="alert"></div>
             </div>
             <div id="playlists-grid">
                 {% comment %} <div class="container">

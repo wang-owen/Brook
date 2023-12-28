@@ -41,7 +41,9 @@ def download_music(link, file_format):
     dir_ = pathlib.Path.joinpath(
         TRACKS_DIR, datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S")
     )
+
     is_playlist = False
+    exists = False
     if "list" in link:
         is_playlist = True
     if "watch" in link:
@@ -50,6 +52,8 @@ def download_music(link, file_format):
         dir_ = pathlib.Path.joinpath(
             PLAYLISTS_DIR, datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S")
         )
+        exists = models.Playlist.objects.filter(id=get_id(link)).exists()
+
     if not dir_.exists():
         dir_.mkdir()
 
@@ -68,12 +72,16 @@ def download_music(link, file_format):
             path = _download_spotify_track(link, file_format, dir_)
 
     if is_playlist:
-        if models.Playlist.objects.filter(id=_get_id(link)).exists():
-            update_playlist(_get_id(link), file_format)
+        if models.Playlist.objects.filter(id=get_id(link)).exists():
+            update_playlist(get_id(link), file_format)
         else:
-            log_playlist(get_playlist_data(link, platform))
+            log_playlist(get_playlist_data(link, platform), True)
 
-    return path
+    return {
+        "path": path,
+        "is_playlist": is_playlist,
+        "exists": exists,
+    }
 
 
 def get_playlist_data(link, platform):
@@ -148,7 +156,7 @@ def _get_auth_header(token):
     return {"Authorization": "Bearer " + token}
 
 
-def _get_id(link):
+def get_id(link):
     """Get id from YouTube or Spotify link
 
     Args:
@@ -201,7 +209,7 @@ def _get_youtube_playlist_data(link):
     Returns:
         dict: dictionary containing playlist link, title, owner, thumbnail, and tracks ([name, artist]])
     """
-    playlist_id = _get_id(link)
+    playlist_id = get_id(link)
 
     # Get playlist title, owner, and thumbnail from different API endpoint
     response = requests.get(
@@ -272,7 +280,7 @@ def _get_spotify_track_data(link):
         dict: dictionary containing track id, name, and artist
     """
     request_url = "https://api.spotify.com/v1/tracks/"
-    track_id = _get_id(link)
+    track_id = get_id(link)
     response = requests.get(
         request_url + track_id,
         headers=_get_auth_header(_get_token()),
@@ -301,7 +309,7 @@ def _get_spotify_playlist_data(link):
     """
     request_url = "https://api.spotify.com/v1/playlists/"
     tracks = []
-    playlist_id = _get_id(link)
+    playlist_id = get_id(link)
     response = requests.get(
         request_url + playlist_id,
         headers=_get_auth_header(_get_token()),
@@ -332,7 +340,7 @@ def _get_spotify_playlist_data(link):
     return data
 
 
-def log_playlist(playlist_data):
+def log_playlist(playlist_data, update):
     """Log playlist data to database and update if playlist already exists
 
     Args:
@@ -347,24 +355,28 @@ def log_playlist(playlist_data):
 
     # Check if playlist already exists
     if models.Playlist.objects.filter(id=playlist_id).exists():
-        # Update playlist
-        playlist = models.Playlist.objects.get(id=playlist_id)
-        # Remove removed tracks
-        for track in playlist.tracks.all():  # type: ignore
-            if track.id not in playlist_tracks:
-                track.delete()
-        # Add new tracks
-        for track in playlist_tracks:
-            if not playlist.tracks.filter(id=track["track_id"]).exists():  # type: ignore
-                track = models.Track(
-                    id=track["track_id"],
-                    name=track["name"],
-                    artist=track["artist"],
-                    platform=track["platform"],
-                    playlist=playlist,
-                )
-                track.save()
-        playlist.save()
+        if update:
+            # Update playlist
+            playlist = models.Playlist.objects.get(id=playlist_id)
+            # Remove removed tracks
+            for track in playlist.tracks.all():  # type: ignore
+                if track.id not in playlist_tracks:
+                    track.delete()
+            # Add new tracks
+            for track in playlist_tracks:
+                if not playlist.tracks.filter(id=track["track_id"]).exists():  # type: ignore
+                    track = models.Track(
+                        id=track["track_id"],
+                        name=track["name"],
+                        artist=track["artist"],
+                        platform=track["platform"],
+                        playlist=playlist,
+                    )
+                    track.save()
+            playlist.save()
+
+        # Playlist already exists
+        return True
     else:
         # Create playlist object
         playlist = models.Playlist(
@@ -386,6 +398,9 @@ def log_playlist(playlist_data):
                 playlist=playlist,
             )
             track.save()
+
+        # Playlist doesn't exist
+        return False
 
 
 def _download_youtube_track(link, file_format, dir_):

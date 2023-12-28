@@ -6,7 +6,7 @@ urlpatterns = [
     path("brew", views.brew, name="brew"),
     path("brew/<str:playlist_id>", views.brew, name="brew"),
     path("download/<str:name>/<path:path>", views.download, name="download"),
-    path("playlists", views.playlists, name="playlists"),
+    path("get-playlists", views.get_playlists, name="get-playlists"),
     path("update/<str:playlist_id>", views.update, name="update"),
     path("remove/<str:playlist_id>", views.remove, name="remove"),
     path(
