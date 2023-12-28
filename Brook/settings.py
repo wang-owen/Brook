@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 
 
-MUSIC_ROOT = Path("Music")
+MUSIC_DIR = Path("Music")
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.

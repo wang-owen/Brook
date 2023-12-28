@@ -12,8 +12,8 @@ from shutil import rmtree
 @login_required
 def clear_files(request):
     if request.user.is_superuser:
-        if Path(settings.MUSIC_ROOT).exists():
-            rmtree(settings.MUSIC_ROOT)
+        if Path(settings.MUSIC_DIR).exists():
+            rmtree(settings.MUSIC_DIR)
     return HttpResponseRedirect(reverse("index"))
 
 
