@@ -44,7 +44,7 @@ def brew(request, playlist_id=None):
 
     try:
         path = download_music(link, file_format)
-    except (KeyError, IndexError) as e:
+    except (KeyError, IndexError):
         return JsonResponse({"error": "Invalid link"}, status=400)
 
     if path:
@@ -55,7 +55,14 @@ def brew(request, playlist_id=None):
 
 def download(request, name, path):
     try:
-        response = FileResponse(open(path, "rb"), as_attachment=True)
+        if "zip" in path:
+            content_type = "application/zip"
+        else:
+            file_format = path.split(".")[-1]
+            content_type = f"audio/{file_format}"
+        response = FileResponse(
+            open(path, "rb"), as_attachment=True, content_type=content_type
+        )
         response["Content-Disposition"] = f"attachment; filename={name}"
         return response
     except FileNotFoundError:
