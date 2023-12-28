@@ -1,35 +1,22 @@
 from django.shortcuts import render, redirect
-from django.http import FileResponse, HttpResponseRedirect, JsonResponse
-from django.urls import reverse
+from django.http import FileResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 import json
 from .util import (
     download_music,
     get_playlist_link,
     log_playlist,
+    get_id,
     get_playlist_data,
     update_playlist,
     DEFAULT_FILE_FORMAT,
 )
 from . import models
-from django.views.decorators.csrf import csrf_exempt
 
 
 # Create your views here.
 def index(request):
-    error = (
-        request.session["error"]
-        if "error" in request.session and request.session["error"]
-        else ""
-    )
-    request.session["error"] = False
-    return render(
-        request,
-        "app/index.html",
-        {
-            "playlists": models.Playlist.objects.all().order_by("-last_modified"),
-            "error": error,
-        },
-    )
+    return render(request, "app/index.html")
 
 
 @csrf_exempt
@@ -37,7 +24,7 @@ def brew(request, playlist_id=None):
     if request.method == "PUT":
         data = json.loads(request.body)
         link = data.get("link")
-        file_format = data.get("file_format")
+        file_format = data.get("fileFormat")
 
     else:
         playlist = models.Playlist.objects.get(id=playlist_id)
@@ -45,14 +32,30 @@ def brew(request, playlist_id=None):
         file_format = DEFAULT_FILE_FORMAT
 
     try:
-        path = download_music(link, file_format)
+        download_data = download_music(link, file_format)
     except (KeyError, IndexError):
-        return JsonResponse({"error": "Invalid link"}, status=400)
+        return JsonResponse(
+            {"error": True, "message": "Invalid YouTube/Spotify link"}, status=400
+        )
 
-    if path:
-        return JsonResponse({"name": path.name, "path": str(path)}, status=200)
+    if download_data:
+        return JsonResponse(
+            {
+                "error": False,
+                "message": "Responded with file path",
+                "model": models.Playlist.objects.get(id=get_id(link)).serialize()
+                if download_data["is_playlist"]
+                else None,
+                "path": str(download_data["path"]),
+                "name": download_data["path"].name,
+                "exists": download_data["exists"],
+            },
+            status=200,
+        )
 
-    return JsonResponse({"error": "Invalid link"}, status=400)
+    return JsonResponse(
+        {"error": True, "message": "Invalid YouTube/Spotify link"}, status=400
+    )
 
 
 def download(request, name, path):
@@ -67,13 +70,13 @@ def download(request, name, path):
         )
         response["Content-Disposition"] = f"attachment; filename={name}"
         return response
-    except FileNotFoundError:
-        request.session["error"] = "Invalid link"
-        return HttpResponseRedirect(reverse("index"))
+    except FileNotFoundError as e:
+        print(e)
+        return JsonResponse({"error": True, "message": "File not found"}, status=404)
 
 
-def playlists(request):
-    playlists = models.Playlist.objects.all().order_by("-last_modified")
+def get_playlists(request):
+    playlists = models.Playlist.objects.all().order_by("last_modified")
     return JsonResponse(
         [playlist.serialize() for playlist in playlists], safe=False, status=200
     )
@@ -87,7 +90,9 @@ def update(request, playlist_id):
     except:
         error = True
         status = 400
-    return JsonResponse({"error": error}, status=status)
+    return JsonResponse(
+        {"error": error, "message": "Playlist does not exist"}, status=status
+    )
 
 
 def remove(request, playlist_id):
@@ -98,7 +103,9 @@ def remove(request, playlist_id):
     except:
         error = True
         status = 400
-    return JsonResponse({"error": error}, status=status)
+    return JsonResponse(
+        {"error": error, "message": "Playlist does not exist"}, status=status
+    )
 
 
 def playlist(request, playlist_platform, playlist_id):
@@ -112,12 +119,11 @@ def watch(request):
     if request.method == "PUT":
         data = json.loads(request.body)
         link = data.get("link")
-        print()
-        print(link)
-        print()
 
         if "list" not in link:
-            return JsonResponse({"error": "Must be playlist"}, status=400)
+            return JsonResponse(
+                {"error": True, "message": "Link must be playlist"}, status=400
+            )
 
         platform = None
         if "youtube" or "youtu.be" in link:
@@ -126,9 +132,21 @@ def watch(request):
             platform = "spotify"
 
         try:
-            log_playlist(get_playlist_data(link, platform))
+            exists = log_playlist(get_playlist_data(link, platform), False)
         except (KeyError, IndexError):
-            return JsonResponse({"error": "Invalid link"}, status=400)
+            return JsonResponse(
+                {"error": True, "message": "Invalid playlist link"}, status=400
+            )
 
-        return JsonResponse({"error": False}, status=200)
-    return JsonResponse({"error": "Invalid request"}, status=400)
+        return JsonResponse(
+            {
+                "error": False,
+                "message": "Playlist saved",
+                "exists": exists,
+                "data": models.Playlist.objects.get(id=get_id(link)).serialize(),
+            },
+            status=200,
+        )
+    return JsonResponse(
+        {"error": True, "message": "Request method must be PUT"}, status=400
+    )

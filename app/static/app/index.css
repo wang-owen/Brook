@@ -22,10 +22,6 @@ form select {
   margin-bottom: 25px;
   width: 100px;
 }
-form #error-msg {
-  margin: 20px;
-  color: darkred;
-}
 
 #brew {
   padding: 50px;
@@ -62,6 +58,20 @@ form #error-msg {
 #recent-playlists #watch #watch-btn {
   scale: 0.85;
   margin-top: 10px;
+}
+#recent-playlists #watch #watch-add-btn {
+  margin: 15px;
+}
+
+.alert {
+  margin: auto;
+  margin-top: 25px;
+  width: 25vw;
+}
+
+.spinner-border {
+  margin: auto;
+  margin-top: 40px;
 }
 
 /*# sourceMappingURL=index.css.map */
