@@ -12,6 +12,24 @@ body {
     text-align: center;
 }
 
+form {
+    margin: auto;
+    margin-top: 25px;
+    width: 50vw;
+
+    select {
+        margin: auto;
+        margin-top: 25px;
+        margin-bottom: 25px;
+        width: 100px;
+    }
+
+    #error-msg {
+        margin: 20px;
+        color: darkred;
+    }
+}
+
 #brew {
     padding: 50px;
     height: 50vh;
@@ -21,37 +39,40 @@ body {
     border-bottom: 2px solid black;
 
     #brew-form {
-        margin: auto;
-        margin-top: 50px;
-        width: 50vw;
-
         select {
             margin: auto;
             margin-top: 25px;
             margin-bottom: 25px;
             width: 100px;
         }
-
-        #error-msg {
-            margin: 20px;
-            color: darkred;
-        }
     }
 }
 
-#playlists {
-    margin-top: 75px;
+#recent-playlists {
+    margin-top: 50px;
     justify-content: center;
 
-    .playlist {
-        margin-bottom: 70px;
-        .playlist-thumbnail {
-            border: 10px solid lightblue;
-        }
+    #playlists-grid {
+        margin-top: 50px;
 
-        .playlist-btns {
-            margin: 5px;
+        .playlist {
+            margin-bottom: 70px;
+
+            .playlist-thumbnail {
+                border: 10px solid lightblue;
+            }
+
+            .playlist-btns {
+                margin: 5px;
+                scale: 0.85;
+            }
+        }
+    }
+
+    #watch {
+        #watch-btn {
             scale: 0.85;
+            margin-top: 10px;
         }
     }
 }

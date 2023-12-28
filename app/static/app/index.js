@@ -1,6 +1,19 @@
 document.addEventListener("DOMContentLoaded", () => {
-    load_playlists();
+    // Hide watch form
+    document.getElementById("watch-form").style.display = "none";
+
+    document.getElementById("watch-btn").addEventListener("click", () => {
+        const form = document.getElementById("watch-form");
+        if (form.style.display == "none") {
+            form.style.display = "block";
+        } else {
+            form.style.display = "none";
+        }
+    });
+
     document.getElementById("brew-form").addEventListener("submit", brew);
+    document.getElementById("watch-form").addEventListener("submit", watch);
+    load_playlists();
 });
 
 function brew(event) {
@@ -48,8 +61,8 @@ function brew(event) {
 }
 
 function load_playlists() {
-    const playlists = document.getElementById("playlists");
-    playlists.innerHTML = "";
+    const playlists_grid = document.getElementById("playlists-grid");
+    playlists_grid.innerHTML = "";
 
     const container = document.createElement("div");
     container.className = "container";
@@ -145,6 +158,39 @@ function load_playlists() {
                 row.appendChild(col);
             });
             container.appendChild(row);
-            playlists.appendChild(container);
+            playlists_grid.appendChild(container);
         });
+}
+
+function watch(event) {
+    event.preventDefault();
+
+    document.getElementById("watch").style.display = "block";
+
+    const link = document.getElementById("watch-link").value;
+    console.log(link);
+    try {
+        url = new URL(link);
+    } catch (TypeError) {
+        alert("Invalid URL");
+        return;
+    }
+
+    fetch("/watch", {
+        method: "PUT",
+        body: JSON.stringify({
+            link: link,
+        }),
+    })
+        .then((response) => {
+            load_playlists();
+            return response.json();
+        })
+        .then((data) => {
+            if (data.error) {
+                alert(data.error);
+            }
+        });
+    document.querySelector("#watch-form").reset();
+    document.querySelector("#watch-form").style.display = "none";
 }
