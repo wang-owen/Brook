@@ -13,47 +13,40 @@
             <h5>Yohohoho</h5>
             <h6>Your barebones music pirate</h6>
         </div>
-        <div id="brew-form">
-            <form action="{% url "download" %}" method="post">
-                {% csrf_token %}
-                <div class="form-floating">
-                    <input type="text"
-                           name="link"
-                           class="form-control"
-                           id="floatingInput"
-                           placeholder="">
-                    <label for="floatingInput">YouTube or Spotify track/playlist URL</label>
-                </div>
-                <!-- Add text-center class here -->
-                <select class="form-select" name="file_format">
-                    <option selected value="m4a">m4a</option>
-                </select>
-                <div id="error-msg">{{ error }}</div>
-                <input type="submit" class="btn btn-outline-secondary" value="Brew">
-            </form>
-        </div>
+        <form id="brew-form" method="post">
+            {% csrf_token %}
+            <div class="form-floating">
+                <input type="text"
+                       name="link"
+                       class="form-control"
+                       id="brew-link"
+                       placeholder="">
+                <label for="brew-link">YouTube or Spotify track/playlist URL</label>
+            </div>
+            <!-- Add text-center class here -->
+            <select class="form-select" name="file_format">
+                <option id="brew-format" selected value="m4a">m4a</option>
+            </select>
+            <div id="error-msg">{{ error }}</div>
+            <input type="submit" class="btn btn-outline-secondary" value="Brew">
+        </form>
     </section>
-    {% block playlist_history %}
-        <section id="playlist-history">
-            <div class="container">
+    {% block playlists %}
+        <section id="playlists">
+            {% comment %} <div class="container">
                 <div class="row">
                     {% for playlist in playlists %}
                         <div class="col">
                             <div class="playlist">
                                 <h5>{{ playlist.name }}</h5>
                                 <h6>{{ playlist.owner }}</h6>
-                                <a href="{% url "playlist" playlist.platform playlist.id %}"
-                                   target="_blank">
-                                    <img class="playlist-thumbnail"
-                                         src="{{ playlist.thumbnail }}"
-                                         alt="thumbnail"
-                                         height="250"
-                                         width="250">
+                                <a href="{% url "playlist" playlist.platform playlist.id %}" target="_blank">
+                                    <img class="playlist-thumbnail" src="{{ playlist.thumbnail }}" alt="thumbnail" height="250" width="250">
                                 </a>
                                 <div class="playlist-btns">
                                     <div class="btn-group">
                                         <a href="{% url "update" playlist.id %}" class="btn btn-secondary">Update</a>
-                                        <a href="{% url "download" playlist.id %}" class="btn btn-secondary">Download</a>
+                                        <a href="{% url "brew" playlist.id %}" class="btn btn-secondary">Download</a>
                                         <a href="{% url "remove" playlist.id %}" class="btn btn-secondary">Remove</a>
                                     </div>
                                 </div>
@@ -61,7 +54,7 @@
                         </div>
                     {% endfor %}
                 </div>
-            </div>
+            </div> {% endcomment %}
         </section>
-    {% endblock playlist_history %}
+    {% endblock playlists %}
 {% endblock body %}

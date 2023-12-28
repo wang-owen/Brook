@@ -8,13 +8,20 @@ class Playlist(models.Model):
     name = models.CharField(max_length=64)
     owner = models.CharField(max_length=64)
     platform = models.CharField(max_length=64)
-    thumbnail = models.ImageField(
-        upload_to=os.path.join("playlist_history", "thumbnails"), blank=True
-    )
+    thumbnail = models.URLField(blank=True)
     last_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.platform}: {self.name}"
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "owner": self.owner,
+            "platform": self.platform,
+            "thumbnail": self.thumbnail,
+        }
 
 
 class Track(models.Model):

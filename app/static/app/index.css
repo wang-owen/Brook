@@ -35,17 +35,17 @@ body {
   color: darkred;
 }
 
-#playlist-history {
+#playlists {
   margin-top: 75px;
   justify-content: center;
 }
-#playlist-history .playlist {
+#playlists .playlist {
   margin-bottom: 70px;
 }
-#playlist-history .playlist .playlist-thumbnail {
+#playlists .playlist .playlist-thumbnail {
   border: 10px solid lightblue;
 }
-#playlist-history .playlist .playlist-btns {
+#playlists .playlist .playlist-btns {
   margin: 5px;
   scale: 0.85;
 }

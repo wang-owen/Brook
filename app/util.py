@@ -35,10 +35,12 @@ def download_music(link, file_format):
 
     is_playlist = False
     platform = None
-    if "playlist" in link:
+    if "list" in link:
         is_playlist = True
+    if "watch" in link:
+        is_playlist = False
 
-    if "youtube" in link:
+    if "youtube" in link or "youtu.be" in link:
         platform = "youtube"
         if is_playlist:
             path = _download_youtube_playlist(link, file_format)
@@ -405,7 +407,10 @@ def _download_youtube_track(
         if name := ydl.extract_info(link, download=True):
             name = name["title"]
 
-    return pathlib.Path.joinpath(dir_, f"{name}.{file_format}")
+    print(shutil.make_archive(str(dir_), "zip", dir_))
+    # shutil.rmtree(dir_)
+
+    return pathlib.Path(str(dir_) + ".zip")
 
 
 def _download_youtube_playlist(link, file_format):
@@ -494,7 +499,10 @@ def _download_youtube_search(
         if name := ydl.extract_info(f"{name} {artist}", download=True):
             name = name["entries"][0]["title"]
 
-    return pathlib.Path.joinpath(dir_, f"{name}.{file_format}")
+    shutil.make_archive(str(dir_), "zip", dir_)
+    shutil.rmtree(dir_)
+
+    return pathlib.Path(str(dir_) + ".zip")
 
 
 def _download_spotify_track(
@@ -548,7 +556,3 @@ def _download_spotify_playlist(link, file_format):
     shutil.rmtree(dir_)
 
     return pathlib.Path(str(ARCHIVE_PATH) + ".zip")
-
-
-def clear_files():
-    shutil.rmtree(MUSIC_ROOT)
