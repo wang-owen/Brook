@@ -11,7 +11,9 @@ from shutil import rmtree
 # Create your views here.
 @login_required
 def clear_files(request):
+    # Only allow superusers to clear files
     if request.user.is_superuser:
+        # Delete all files in the music directory
         if Path(settings.MUSIC_DIR).exists():
             rmtree(settings.MUSIC_DIR)
     return HttpResponseRedirect(reverse("index"))

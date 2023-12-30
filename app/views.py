@@ -22,53 +22,64 @@ def index(request):
 @csrf_exempt
 def brew(request, playlist_id=None):
     if request.method == "PUT":
+        # Get playlist link from request body
         data = json.loads(request.body)
         link = data.get("link")
         file_format = data.get("fileFormat")
-
     else:
+        # Get playlist link from database
         playlist = models.Playlist.objects.get(id=playlist_id)
         link = get_playlist_link(playlist.platform, playlist.id)
         file_format = DEFAULT_FILE_FORMAT
 
     try:
+        # Download music
         download_data = download_music(link, file_format)
     except (KeyError, IndexError):
+        # Invalid YouTube/Spotify link
         return JsonResponse(
             {"error": True, "message": "Invalid YouTube/Spotify link"}, status=400
         )
 
     if download_data:
+        # Return JSON response to client, handled by brew() in index.js
         return JsonResponse(
             {
                 "error": False,
                 "message": "Responded with file path",
+                "is_playlist": download_data["is_playlist"],
                 "model": models.Playlist.objects.get(id=get_id(link)).serialize()
                 if download_data["is_playlist"]
                 else None,
-                "path": str(download_data["path"]),
-                "name": download_data["path"].name,
                 "exists": download_data["exists"],
+                "path": str(download_data["path"]),
+                "message": "Playlist downloaded"
+                if download_data["is_playlist"]
+                else "Track downloaded",
             },
             status=200,
         )
 
+    # download data is empty
     return JsonResponse(
         {"error": True, "message": "Invalid YouTube/Spotify link"}, status=400
     )
 
 
-def download(request, name, path):
+def download(request, path):
+    # Return file to client, called by brew() in index.js
     try:
+        # Determine whether file is a zip or audio file
         if "zip" in path:
             content_type = "application/zip"
         else:
-            file_format = path.split(".")[-1]
-            content_type = f"audio/{file_format}"
+            content_type = f"audio/{path.split('.')[-1]}"
+
+        # Return file to client
         response = FileResponse(
             open(path, "rb"), as_attachment=True, content_type=content_type
         )
-        response["Content-Disposition"] = f"attachment; filename={name}"
+        response["Content-Disposition"] = f"attachment; filename={path.split('/')[-1]}"
         return response
     except FileNotFoundError as e:
         print(e)
@@ -76,6 +87,7 @@ def download(request, name, path):
 
 
 def get_playlists(request):
+    # Return all playlists to client, called by loadPlaylists() in index.js
     playlists = models.Playlist.objects.all().order_by("last_modified")
     return JsonResponse(
         [playlist.serialize() for playlist in playlists], safe=False, status=200
@@ -83,16 +95,34 @@ def get_playlists(request):
 
 
 def update(request, playlist_id):
+    # Update playlist in database, called when update button is clicked; handled by brew() in index.js
     try:
-        update_playlist(playlist_id, DEFAULT_FILE_FORMAT)
-        error = False
-        status = 200
-    except:
-        error = True
-        status = 400
-    return JsonResponse(
-        {"error": error, "message": "Playlist does not exist"}, status=status
-    )
+        path = update_playlist(playlist_id, DEFAULT_FILE_FORMAT)
+        if path:
+            return JsonResponse(
+                {
+                    "error": False,
+                    "message": "Playlist updated, new tracks downloaded",
+                    "path": str(path),
+                    "name": path.name,
+                    "thumbnail": models.Playlist.objects.get(id=playlist_id).thumbnail,
+                },
+                status=200,
+            )
+        # No new tracks downloaded
+        return JsonResponse(
+            {
+                "error": False,
+                "message": "Playlist updated",
+                "thumbnail": models.Playlist.objects.get(id=playlist_id).thumbnail,
+            },
+            status=200,
+        )
+    except Exception as e:
+        print(e)
+        return JsonResponse(
+            {"error": True, "message": "Playlist does not exist"}, status=400
+        )
 
 
 def remove(request, playlist_id):
@@ -126,7 +156,7 @@ def watch(request):
             )
 
         platform = None
-        if "youtube" or "youtu.be" in link:
+        if "youtube" in link or "youtu.be" in link:
             platform = "youtube"
         elif "spotify" in link:
             platform = "spotify"
