@@ -59,11 +59,20 @@ DEFAULT_FILE_FORMAT = "m4a"
 
 
 def download_music(link, file_format):
-    # Create directories if they don't exist
+    """Download music from YouTube or Spotify link
+
+    Args:
+        link (str): link to YouTube or Spotify track or playlist
+        file_format (str): file format to download tracks in
+
+    Returns:
+        dict: dictionary containing file path, whether link is to a playlist, and whether playlist already exists
+    """
     dir_ = pathlib.Path.joinpath(
         TRACKS_DIR, datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S")
     )
 
+    # Determine whether link is to a playlist or track
     is_playlist = False
     exists = None
     if "list" in link:
@@ -90,6 +99,7 @@ def download_music(link, file_format):
         else:
             path = _download_spotify_track(link, file_format, dir_)
 
+    # Log or update (if existing) playlist
     if is_playlist:
         if models.Playlist.objects.filter(id=get_id(link)).exists():
             update_playlist(get_id(link), file_format)
@@ -118,6 +128,15 @@ def get_playlist_data(link, platform):
 
 
 def update_playlist(id, file_format):
+    """Updates playlist with new tracks and removes old tracks, downloads new tracks, and returns zip file path
+
+    Args:
+        id (str): id of playlist
+        file_format (str): file format to download tracks in
+
+    Returns:
+        Path: path to zip file containing new tracks
+    """
     if playlist := models.Playlist.objects.get(id=id):
         playlist_name = playlist.name
         for char in ILLEGAL_CHARS:
@@ -158,6 +177,7 @@ def update_playlist(id, file_format):
         playlist.thumbnail = data["thumbnail"]
         playlist.save()
 
+        # Download new tracks if any
         if len(updated_tracks) > 0:
             for track_url in updated_tracks:
                 if playlist.platform == "youtube":
@@ -230,6 +250,15 @@ def get_playlist_link(platform, id_):
 
 
 def _get_track_link(platform, id_):
+    """Get track link from YouTube or Spotify id
+
+    Args:
+        platform (str): platform of track (youtube or spotify)
+        id_ (str): id of YouTube or Spotify track
+
+    Returns:
+        str: link to track
+    """
     if platform == "youtube":
         return f"https://www.youtube.com/watch?v={id_}"
     elif platform == "spotify":
@@ -244,7 +273,7 @@ def _get_youtube_playlist_data(link):
         link (str): link to YouTube playlist
 
     Returns:
-        dict: dictionary containing playlist link, title, owner, thumbnail, and tracks ([name, artist]])
+        dict: dictionary containing playlist id, name, owner, platform, thumbnail, and tracks ({track_id, name, artist, platform}})
     """
     playlist_id = get_id(link)
 
@@ -314,7 +343,7 @@ def _get_spotify_track_data(link):
         link (str): link to Spotify track
 
     Returns:
-        dict: dictionary containing track id, name, and artist
+        dict: dictionary containing track id, name, artist, and platform
     """
     request_url = "https://api.spotify.com/v1/tracks/"
     track_id = get_id(link)
@@ -339,10 +368,10 @@ def _get_spotify_playlist_data(link):
     """Get playlist data from Spotify playlist link
 
     Args:
-        link (str): link to Spotify playlist
+        link (str): link to YouTube Spotify
 
     Returns:
-        dict: dictionary containing playlist id, link, title, owner, thumbnail, and tracks ([name, artist]])
+        dict: dictionary containing playlist id, name, owner, platform, thumbnail, and tracks ({track_id, name, artist, platform}})
     """
     request_url = "https://api.spotify.com/v1/playlists/"
     tracks = []
@@ -381,7 +410,7 @@ def log_playlist(playlist_data, update):
     """Log playlist data to database and update if playlist already exists
 
     Args:
-        playlist_data (dict): dictionary containing playlist title, owner, thumbnail, and tracks ([name, artist]])
+        playlist_data (dict): dictionary containing playlist id, name, owner, platform, thumbnail, and tracks ({track_id, name, artist, platform}})
     """
     playlist_id = playlist_data["playlist_id"]
     playlist_name = playlist_data["name"]
@@ -446,6 +475,7 @@ def _download_youtube_track(link, file_format, dir_):
     Args:
         link (str): link to YouTube track or playlist
         file_format (str): file format to download tracks in
+        dir_ (str): directory to download tracks to
     """
     ydl_opts = {
         "outtmpl": f"{dir_}/%(title)s.%(ext)s",
@@ -476,6 +506,7 @@ def _download_youtube_playlist(link, file_format, dir_):
     Args:
         link (str): link to YouTube track or playlist
         file_format (str): file format to download tracks in
+        dir_ (str): directory to download tracks to
     """
     playlist_name = _get_youtube_playlist_data(link)["name"]
     # Remove illegal filename characters from playlist name
@@ -518,6 +549,7 @@ def _download_youtube_search(name, artist, file_format, dir_):
         name (str): track name
         artist (str): artist name
         file_format (str): file format to download track in
+        dir_ (str): directory to download tracks to
     """
     ydl_opts = {
         "outtmpl": f"{dir_}/%(title)s.%(ext)s",
@@ -550,6 +582,7 @@ def _download_spotify_track(link, file_format, dir_):
     Args:
         link (str): link to Spotify track
         file_format (str): file format to download track in
+        dir_ (str): directory to download tracks to
     """
     data = _get_spotify_track_data(link)
     track_name, track_artist = data["name"], data["artist"]
@@ -563,6 +596,7 @@ def _download_spotify_playlist(link, file_format, dir_):
     Args:
         link (str): link to Spotify playlist
         file_format (str): file format to download tracks in
+        dir_ (str): directory to download tracks to
     """
     data = _get_spotify_playlist_data(link)
     playlist_name = data["name"]
