@@ -47,6 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function brew(event) {
     event.preventDefault();
 
+    // Get link and file format from form
     const link = document.getElementById("brew-link").value;
     const fileFormat = document.getElementById("brew-format").value;
     if (link == "" || fileFormat == "") {
@@ -54,6 +55,7 @@ function brew(event) {
         return;
     }
 
+    // Check if link is valid
     try {
         url = new URL(link);
     } catch (TypeError) {
@@ -79,6 +81,7 @@ function brew(event) {
                 return;
             }
 
+            // If playlist, update recent playlist grid
             if (data.is_playlist) {
                 if (data.exists) {
                     col = document.getElementById(data.model.id);
@@ -171,7 +174,7 @@ function createPlaylist(model, row, append) {
         showWatchConfirm(false, "");
         showWatchError(false, "");
         showWatchSpinner(true);
-        fetch("brew/" + model.id)
+        fetch("/brew/" + model.id)
             .then((response) => response.json())
             .then((data) => {
                 if (data.error) {
@@ -181,7 +184,7 @@ function createPlaylist(model, row, append) {
                 }
 
                 const a = document.createElement("a");
-                a.href = "download/" + data.path;
+                a.href = "/download/" + data.path;
                 a.target = "_blank"; // This allows thumbnail to load for some reason
                 document.body.appendChild(a);
                 a.click();
@@ -200,7 +203,7 @@ function createPlaylist(model, row, append) {
     removeBtn.className = "btn btn-secondary";
     removeBtn.innerHTML = "Remove";
     removeBtn.addEventListener("click", () => {
-        fetch("remove/" + model.id)
+        fetch("/remove/" + model.id)
             .then((response) => response.json())
             .then((data) => {
                 if (data.error) {

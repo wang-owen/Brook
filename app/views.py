@@ -127,6 +127,7 @@ def update(request, playlist_id):
 
 def remove(request, playlist_id):
     try:
+        # Delete playlist from database
         models.Playlist.objects.get(id=playlist_id).delete()
         error = False
         status = 200
