@@ -73,29 +73,33 @@ function brew(event) {
     })
         .then((response) => response.json())
         .then((data) => {
-            showBrewSpinner(false);
-
             if (data.error) {
                 showBrewError(true, data.message);
+                showBrewSpinner(false);
                 return;
             }
 
-            if (data.exists) {
-                col = document.getElementById(data.model.id);
-                col.remove();
+            if (data.is_playlist) {
+                if (data.exists) {
+                    col = document.getElementById(data.model.id);
+                    col.remove();
+                }
+                createPlaylist(
+                    data.model,
+                    document.getElementById("playlists-row"),
+                    false
+                );
             }
 
-            createPlaylist(
-                data.model,
-                document.getElementById("playlists-row")
-            );
-
             const a = document.createElement("a");
-            a.href = "download/" + data.name + "/" + data.path;
+            a.href = "download/" + data.path;
+            a.target = "_blank"; // This allows thumbnail to load for some reason
             document.body.appendChild(a);
             a.click();
             a.remove();
-            showBrewConfirm(true, "Playlist downloaded");
+
+            showBrewSpinner(false);
+            showBrewConfirm(true, data.message);
         });
     document.querySelector("#brew-form").reset();
 }
@@ -131,16 +135,32 @@ function createPlaylist(model, row, append) {
     updateBtn.className = "btn btn-secondary";
     updateBtn.innerHTML = "Update";
     updateBtn.addEventListener("click", () => {
+        showWatchConfirm(false, "");
+        showWatchError(false, "");
+        showWatchSpinner(true);
         fetch("update/" + model.id)
             .then((response) => response.json())
             .then((data) => {
                 if (data.error) {
                     showWatchError(true, data.message);
+                    showWatchSpinner(false);
                     return;
                 }
+                if (data.path) {
+                    const a = document.createElement("a");
+                    a.href = "download/" + data.path;
+                    a.target = "_blank"; // This allows thumbnail to load for some reason
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                }
+
                 col.remove();
+                img.src = data.thumbnail;
                 row.insertBefore(col, row.firstChild);
-                showWatchConfirm(true, "Playlist updated");
+
+                showWatchSpinner(false);
+                showWatchConfirm(true, data.message);
             });
     });
 
@@ -148,15 +168,30 @@ function createPlaylist(model, row, append) {
     downloadBtn.className = "btn btn-secondary";
     downloadBtn.innerHTML = "Download";
     downloadBtn.addEventListener("click", () => {
+        showWatchConfirm(false, "");
+        showWatchError(false, "");
+        showWatchSpinner(true);
         fetch("brew/" + model.id)
             .then((response) => response.json())
             .then((data) => {
                 if (data.error) {
                     showWatchError(true, data.message);
+                    showWatchSpinner(false);
                     return;
                 }
-                window.location.href =
-                    "download/" + data.name + "/" + data.path;
+
+                const a = document.createElement("a");
+                a.href = "download/" + data.path;
+                a.target = "_blank"; // This allows thumbnail to load for some reason
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+
+                col.remove();
+                img.src = data.model.thumbnail;
+                row.insertBefore(col, row.firstChild);
+
+                showWatchSpinner(false);
                 showWatchConfirm(true, "Playlist downloaded");
             });
     });
@@ -170,6 +205,7 @@ function createPlaylist(model, row, append) {
             .then((data) => {
                 if (data.error) {
                     showWatchError(true, data.message);
+                    showWatchSpinner(false);
                     return;
                 }
                 col.remove();
@@ -211,7 +247,7 @@ function loadPlaylists() {
         .then((response) => response.json())
         .then((data) => {
             data.forEach((model) => {
-                createPlaylist(model, row);
+                createPlaylist(model, row, false);
             });
         });
 }
@@ -222,7 +258,11 @@ function watch(event) {
     document.getElementById("watch").style.display = "block";
 
     const link = document.getElementById("watch-link").value;
-    console.log(link);
+    if (link == "") {
+        showWatchError(true, "Please fill out all fields");
+        return;
+    }
+
     try {
         url = new URL(link);
     } catch (TypeError) {
@@ -233,6 +273,7 @@ function watch(event) {
     showWatchSpinner(true);
     showWatchConfirm(false, "");
     showWatchError(false, "");
+
     fetch("/watch", {
         method: "PUT",
         body: JSON.stringify({
@@ -247,6 +288,7 @@ function watch(event) {
 
             if (data.error) {
                 showWatchError(true, data.message);
+                showWatchSpinner(false);
                 return;
             } else if (!data.exists) {
                 createPlaylist(
@@ -258,9 +300,9 @@ function watch(event) {
             } else if (data.exists) {
                 showWatchConfirm(true, "Playlist already exists");
             }
+            document.querySelector("#watch-form").reset();
+            document.querySelector("#watch-form").style.display = "none";
         });
-    document.querySelector("#watch-form").reset();
-    document.querySelector("#watch-form").style.display = "none";
 }
 
 function showBrewSpinner(show) {

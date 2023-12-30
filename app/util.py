@@ -10,6 +10,35 @@ from dotenv import load_dotenv
 from . import models
 from django.conf import settings
 
+ILLEGAL_CHARS = [
+    "#",
+    "%",
+    "&",
+    "{",
+    "}",
+    "\\",
+    "<",
+    ">",
+    "*",
+    "?",
+    "/",
+    "$",
+    "!",
+    "'",
+    '"',
+    ":",
+    "@",
+    "+",
+    "`",
+    "|",
+    "=",
+    ";",
+    "[",
+    "]",
+    "(",
+    ")",
+]
+
 # Load API keys from .env file
 load_dotenv()
 
@@ -31,19 +60,12 @@ DEFAULT_FILE_FORMAT = "m4a"
 
 def download_music(link, file_format):
     # Create directories if they don't exist
-    if not MUSIC_DIR.exists():
-        MUSIC_DIR.mkdir()
-    if not PLAYLISTS_DIR.exists():
-        PLAYLISTS_DIR.mkdir()
-    if not TRACKS_DIR.exists():
-        TRACKS_DIR.mkdir()
-
     dir_ = pathlib.Path.joinpath(
         TRACKS_DIR, datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S")
     )
 
     is_playlist = False
-    exists = False
+    exists = None
     if "list" in link:
         is_playlist = True
     if "watch" in link:
@@ -53,9 +75,6 @@ def download_music(link, file_format):
             PLAYLISTS_DIR, datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S")
         )
         exists = models.Playlist.objects.filter(id=get_id(link)).exists()
-
-    if not dir_.exists():
-        dir_.mkdir()
 
     path, platform = None, None
     if "youtube" in link or "youtu.be" in link:
@@ -100,10 +119,13 @@ def get_playlist_data(link, platform):
 
 def update_playlist(id, file_format):
     if playlist := models.Playlist.objects.get(id=id):
+        playlist_name = playlist.name
+        for char in ILLEGAL_CHARS:
+            playlist_name = playlist_name.replace(char, "-")
         dir_ = pathlib.Path.joinpath(
             MUSIC_DIR,
             datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S"),
-            f"UPDATED {playlist.name}",
+            f"UPDATED-{playlist_name}",
         )
 
         link = get_playlist_link(playlist.platform, playlist.id)
@@ -111,10 +133,15 @@ def update_playlist(id, file_format):
 
         old_tracks = playlist.tracks.all()  # type: ignore
         new_tracks = data["tracks"]
+        updated_tracks = []
 
         # Add new tracks
         for track in new_tracks:
             if not old_tracks.filter(id=track["track_id"]).exists():
+                updated_tracks.append(
+                    _get_track_link(playlist.platform, track["track_id"])
+                )
+
                 track = models.Track(
                     id=track["track_id"],
                     name=track["name"],
@@ -122,19 +149,29 @@ def update_playlist(id, file_format):
                     playlist=playlist,
                 )
                 track.save()
-                if playlist.platform == "youtube":
-                    _download_youtube_track(
-                        _get_track_link(playlist.platform, track.id), file_format, dir_
-                    )
-                elif playlist.platform == "spotify":
-                    _download_spotify_track(
-                        _get_track_link(playlist.platform, track.id), file_format, dir_
-                    )
+
         # Delete unlisted tracks
         for track in old_tracks:
             if not any(track.id == new_track["track_id"] for new_track in new_tracks):
                 track.delete()
+
+        playlist.thumbnail = data["thumbnail"]
         playlist.save()
+
+        if len(updated_tracks) > 0:
+            for track_url in updated_tracks:
+                if playlist.platform == "youtube":
+                    _download_youtube_track(track_url, file_format, dir_)
+                elif playlist.platform == "spotify":
+                    _download_spotify_track(track_url, file_format, dir_)
+
+            # Compress folder
+            path = shutil.make_archive(str(dir_), "zip", dir_)
+            shutil.rmtree(dir_)
+
+            return pathlib.Path(path)
+
+        return None
 
 
 def _get_token():
@@ -441,8 +478,10 @@ def _download_youtube_playlist(link, file_format, dir_):
         file_format (str): file format to download tracks in
     """
     playlist_name = _get_youtube_playlist_data(link)["name"]
+    # Remove illegal filename characters from playlist name
+    for char in ILLEGAL_CHARS:
+        playlist_name = playlist_name.replace(char, "-")
     playlist_dir = pathlib.Path.joinpath(dir_, playlist_name)
-    playlist_dir.mkdir()
 
     ydl_opts = {
         "outtmpl": f"{playlist_dir}/%(title)s.%(ext)s",
@@ -527,6 +566,9 @@ def _download_spotify_playlist(link, file_format, dir_):
     """
     data = _get_spotify_playlist_data(link)
     playlist_name = data["name"]
+    # Remove illegal filename characters from playlist name
+    for char in ILLEGAL_CHARS:
+        playlist_name = playlist_name.replace(char, "-")
     playlist_dir = pathlib.Path.joinpath(dir_, playlist_name)
 
     tracks = data["tracks"]
