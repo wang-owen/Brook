@@ -1,4 +1,7 @@
+var logged_in = false;
+
 document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("recent-playlists").style.display = "none";
     const brewConfirm = document.getElementById("brew-confirm");
     const watchConfirm = document.getElementById("watch-confirm");
     brewConfirm.addEventListener("click", () => {
@@ -41,7 +44,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("brew-form").addEventListener("submit", brew);
     document.getElementById("watch-form").addEventListener("submit", watch);
-    loadPlaylists();
+
+    fetch("/check-login")
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.is_logged_in) {
+                logged_in = true;
+                loadPlaylists();
+                document.getElementById("recent-playlists").style.display =
+                    "block";
+            } else {
+                logged_in = false;
+            }
+        });
 });
 
 function brew(event) {
@@ -82,7 +97,7 @@ function brew(event) {
             }
 
             // If playlist, update recent playlist grid
-            if (data.is_playlist) {
+            if (logged_in && data.is_playlist) {
                 if (data.exists) {
                     col = document.getElementById(data.model.id);
                     col.remove();

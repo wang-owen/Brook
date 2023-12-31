@@ -58,7 +58,7 @@ TRACKS_DIR = pathlib.Path.joinpath(MUSIC_DIR, "Tracks")
 DEFAULT_FILE_FORMAT = "m4a"
 
 
-def download_music(link, file_format):
+def download_music(link, file_format, logged_in, user_model):
     """Download music from YouTube or Spotify link
 
     Args:
@@ -100,11 +100,11 @@ def download_music(link, file_format):
             path = _download_spotify_track(link, file_format, dir_)
 
     # Log or update (if existing) playlist
-    if is_playlist:
+    if is_playlist and logged_in:
         if models.Playlist.objects.filter(id=get_id(link)).exists():
             update_playlist(get_id(link), file_format)
         else:
-            log_playlist(get_playlist_data(link, platform), True)
+            log_playlist(get_playlist_data(link, platform), True, user_model)
 
     return {
         "path": path,
@@ -406,7 +406,7 @@ def _get_spotify_playlist_data(link):
     return data
 
 
-def log_playlist(playlist_data, update):
+def log_playlist(playlist_data, update, user_model):
     """Log playlist data to database and update if playlist already exists
 
     Args:
@@ -446,6 +446,7 @@ def log_playlist(playlist_data, update):
     else:
         # Create playlist object
         playlist = models.Playlist(
+            watcher = user_model,
             id=playlist_id,
             name=playlist_name,
             owner=playlist_owner,

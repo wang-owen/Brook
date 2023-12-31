@@ -15,4 +15,5 @@ urlpatterns = [
         name="playlist",
     ),
     path("watch", views.watch, name="watch"),
+    path("check-login", views.check_login, name="check_login"),
 ]
