@@ -20,6 +20,7 @@ cd into the project directory and install requirements
 ```
 pip install -r requirements.txt
 ```
+Add your YouTube API and Spotify Client ID and Secret to your environment variables
 
 Run the command
 ```
