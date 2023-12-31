@@ -91,9 +91,13 @@ WSGI_APPLICATION = 'Brook.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "dehrvebutmkq34",
+        "USER": "mojpcmscgfnjyd",
+        "PASSWORD": os.environ.get("DATABASE_PASSWORD"),
+        "HOST": "ec2-34-193-110-25.compute-1.amazonaws.com",
+        "PORT": "5432",
     }
 }
 
