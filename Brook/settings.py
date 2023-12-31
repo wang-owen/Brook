@@ -16,10 +16,10 @@ from pathlib import Path
 
 
 load_dotenv()
-MUSIC_DIR = Path("media")
+MUSIC_DIR = Path("Music")
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = "/Music/"
+MEDIA_ROOT = os.path.join('Music')
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
