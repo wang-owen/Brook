@@ -19,6 +19,10 @@ def index(request):
     return render(request, "app/index.html")
 
 
+def check_login(request):
+    return JsonResponse({"is_logged_in": request.user.is_authenticated}, status=200)
+
+
 @csrf_exempt
 def brew(request, playlist_id=None):
     if request.method == "PUT":
@@ -34,7 +38,9 @@ def brew(request, playlist_id=None):
 
     try:
         # Download music
-        download_data = download_music(link, file_format)
+        download_data = download_music(
+            link, file_format, request.user.is_authenticated, request.user
+        )
     except (KeyError, IndexError):
         # Invalid YouTube/Spotify link
         return JsonResponse(
@@ -49,7 +55,7 @@ def brew(request, playlist_id=None):
                 "message": "Responded with file path",
                 "is_playlist": download_data["is_playlist"],
                 "model": models.Playlist.objects.get(id=get_id(link)).serialize()
-                if download_data["is_playlist"]
+                if request.user.is_authenticated and download_data["is_playlist"]
                 else None,
                 "exists": download_data["exists"],
                 "path": str(download_data["path"]),
@@ -163,7 +169,9 @@ def watch(request):
             platform = "spotify"
 
         try:
-            exists = log_playlist(get_playlist_data(link, platform), False)
+            exists = log_playlist(
+                get_playlist_data(link, platform), False, request.user
+            )
         except (KeyError, IndexError):
             return JsonResponse(
                 {"error": True, "message": "Invalid playlist link"}, status=400
