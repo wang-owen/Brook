@@ -17,7 +17,7 @@ json5==0.9.14
 mutagen==1.47.0
 packaging==23.2
 pathspec==0.12.1
-pycryptodomex==3.19.0
+pycryptodomex==3.19.1
 python-dotenv==1.0.0
 PyYAML==6.0.1
 regex==2023.12.25
@@ -28,4 +28,4 @@ tqdm==4.66.1
 urllib3==2.1.0
 websockets==12.0
 whitenoise==6.6.0
-yt-dlp==2023.11.16
+yt-dlp==2023.12.30
