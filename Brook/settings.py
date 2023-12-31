@@ -41,7 +41,7 @@ SECRET_KEY = os.environ.get(
 # DEBUG = True
 DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
 
-ALLOWED_HOSTS = ['127.0.0.1', "brook.com"]
+ALLOWED_HOSTS = ['127.0.0.1', "brook-app-d889b0c7d9da.herokuapp.com"]
 
 
 # Application definition
