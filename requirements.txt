@@ -17,6 +17,7 @@ json5==0.9.14
 mutagen==1.47.0
 packaging==23.2
 pathspec==0.12.1
+psycopg2-binary==2.9.9
 pycryptodomex==3.19.1
 python-dotenv==1.0.0
 PyYAML==6.0.1
