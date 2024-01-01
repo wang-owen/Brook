@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect
 from django.http import FileResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 import json
 from .util import (
     download_music,
@@ -23,7 +22,6 @@ def check_login(request):
     return JsonResponse({"is_logged_in": request.user.is_authenticated}, status=200)
 
 
-@csrf_exempt
 def brew(request, playlist_id=None):
     if request.method == "PUT":
         # Get playlist link from request body
@@ -153,7 +151,6 @@ def playlist(request, playlist_platform, playlist_id):
     return redirect(link)
 
 
-@csrf_exempt
 def watch(request):
     if request.method == "PUT":
         data = json.loads(request.body)

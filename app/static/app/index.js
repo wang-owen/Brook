@@ -1,5 +1,22 @@
 var logged_in = false;
 
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+        var cookies = document.cookie.split(";");
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+                cookieValue = decodeURIComponent(
+                    cookie.substring(name.length + 1)
+                );
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("recent-playlists").style.display = "none";
     const brewConfirm = document.getElementById("brew-confirm");
@@ -81,12 +98,14 @@ function brew(event) {
     showBrewSpinner(true);
     showBrewConfirm(false, "");
     showBrewError(false, "");
+
     fetch("/brew", {
         method: "PUT",
         body: JSON.stringify({
             link: link,
             fileFormat: fileFormat,
         }),
+        headers: { "X-CSRFToken": getCookie("csrftoken") },
     })
         .then((response) => response.json())
         .then((data) => {
@@ -297,6 +316,7 @@ function watch(event) {
         body: JSON.stringify({
             link: link,
         }),
+        headers: { "X-CSRFToken": getCookie("csrftoken") },
     })
         .then((response) => {
             return response.json();
