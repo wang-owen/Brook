@@ -1,15 +1,9 @@
-import json
-import sys
-from os import environ
-import base64
-import shutil
+import sys, os, base64, shutil, requests, yt_dlp
 from datetime import datetime
-import requests
-import yt_dlp
-import pathlib
+from pathlib import Path
 from dotenv import load_dotenv
-from . import models
 from django.conf import settings
+from . import models
 
 ILLEGAL_CHARS = [
     "#",
@@ -45,9 +39,9 @@ load_dotenv()
 
 # Verify API keys
 try:
-    YOUTUBE_API_KEY = environ["YOUTUBE_API_KEY"]
-    SPOTIFY_CLIENT_ID = environ["SPOTIFY_CLIENT_ID"]
-    SPOTIFY_CLIENT_SECRET = environ["SPOTIFY_CLIENT_SECRET"]
+    YOUTUBE_API_KEY = os.environ["YOUTUBE_API_KEY"]
+    SPOTIFY_CLIENT_ID = os.environ["SPOTIFY_CLIENT_ID"]
+    SPOTIFY_CLIENT_SECRET = os.environ["SPOTIFY_CLIENT_SECRET"]
 except KeyError:
     print("ERROR: Missing API keys")
     sys.exit(1)
@@ -186,7 +180,7 @@ def update_playlist(id, file_format):
             path = shutil.make_archive(str(dir_), "zip", dir_)
             shutil.rmtree(dir_)
 
-            return pathlib.Path(path)
+            return Path(path)
 
         return None
 
@@ -498,7 +492,7 @@ def _download_youtube_track(link, file_format, dir_):
             path = shutil.make_archive(str(dir_), "zip", dir_)
             shutil.rmtree(dir_)
 
-            return pathlib.Path(path)
+            return Path(path)
 
 
 def _download_youtube_playlist(link, file_format, dir_):
@@ -540,7 +534,7 @@ def _download_youtube_playlist(link, file_format, dir_):
     path = shutil.make_archive(str(playlist_dir), "zip", playlist_dir)
     shutil.rmtree(playlist_dir)
 
-    return pathlib.Path(path)
+    return Path(path)
 
 
 def _download_youtube_search(name, artist, file_format, dir_):
@@ -577,7 +571,7 @@ def _download_youtube_search(name, artist, file_format, dir_):
             path = shutil.make_archive(str(dir_), "zip", dir_)
             shutil.rmtree(dir_)
 
-            return pathlib.Path(path)
+            return Path(path)
 
 
 def _download_spotify_track(link, file_format, dir_):
@@ -619,4 +613,4 @@ def _download_spotify_playlist(link, file_format, dir_):
     path = shutil.make_archive(str(playlist_dir), "zip", playlist_dir)
     shutil.rmtree(playlist_dir)
 
-    return pathlib.Path(path)
+    return Path(path)
