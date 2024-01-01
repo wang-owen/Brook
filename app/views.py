@@ -94,7 +94,9 @@ def download(request, path):
 
 def get_playlists(request):
     # Return all playlists to client, called by loadPlaylists() in index.js
-    playlists = models.Playlist.objects.all().order_by("last_modified")
+    playlists = models.Playlist.objects.filter(watcher=request.user).order_by(
+        "last_modified"
+    )
     return JsonResponse(
         [playlist.serialize() for playlist in playlists], safe=False, status=200
     )
