@@ -11,18 +11,18 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 import os
+import pathlib
 from dotenv import load_dotenv
-from pathlib import Path
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = pathlib.Path(__file__).resolve().parent.parent
 
 
 load_dotenv()
-MUSIC_DIR = Path("Music")
-MEDIA_URL = "/Music/"
-MEDIA_ROOT = os.path.join(BASE_DIR, 'Music')
+MUSIC_DIR = pathlib.Path("Music")
+MEDIA_URL = "/media/"
+MEDIA_ROOT = pathlib.Path.joinpath(BASE_DIR, "media")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -139,12 +139,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-# STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATIC_URL = '/static/'
-
+STATIC_URL = 'static/'
+STATIC_ROOT = pathlib.Path.joinpath(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
+    pathlib.Path.joinpath(BASE_DIR, STATIC_URL),
 )
 
 # Default primary key field type
