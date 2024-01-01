@@ -1,3 +1,4 @@
+import json
 import sys
 from os import environ
 import base64
@@ -53,8 +54,8 @@ except KeyError:
 
 
 MUSIC_DIR = settings.MUSIC_DIR
-PLAYLISTS_DIR = pathlib.Path.joinpath(MUSIC_DIR, "Playlists")
-TRACKS_DIR = pathlib.Path.joinpath(MUSIC_DIR, "Tracks")
+PLAYLISTS_DIR = MUSIC_DIR / "Playlists"
+TRACKS_DIR = MUSIC_DIR / "Tracks"
 DEFAULT_FILE_FORMAT = "m4a"
 
 
@@ -68,9 +69,7 @@ def download_music(link, file_format, logged_in, user_model):
     Returns:
         dict: dictionary containing file path, whether link is to a playlist, and whether playlist already exists
     """
-    dir_ = pathlib.Path.joinpath(
-        TRACKS_DIR, datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S")
-    )
+    dir_ = TRACKS_DIR / datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S")
 
     # Determine whether link is to a playlist or track
     is_playlist = False
@@ -80,9 +79,7 @@ def download_music(link, file_format, logged_in, user_model):
     if "watch" in link:
         is_playlist = False
     if is_playlist:
-        dir_ = pathlib.Path.joinpath(
-            PLAYLISTS_DIR, datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S")
-        )
+        dir_ = PLAYLISTS_DIR / datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S")
         exists = models.Playlist.objects.filter(id=get_id(link)).exists()
 
     path, platform = None, None
@@ -141,10 +138,10 @@ def update_playlist(id, file_format):
         playlist_name = playlist.name
         for char in ILLEGAL_CHARS:
             playlist_name = playlist_name.replace(char, "-")
-        dir_ = pathlib.Path.joinpath(
-            MUSIC_DIR,
-            datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S"),
-            f"UPDATED-{playlist_name}",
+        dir_ = (
+            MUSIC_DIR
+            / datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S")
+            / f"UPDATED-{playlist_name}"
         )
 
         link = get_playlist_link(playlist.platform, playlist.id)
@@ -446,7 +443,7 @@ def log_playlist(playlist_data, update, user_model):
     else:
         # Create playlist object
         playlist = models.Playlist(
-            watcher = user_model,
+            watcher=user_model,
             id=playlist_id,
             name=playlist_name,
             owner=playlist_owner,
@@ -495,10 +492,13 @@ def _download_youtube_track(link, file_format, dir_):
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        if name := ydl.extract_info(link, download=True):
-            name = name["title"]
+        if data := ydl.extract_info(link, download=True):
+            name = data["title"]
 
-    return pathlib.Path.joinpath(dir_, f"{name}.{file_format}")
+            path = shutil.make_archive(str(dir_), "zip", dir_)
+            shutil.rmtree(dir_)
+
+            return pathlib.Path(path)
 
 
 def _download_youtube_playlist(link, file_format, dir_):
@@ -513,7 +513,7 @@ def _download_youtube_playlist(link, file_format, dir_):
     # Remove illegal filename characters from playlist name
     for char in ILLEGAL_CHARS:
         playlist_name = playlist_name.replace(char, "-")
-    playlist_dir = pathlib.Path.joinpath(dir_, playlist_name)
+    playlist_dir = dir_ / playlist_name
 
     ydl_opts = {
         "outtmpl": f"{playlist_dir}/%(title)s.%(ext)s",
@@ -534,7 +534,7 @@ def _download_youtube_playlist(link, file_format, dir_):
         ydl.download([link])
 
     # Delete leftover thumbnail file
-    pathlib.Path.joinpath(playlist_dir, f"{playlist_name}.jpg").unlink()
+    (playlist_dir / f"{playlist_name}.jpg").unlink()
 
     # Compress folder
     path = shutil.make_archive(str(playlist_dir), "zip", playlist_dir)
@@ -571,10 +571,13 @@ def _download_youtube_search(name, artist, file_format, dir_):
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        if name := ydl.extract_info(f"{name} {artist}", download=True):
-            name = name["entries"][0]["title"]
+        if data := ydl.extract_info(f"{name} {artist}", download=True):
+            name = data["entries"][0]["title"]
 
-    return pathlib.Path.joinpath(dir_, f"{name}.{file_format}")
+            path = shutil.make_archive(str(dir_), "zip", dir_)
+            shutil.rmtree(dir_)
+
+            return pathlib.Path(path)
 
 
 def _download_spotify_track(link, file_format, dir_):
@@ -604,7 +607,7 @@ def _download_spotify_playlist(link, file_format, dir_):
     # Remove illegal filename characters from playlist name
     for char in ILLEGAL_CHARS:
         playlist_name = playlist_name.replace(char, "-")
-    playlist_dir = pathlib.Path.joinpath(dir_, playlist_name)
+    playlist_dir = dir_ / playlist_name
 
     tracks = data["tracks"]
     for track in tracks:
