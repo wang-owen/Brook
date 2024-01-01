@@ -474,6 +474,7 @@ def _download_youtube_track(link, file_format, dir_):
         "format": f"ba[ext={file_format}]",
         "writethumbnail": True,
         "embedthumbnail": True,
+        "noplaylist": True,
         "postprocessors": [
             {
                 "key": "FFmpegMetadata",
@@ -551,6 +552,7 @@ def _download_youtube_search(name, artist, file_format, dir_):
         "format": f"ba[ext={file_format}]",
         "writethumbnail": True,
         "embedthumbnail": True,
+        "noplaylist": True,
         "postprocessors": [
             {
                 "key": "FFmpegMetadata",
