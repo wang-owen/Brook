@@ -411,10 +411,14 @@ def log_playlist(playlist_data, update, user_model):
     playlist_tracks = playlist_data["tracks"]
 
     # Check if playlist already exists
-    if models.Playlist.objects.filter(id=playlist_id).exists():
+    if (
+        models.Playlist.objects.filter(watcher=user_model)
+        .filter(id=playlist_id)
+        .exists()
+    ):
         if update:
             # Update playlist
-            playlist = models.Playlist.objects.get(id=playlist_id)
+            playlist = models.Playlist.objects.get(watcher=user_model, id=playlist_id)
             # Remove removed tracks
             for track in playlist.tracks.all():  # type: ignore
                 if track.id not in playlist_tracks:
