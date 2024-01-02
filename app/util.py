@@ -28,10 +28,6 @@ ILLEGAL_CHARS = [
     "|",
     "=",
     ";",
-    "[",
-    "]",
-    "(",
-    ")",
 ]
 
 # Load API keys from .env file
@@ -92,7 +88,11 @@ def download_music(link, file_format, logged_in, user_model):
 
     # Log or update (if existing) playlist
     if is_playlist and logged_in:
-        if models.Playlist.objects.filter(id=get_id(link)).exists():
+        if (
+            models.Playlist.objects.filter(watcher=user_model)
+            .filter(id=get_id(link))
+            .exists()
+        ):
             update_playlist(get_id(link), file_format)
         else:
             log_playlist(get_playlist_data(link, platform), True, user_model)
@@ -474,7 +474,7 @@ def _download_youtube_track(link, file_format, dir_):
         dir_ (str): directory to download tracks to
     """
     ydl_opts = {
-        "outtmpl": f"{dir_}/%(title)s.%(ext)s",
+        "outtmpl": f"{dir_}/%(title)s [%(id)s].%(ext)s",
         "format": f"ba[ext={file_format}]",
         "writethumbnail": True,
         "embedthumbnail": True,
@@ -515,7 +515,7 @@ def _download_youtube_playlist(link, file_format, dir_):
     playlist_dir = dir_ / playlist_name
 
     ydl_opts = {
-        "outtmpl": f"{playlist_dir}/%(title)s.%(ext)s",
+        "outtmpl": f"{playlist_dir}/%(title)s [%(id)s].%(ext)s",
         "format": f"ba[ext={file_format}]",
         "writethumbnail": True,
         "embedthumbnail": True,
@@ -533,7 +533,8 @@ def _download_youtube_playlist(link, file_format, dir_):
         ydl.download([link])
 
     # Delete leftover thumbnail file
-    (playlist_dir / f"{playlist_name}.jpg").unlink()
+    for img_file in Path(playlist_dir).glob("*.jpg"):
+        img_file.unlink()
 
     # Compress folder
     path = shutil.make_archive(str(playlist_dir), "zip", playlist_dir)
@@ -552,7 +553,7 @@ def _download_youtube_search(name, artist, file_format, dir_):
         dir_ (str): directory to download tracks to
     """
     ydl_opts = {
-        "outtmpl": f"{dir_}/%(title)s.%(ext)s",
+        "outtmpl": f"{dir_}/%(title)s [%(id)s].%(ext)s",
         "format": f"ba[ext={file_format}]",
         "writethumbnail": True,
         "embedthumbnail": True,
