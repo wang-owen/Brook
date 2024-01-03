@@ -13,6 +13,7 @@
             <a href="{% url "login" %}" class="btn btn-outline-secondary">Login</a>
         {% else %}
             <a href="{% url "logout" %}" class="btn btn-outline-secondary">Logout</a>
+            <p>{{ user.username }}</p>
         {% endif %}
     </div>
     <section id="brew">
