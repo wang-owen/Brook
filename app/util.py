@@ -70,7 +70,7 @@ def download_music(link, file_format, logged_in, user_model):
         is_playlist = False
     if is_playlist:
         dir_ = PLAYLISTS_DIR / datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S")
-        exists = models.Playlist.objects.filter(id=get_id(link)).exists()
+        exists = models.Playlist.objects.filter(playlist_id=get_id(link)).exists()
 
     path, platform = None, None
     if "youtube" in link or "youtu.be" in link:
@@ -90,10 +90,10 @@ def download_music(link, file_format, logged_in, user_model):
     if is_playlist and logged_in:
         if (
             models.Playlist.objects.filter(watcher=user_model)
-            .filter(id=get_id(link))
+            .filter(playlist_id=get_id(link))
             .exists()
         ):
-            update_playlist(get_id(link), file_format)
+            update_playlist(get_id(link), file_format, user_model)
         else:
             log_playlist(get_playlist_data(link, platform), True, user_model)
 
@@ -118,7 +118,7 @@ def get_playlist_data(link, platform):
     return {}
 
 
-def update_playlist(id, file_format):
+def update_playlist(playlist_id, file_format, user_model):
     """Updates playlist with new tracks and removes old tracks, downloads new tracks, and returns zip file path
 
     Args:
@@ -128,7 +128,9 @@ def update_playlist(id, file_format):
     Returns:
         Path: path to zip file containing new tracks
     """
-    if playlist := models.Playlist.objects.get(id=id):
+    if playlist := models.Playlist.objects.get(
+        watcher=user_model, playlist_id=playlist_id
+    ):
         playlist_name = playlist.name
         for char in ILLEGAL_CHARS:
             playlist_name = playlist_name.replace(char, "-")
@@ -138,22 +140,21 @@ def update_playlist(id, file_format):
             / f"UPDATED-{playlist_name}"
         )
 
-        link = get_playlist_link(playlist.platform, playlist.id)
-        data = get_playlist_data(link, playlist.platform)
+        data = get_playlist_data(
+            get_playlist_link(playlist.platform, playlist_id), playlist.platform
+        )
 
         old_tracks = playlist.tracks.all()  # type: ignore
-        new_tracks = data["tracks"]
-        updated_tracks = []
+        cur_tracks = data["tracks"]
+        new_tracks = []
 
         # Add new tracks
-        for track in new_tracks:
-            if not old_tracks.filter(id=track["track_id"]).exists():
-                updated_tracks.append(
-                    _get_track_link(playlist.platform, track["track_id"])
-                )
+        for track in cur_tracks:
+            if not old_tracks.filter(track_id=track["track_id"]).exists():
+                new_tracks.append(_get_track_link(playlist.platform, track["track_id"]))
 
                 track = models.Track(
-                    id=track["track_id"],
+                    track_id=track["track_id"],
                     name=track["name"],
                     artist=track["artist"],
                     playlist=playlist,
@@ -161,16 +162,18 @@ def update_playlist(id, file_format):
                 track.save()
 
         # Delete unlisted tracks
-        for track in old_tracks:
-            if not any(track.id == new_track["track_id"] for new_track in new_tracks):
-                track.delete()
+        for old_track in old_tracks:
+            if not any(
+                old_track.track_id == cur_track["track_id"] for cur_track in cur_tracks
+            ):
+                old_track.delete()
 
         playlist.thumbnail = data["thumbnail"]
         playlist.save()
 
         # Download new tracks if any
-        if len(updated_tracks) > 0:
-            for track_url in updated_tracks:
+        if len(new_tracks) > 0:
+            for track_url in new_tracks:
                 if playlist.platform == "youtube":
                     _download_youtube_track(track_url, file_format, dir_)
                 elif playlist.platform == "spotify":
@@ -413,25 +416,27 @@ def log_playlist(playlist_data, update, user_model):
     # Check if playlist already exists
     if (
         models.Playlist.objects.filter(watcher=user_model)
-        .filter(id=playlist_id)
+        .filter(playlist_id=playlist_id)
         .exists()
     ):
         if update:
             # Update playlist
-            playlist = models.Playlist.objects.get(watcher=user_model, id=playlist_id)
+            playlist = models.Playlist.objects.get(
+                watcher=user_model, playlist_id=playlist_id
+            )
             # Remove removed tracks
             for track in playlist.tracks.all():  # type: ignore
                 if track.id not in playlist_tracks:
                     track.delete()
             # Add new tracks
             for track in playlist_tracks:
-                if not playlist.tracks.filter(id=track["track_id"]).exists():  # type: ignore
+                if not playlist.tracks.filter(track_id=track["track_id"]).exists():  # type: ignore
                     track = models.Track(
-                        id=track["track_id"],
+                        playlist=playlist,
+                        track_id=track["track_id"],
                         name=track["name"],
                         artist=track["artist"],
                         platform=track["platform"],
-                        playlist=playlist,
                     )
                     track.save()
             playlist.save()
@@ -442,7 +447,7 @@ def log_playlist(playlist_data, update, user_model):
         # Create playlist object
         playlist = models.Playlist(
             watcher=user_model,
-            id=playlist_id,
+            playlist_id=playlist_id,
             name=playlist_name,
             owner=playlist_owner,
             platform=playlist_platform,
@@ -452,14 +457,14 @@ def log_playlist(playlist_data, update, user_model):
 
         # Create track objects
         for track in playlist_tracks:
-            track = models.Track(
-                id=track["track_id"],
+            track_model = models.Track(
+                playlist=playlist,
+                track_id=track["track_id"],
                 name=track["name"],
                 artist=track["artist"],
                 platform=track["platform"],
-                playlist=playlist,
             )
-            track.save()
+            track_model.save()
 
         # Playlist doesn't exist
         return False
@@ -476,6 +481,7 @@ def _download_youtube_track(link, file_format, dir_):
     ydl_opts = {
         "outtmpl": f"{dir_}/%(title)s [%(id)s].%(ext)s",
         "format": f"ba[ext={file_format}]",
+        "restrictfilenames": True,
         "writethumbnail": True,
         "embedthumbnail": True,
         "noplaylist": True,
@@ -491,13 +497,10 @@ def _download_youtube_track(link, file_format, dir_):
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        if data := ydl.extract_info(link, download=True):
-            name = data["title"]
+        path = ydl.prepare_filename(ydl.extract_info(link, download=True))
 
-            path = shutil.make_archive(str(dir_), "zip", dir_)
-            shutil.rmtree(dir_)
-
-            return Path(path)
+        print(path)
+        return Path(path)
 
 
 def _download_youtube_playlist(link, file_format, dir_):
@@ -555,6 +558,7 @@ def _download_youtube_search(name, artist, file_format, dir_):
     ydl_opts = {
         "outtmpl": f"{dir_}/%(title)s [%(id)s].%(ext)s",
         "format": f"ba[ext={file_format}]",
+        "restrictfilenames": True,
         "writethumbnail": True,
         "embedthumbnail": True,
         "noplaylist": True,
@@ -572,13 +576,9 @@ def _download_youtube_search(name, artist, file_format, dir_):
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        if data := ydl.extract_info(f"{name} {artist}", download=True):
-            name = data["entries"][0]["title"]
+        path = ydl.prepare_filename(ydl.extract_info(f"{name} {artist}", download=True))
 
-            path = shutil.make_archive(str(dir_), "zip", dir_)
-            shutil.rmtree(dir_)
-
-            return Path(path)
+        return Path(path)
 
 
 def _download_spotify_track(link, file_format, dir_):

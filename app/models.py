@@ -5,7 +5,7 @@ from django.conf import settings
 # Create your models here.
 class Playlist(models.Model):
     watcher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    id = models.CharField(max_length=128, primary_key=True)
+    playlist_id = models.CharField(max_length=128)
     name = models.CharField(max_length=128)
     owner = models.CharField(max_length=128)
     platform = models.CharField(max_length=128)
@@ -17,7 +17,7 @@ class Playlist(models.Model):
 
     def serialize(self):
         return {
-            "id": self.id,
+            "playlist_id": self.playlist_id,
             "name": self.name,
             "owner": self.owner,
             "platform": self.platform,
@@ -29,7 +29,7 @@ class Track(models.Model):
     playlist = models.ForeignKey(
         Playlist, on_delete=models.CASCADE, related_name="tracks"
     )
-    id = models.CharField(max_length=128, primary_key=True)
+    track_id = models.CharField(max_length=128)
     name = models.CharField(max_length=128)
     artist = models.CharField(max_length=128)
     platform = models.CharField(max_length=128)
