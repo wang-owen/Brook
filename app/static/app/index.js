@@ -118,7 +118,7 @@ function brew(event) {
             // If playlist, update recent playlist grid
             if (logged_in && data.is_playlist) {
                 if (data.exists) {
-                    col = document.getElementById(data.model.id);
+                    col = document.getElementById(data.model.playlist_id);
                     col.remove();
                 }
                 createPlaylist(
@@ -143,7 +143,7 @@ function brew(event) {
 
 function createPlaylist(model, row, append) {
     const col = document.createElement("div");
-    col.id = model.id;
+    col.id = model.playlist_id;
     col.className = "col";
     const playlist = document.createElement("div");
     playlist.className = "playlist";
@@ -153,7 +153,7 @@ function createPlaylist(model, row, append) {
     h6.innerHTML = model.owner;
 
     const a = document.createElement("a");
-    a.href = "playlist/" + model.platform + "/" + model.id;
+    a.href = "playlist/" + model.platform + "/" + model.playlist_id;
     a.target = "_blank";
     const img = document.createElement("img");
     img.className = "playlist-thumbnail";
@@ -175,7 +175,7 @@ function createPlaylist(model, row, append) {
         showWatchConfirm(false, "");
         showWatchError(false, "");
         showWatchSpinner(true);
-        fetch("update/" + model.id)
+        fetch("update/" + model.playlist_id)
             .then((response) => response.json())
             .then((data) => {
                 if (data.error) {
@@ -208,7 +208,7 @@ function createPlaylist(model, row, append) {
         showWatchConfirm(false, "");
         showWatchError(false, "");
         showWatchSpinner(true);
-        fetch("/brew/" + model.id)
+        fetch("/brew/" + model.playlist_id)
             .then((response) => response.json())
             .then((data) => {
                 if (data.error) {
@@ -237,7 +237,7 @@ function createPlaylist(model, row, append) {
     removeBtn.className = "btn btn-secondary";
     removeBtn.innerHTML = "Remove";
     removeBtn.addEventListener("click", () => {
-        fetch("/remove/" + model.id)
+        fetch("/remove/" + model.playlist_id)
             .then((response) => response.json())
             .then((data) => {
                 if (data.error) {
