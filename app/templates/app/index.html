@@ -45,34 +45,33 @@
         <div id="brew-confirm" class="alert alert-info" role="alert"></div>
         <div id="brew-error" class="alert alert-danger" role="alert"></div>
     </section>
-    {% block playlists %}
-        <section id="recent-playlists">
-            <h3>Recent Playlists</h3>
-            <div id="watch">
-                <button id="watch-btn" class="btn btn-outline-secondary">Add playlist</button>
-                <form id="watch-form" method="post">
-                    {% csrf_token %}
-                    <div class="form-floating">
-                        <input type="text"
-                               name="link"
-                               class="form-control"
-                               id="watch-link"
-                               placeholder="">
-                        <label for="watch-link">YouTube or Spotify playlist URL to watch</label>
-                    </div>
-                    <input id="watch-add-btn"
-                           type="submit"
-                           class="btn btn-outline-primary"
-                           value="Add">
-                </form>
-                <div id="watch-spinner" class="spinner-border" role="status">
-                    <span class="visually-hidden">Downloading...</span>
+    <section id="recent-playlists">
+        <h3>Recent Playlists</h3>
+        <div id="watch">
+            <button id="watch-btn" class="btn btn-outline-secondary">Add playlist</button>
+            <form id="watch-form" method="post">
+                {% csrf_token %}
+                <div class="form-floating">
+                    <input type="text"
+                           name="link"
+                           class="form-control"
+                           id="watch-link"
+                           placeholder="">
+                    <label for="watch-link">YouTube or Spotify playlist URL to watch</label>
                 </div>
-                <div id="watch-confirm" class="alert alert-info" role="alert"></div>
-                <div id="watch-error" class="alert alert-danger" role="alert"></div>
+                <input id="watch-add-btn"
+                       type="submit"
+                       class="btn btn-outline-primary"
+                       value="Add">
+            </form>
+            <div id="watch-spinner" class="spinner-border" role="status">
+                <span class="visually-hidden">Downloading...</span>
             </div>
-            <div id="playlists-grid">
-                {% comment %} <div class="container">
+            <div id="watch-confirm" class="alert alert-info" role="alert"></div>
+            <div id="watch-error" class="alert alert-danger" role="alert"></div>
+        </div>
+        <div id="playlists-grid">
+            {% comment %} <div class="container">
                 <div class="row">
                     {% for playlist in playlists %}
                         <div class="col">
@@ -93,8 +92,10 @@
                         </div>
                     {% endfor %}
                 </div>
-                </div> {% endcomment %}
-            </div>
-        </section>
-    {% endblock playlists %}
+            </div> {% endcomment %}
+        </div>
+    </section>
+    <div id="links">
+        <a href="{% url "about" %}" class="btn btn-link">About</a>
+    </div>
 {% endblock body %}
