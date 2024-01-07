@@ -10,6 +10,9 @@ from . import models
 def index(request):
     return render(request, "app/index.html")
 
+def about(request):
+    return render(request, "app/about.html")
+
 
 def check_login(request):
     return JsonResponse({"is_logged_in": request.user.is_authenticated}, status=200)
