@@ -48,6 +48,13 @@ PLAYLISTS_DIR = MUSIC_DIR / "Playlists"
 TRACKS_DIR = MUSIC_DIR / "Tracks"
 DEFAULT_FILE_FORMAT = "m4a"
 
+if not MUSIC_DIR.exists():
+    MUSIC_DIR.mkdir()
+if not PLAYLISTS_DIR.exists():
+    PLAYLISTS_DIR.mkdir()
+if not TRACKS_DIR.exists():
+    TRACKS_DIR.mkdir()
+
 
 def download_music(link, file_format, logged_in, user_model):
     """Download music from YouTube or Spotify link
