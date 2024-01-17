@@ -1,5 +1,6 @@
 var logged_in = false;
 
+// Retrieve cookie with given name
 function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie !== "") {
@@ -17,7 +18,9 @@ function getCookie(name) {
     return cookieValue;
 }
 
+// Run when page is loaded
 document.addEventListener("DOMContentLoaded", () => {
+    // Initalize + hide elements
     document.getElementById("recent-playlists").style.display = "none";
     const brewConfirm = document.getElementById("brew-confirm");
     const watchConfirm = document.getElementById("watch-confirm");
@@ -27,7 +30,6 @@ document.addEventListener("DOMContentLoaded", () => {
     watchConfirm.addEventListener("click", () => {
         showWatchConfirm(false, "");
     });
-    // Hide confirm messages
     showBrewConfirm(false, "");
     showWatchConfirm(false, "");
 
@@ -39,15 +41,12 @@ document.addEventListener("DOMContentLoaded", () => {
     watchError.addEventListener("click", () => {
         showWatchError(false, "");
     });
-    // Hide error messages
     showBrewError(false, "");
     showWatchError(false, "");
 
-    // Hide spinners
     showBrewSpinner(false);
     showWatchSpinner(false);
 
-    // Hide watch form
     document.getElementById("watch-form").style.display = "none";
 
     document.getElementById("watch-btn").addEventListener("click", () => {
@@ -59,9 +58,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Add event listeners to form submissions
     document.getElementById("brew-form").addEventListener("submit", brew);
     document.getElementById("watch-form").addEventListener("submit", watch);
 
+    // Check if user is logged in
     fetch("/check-login")
         .then((response) => response.json())
         .then((data) => {
@@ -77,6 +78,10 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function brew(event) {
+    /*
+        Brews a playlist from a given link
+    */
+
     event.preventDefault();
 
     // Get link and file format from form
