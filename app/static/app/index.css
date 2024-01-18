@@ -9,11 +9,12 @@
 
 body {
   text-align: center;
+  background-color: #f5f5f5;
 }
 
 #account-links {
-  float: left;
-  margin: 5px;
+  text-align: left;
+  margin: 10px;
 }
 
 form {
@@ -29,9 +30,8 @@ form select {
 }
 
 #brew {
-  padding: 50px;
   height: 50vh;
-  background-image: url(img/brook-violin.png);
+  background-image: url(img/brook-violin-transparent.png);
   background-repeat: no-repeat;
   background-position: right;
   border-bottom: 2px solid black;
@@ -77,6 +77,18 @@ form select {
 .spinner-border {
   margin: auto;
   margin-top: 40px;
+}
+
+#links {
+  float: left;
+  bottom: 0;
+}
+#links a {
+  color: black;
+  text-decoration: none;
+}
+#links a:hover {
+  text-decoration: underline;
 }
 
 /*# sourceMappingURL=index.css.map */

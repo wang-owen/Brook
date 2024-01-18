@@ -1,5 +1,22 @@
 var logged_in = false;
 
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+        var cookies = document.cookie.split(";");
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+                cookieValue = decodeURIComponent(
+                    cookie.substring(name.length + 1)
+                );
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("recent-playlists").style.display = "none";
     const brewConfirm = document.getElementById("brew-confirm");
@@ -81,12 +98,14 @@ function brew(event) {
     showBrewSpinner(true);
     showBrewConfirm(false, "");
     showBrewError(false, "");
+
     fetch("/brew", {
         method: "PUT",
         body: JSON.stringify({
             link: link,
             fileFormat: fileFormat,
         }),
+        headers: { "X-CSRFToken": getCookie("csrftoken") },
     })
         .then((response) => response.json())
         .then((data) => {
@@ -99,7 +118,7 @@ function brew(event) {
             // If playlist, update recent playlist grid
             if (logged_in && data.is_playlist) {
                 if (data.exists) {
-                    col = document.getElementById(data.model.id);
+                    col = document.getElementById(data.model.playlist_id);
                     col.remove();
                 }
                 createPlaylist(
@@ -124,7 +143,7 @@ function brew(event) {
 
 function createPlaylist(model, row, append) {
     const col = document.createElement("div");
-    col.id = model.id;
+    col.id = model.playlist_id;
     col.className = "col";
     const playlist = document.createElement("div");
     playlist.className = "playlist";
@@ -134,7 +153,7 @@ function createPlaylist(model, row, append) {
     h6.innerHTML = model.owner;
 
     const a = document.createElement("a");
-    a.href = "playlist/" + model.platform + "/" + model.id;
+    a.href = "playlist/" + model.platform + "/" + model.playlist_id;
     a.target = "_blank";
     const img = document.createElement("img");
     img.className = "playlist-thumbnail";
@@ -156,7 +175,7 @@ function createPlaylist(model, row, append) {
         showWatchConfirm(false, "");
         showWatchError(false, "");
         showWatchSpinner(true);
-        fetch("update/" + model.id)
+        fetch("update/" + model.playlist_id)
             .then((response) => response.json())
             .then((data) => {
                 if (data.error) {
@@ -189,7 +208,7 @@ function createPlaylist(model, row, append) {
         showWatchConfirm(false, "");
         showWatchError(false, "");
         showWatchSpinner(true);
-        fetch("/brew/" + model.id)
+        fetch("/brew/" + model.playlist_id)
             .then((response) => response.json())
             .then((data) => {
                 if (data.error) {
@@ -218,7 +237,7 @@ function createPlaylist(model, row, append) {
     removeBtn.className = "btn btn-secondary";
     removeBtn.innerHTML = "Remove";
     removeBtn.addEventListener("click", () => {
-        fetch("/remove/" + model.id)
+        fetch("/remove/" + model.playlist_id)
             .then((response) => response.json())
             .then((data) => {
                 if (data.error) {
@@ -297,6 +316,7 @@ function watch(event) {
         body: JSON.stringify({
             link: link,
         }),
+        headers: { "X-CSRFToken": getCookie("csrftoken") },
     })
         .then((response) => {
             return response.json();

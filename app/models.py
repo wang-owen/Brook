@@ -5,10 +5,10 @@ from django.conf import settings
 # Create your models here.
 class Playlist(models.Model):
     watcher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    id = models.CharField(max_length=64, primary_key=True)
-    name = models.CharField(max_length=64)
-    owner = models.CharField(max_length=64)
-    platform = models.CharField(max_length=64)
+    playlist_id = models.CharField(max_length=128)
+    name = models.CharField(max_length=128)
+    owner = models.CharField(max_length=128)
+    platform = models.CharField(max_length=128)
     thumbnail = models.URLField(blank=True)
     last_modified = models.DateTimeField(auto_now=True)
 
@@ -17,7 +17,7 @@ class Playlist(models.Model):
 
     def serialize(self):
         return {
-            "id": self.id,
+            "playlist_id": self.playlist_id,
             "name": self.name,
             "owner": self.owner,
             "platform": self.platform,
@@ -29,10 +29,10 @@ class Track(models.Model):
     playlist = models.ForeignKey(
         Playlist, on_delete=models.CASCADE, related_name="tracks"
     )
-    id = models.CharField(max_length=64, primary_key=True)
-    name = models.CharField(max_length=64)
-    artist = models.CharField(max_length=64)
-    platform = models.CharField(max_length=64)
+    track_id = models.CharField(max_length=128)
+    name = models.CharField(max_length=128)
+    artist = models.CharField(max_length=128)
+    platform = models.CharField(max_length=128)
 
     def __str__(self):
         return f"{self.playlist.name}: {self.name} by {self.artist}"
