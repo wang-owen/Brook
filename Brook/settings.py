@@ -47,12 +47,15 @@ ALLOWED_HOSTS = ["127.0.0.1", "brook-app-d889b0c7d9da.herokuapp.com"]
 INSTALLED_APPS = [
     "app",
     "users",
+
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
+    "rest_framework",  # Django REST Framework
 ]
 
 MIDDLEWARE = [
@@ -93,10 +96,10 @@ WSGI_APPLICATION = "Brook.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "dehrvebutmkq34",
-        "USER": "mojpcmscgfnjyd",
+        "NAME": os.environ.get("DATABASE_NAME"),
+        "USER": os.environ.get("DATABASE_USER"),
         "PASSWORD": os.environ.get("DATABASE_PASSWORD"),
-        "HOST": "ec2-34-193-110-25.compute-1.amazonaws.com",
+        "HOST": os.environ.get("DATABASE_HOST"),
         "PORT": "5432",
     }
 }
