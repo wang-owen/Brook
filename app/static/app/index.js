@@ -63,10 +63,12 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("watch-form").addEventListener("submit", watch);
 
     // Check if user is logged in
-    fetch("/check-login")
+    fetch("/check-login", {
+        method: "GET",
+    })
         .then((response) => response.json())
         .then((data) => {
-            if (data.is_logged_in) {
+            if (data.logged_in) {
                 logged_in = true;
                 loadPlaylists();
                 document.getElementById("recent-playlists").style.display =

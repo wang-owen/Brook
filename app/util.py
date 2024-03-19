@@ -73,8 +73,10 @@ def download_music(link, file_format, logged_in, user_model):
     exists = None
     if "list" in link:
         is_playlist = True
-    if "watch" in link:
+    elif "watch" in link:
         is_playlist = False
+    else:
+        return {}
     if is_playlist:
         dir_ = PLAYLISTS_DIR / datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S")
         exists = models.Playlist.objects.filter(playlist_id=get_id(link)).exists()
@@ -92,6 +94,8 @@ def download_music(link, file_format, logged_in, user_model):
             path = _download_spotify_playlist(link, file_format, dir_)
         else:
             path = _download_spotify_track(link, file_format, dir_)
+    else:  # Invalid link
+        return {}
 
     # Log or update (if existing) playlist
     if is_playlist and logged_in:
