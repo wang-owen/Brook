@@ -10,12 +10,17 @@ from . import models
 def index(request):
     return render(request, "app/index.html")
 
+
 def about(request):
     return render(request, "app/about.html")
 
 
 def check_login(request):
-    return JsonResponse({"is_logged_in": request.user.is_authenticated}, status=200)
+    if request.method == "GET":
+        return JsonResponse({"logged_in": request.user.is_authenticated}, status=200)
+    return JsonResponse(
+        {"error": True, "message": "Request method must be GET"}, status=400
+    )
 
 
 def brew(request, playlist_id=None):
@@ -48,16 +53,20 @@ def brew(request, playlist_id=None):
                 "error": False,
                 "message": "Responded with file path",
                 "is_playlist": download_data["is_playlist"],
-                "model": models.Playlist.objects.get(
-                    playlist_id=util.get_id(link)
-                ).serialize()
-                if request.user.is_authenticated and download_data["is_playlist"]
-                else None,
+                "model": (
+                    models.Playlist.objects.get(
+                        playlist_id=util.get_id(link)
+                    ).serialize()
+                    if request.user.is_authenticated and download_data["is_playlist"]
+                    else None
+                ),
                 "exists": download_data["exists"],
                 "path": str(download_data["path"]),
-                "message": "Playlist downloaded"
-                if download_data["is_playlist"]
-                else "Track downloaded",
+                "message": (
+                    "Playlist downloaded"
+                    if download_data["is_playlist"]
+                    else "Track downloaded"
+                ),
             },
             status=200,
         )
