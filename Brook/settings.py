@@ -41,6 +41,8 @@ DEBUG = os.environ.get("DJANGO_DEBUG", "") != "False"
 
 ALLOWED_HOSTS = ["127.0.0.1", ".herokuapp.com", ".wangowen.com"]
 
+CSRF_TRUSTED_ORIGINS = ["https://*.wangowen.com"]
+
 
 # Application definition
 
