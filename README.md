@@ -8,7 +8,7 @@ Brook is a web app which allows users to download YouTube and Spotify tracks as 
 * Added playlists keep track of new and removed tracks since its last update
 * When watched playlists are updated, a zip file containing any new tracks are downloaded.
 
-*Try it here:* https://brook-app-d889b0c7d9da.herokuapp.com/
+*Try it here:* [brook.wangowen.com](https://brook.wangowen.com/)
 
 # Usage
 Clone the repository
