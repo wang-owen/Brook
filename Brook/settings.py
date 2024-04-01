@@ -39,14 +39,20 @@ SECRET_KEY = os.environ.get(
 # DEBUG = True
 DEBUG = os.environ.get("DJANGO_DEBUG", "") != "False"
 
-ALLOWED_HOSTS = ["127.0.0.1", "brook-app-d889b0c7d9da.herokuapp.com"]
+ALLOWED_HOSTS = ["127.0.0.1", ".herokuapp.com", ".wangowen.com"]
+
+CSRF_TRUSTED_ORIGINS = ["https://*.wangowen.com"]
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    "app",
+    "api",
+    "brewery",
     "users",
+    
+    "rest_framework",
+
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -65,6 +71,14 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
+}
 
 ROOT_URLCONF = "Brook.urls"
 
@@ -93,10 +107,10 @@ WSGI_APPLICATION = "Brook.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "dehrvebutmkq34",
-        "USER": "mojpcmscgfnjyd",
+        "NAME": os.environ.get("DATABASE_NAME"),
+        "USER": os.environ.get("DATABASE_USER"),
         "PASSWORD": os.environ.get("DATABASE_PASSWORD"),
-        "HOST": "ec2-34-193-110-25.compute-1.amazonaws.com",
+        "HOST": os.environ.get("DATABASE_HOST"),
         "PORT": "5432",
     }
 }
