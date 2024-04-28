@@ -4,7 +4,7 @@ from django.conf import settings
 
 # Create your models here.
 class Playlist(models.Model):
-    id = models.CharField(max_length=128)
+    id = models.CharField(max_length=128, primary_key=True)
     watcher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     name = models.CharField(max_length=128)
     owner = models.CharField(max_length=128)
@@ -15,7 +15,7 @@ class Playlist(models.Model):
 
 
 class Track(models.Model):
-    id = models.CharField(max_length=128)
+    id = models.CharField(max_length=128, primary_key=True)
     name = models.CharField(max_length=128)
     artist = models.CharField(max_length=128)
     platform = models.CharField(max_length=128)

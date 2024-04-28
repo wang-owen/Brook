@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from brewery.models import Playlist, Track
+from server.models import Playlist, Track
 from users.models import User
 
 

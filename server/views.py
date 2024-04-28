@@ -3,35 +3,25 @@ from django.contrib.auth.decorators import login_required
 from . import util
 
 
-PLAYLIST = "playlist"
-PLAYLIST_URLS = ["list", "playlist", "album"]
-TRACK = "track"
-TRACK_URLS = ["watch", "track"]
-YOUTUBE = "youtube"
-YOUTUBE_URLS = ["youtube", "youtu.be"]
-SPOTIFY = "spotify"
-SPOTIFY_URLS = ["spotify"]
-
-
 # Create your views here.
 def _get_platform(link):
-    for url in YOUTUBE_URLS:
+    for url in util.YOUTUBE_URLS:
         if url in link:
-            return YOUTUBE
-    for url in SPOTIFY_URLS:
+            return util.YOUTUBE
+    for url in util.SPOTIFY_URLS:
         if url in link:
-            return SPOTIFY
+            return util.SPOTIFY
     return None
 
 
 def _get_content_type(link):
     # Need to check for playlist first since single tracks in a playlist will also contain "list" in the URL
-    for url in PLAYLIST_URLS:
+    for url in util.PLAYLIST_URLS:
         if url in link:
-            return PLAYLIST
-    for url in TRACK_URLS:
+            return util.PLAYLIST
+    for url in util.TRACK_URLS:
         if url in link:
-            return TRACK
+            return util.TRACK
     return None
 
 
@@ -44,9 +34,9 @@ def brew(link, file_format):
         return False
 
     try:
-        if content_type == PLAYLIST:
+        if content_type == util.PLAYLIST:
             return util.download_playlist(link, file_format, platform)
-        elif content_type == TRACK:
+        elif content_type == util.TRACK:
             return util.download_track(link, file_format, platform)
     except (KeyError, IndexError):
         # Invalid link
@@ -63,10 +53,10 @@ def get_data(link):
         "platform": platform,
         "contentType": content_type,
         "playlistData": (
-            util.get_playlist_data(link, platform) if content_type == PLAYLIST else None
+            util.get_playlist_data(link, platform) if content_type == util.PLAYLIST else None
         ),
         "trackData": (
-            util.get_track_data(link, platform) if content_type == TRACK else None
+            util.get_track_data(link, platform) if content_type == util.TRACK else None
         ),
     }
 
