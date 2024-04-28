@@ -47,7 +47,7 @@ CSRF_TRUSTED_ORIGINS = ["https://*.wangowen.com"]
 # Application definition
 
 INSTALLED_APPS = [
-    "app",
+    "server",
     "users",
 
     "django.contrib.admin",
@@ -95,13 +95,17 @@ WSGI_APPLICATION = "Brook.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("DATABASE_NAME"),
-        "USER": os.environ.get("DATABASE_USER"),
-        "PASSWORD": os.environ.get("DATABASE_PASSWORD"),
-        "HOST": os.environ.get("DATABASE_HOST"),
-        "PORT": "5432",
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
+    # "default": {
+    #     "ENGINE": "django.db.backends.postgresql",
+    #     "NAME": os.environ.get("DATABASE_NAME"),
+    #     "USER": os.environ.get("DATABASE_USER"),
+    #     "PASSWORD": os.environ.get("DATABASE_PASSWORD"),
+    #     "HOST": os.environ.get("DATABASE_HOST"),
+    #     "PORT": "5432",
+    # }
 }
 
 
