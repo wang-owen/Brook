@@ -2,9 +2,9 @@ from rest_framework import status, viewsets, permissions
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from api.serializers import UserSerializer, PlaylistSerializer, TrackSerializer
-from brewery.models import Playlist, Track
+from server.models import Playlist, Track
 from users.models import User
-from brewery import views
+from server import views
 
 
 # Create your views here.

@@ -48,11 +48,9 @@ CSRF_TRUSTED_ORIGINS = ["https://*.wangowen.com"]
 
 INSTALLED_APPS = [
     "api",
-    "brewery",
+    "server",
     "users",
-    
     "rest_framework",
-
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -75,8 +73,8 @@ MIDDLEWARE = [
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly"
     ]
 }
 
@@ -106,13 +104,17 @@ WSGI_APPLICATION = "Brook.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("DATABASE_NAME"),
-        "USER": os.environ.get("DATABASE_USER"),
-        "PASSWORD": os.environ.get("DATABASE_PASSWORD"),
-        "HOST": os.environ.get("DATABASE_HOST"),
-        "PORT": "5432",
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
+    # "default": {
+    #     "ENGINE": "django.db.backends.postgresql",
+    #     "NAME": os.environ.get("DATABASE_NAME"),
+    #     "USER": os.environ.get("DATABASE_USER"),
+    #     "PASSWORD": os.environ.get("DATABASE_PASSWORD"),
+    #     "HOST": os.environ.get("DATABASE_HOST"),
+    #     "PORT": "5432",
+    # }
 }
 
 

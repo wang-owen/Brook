@@ -3,7 +3,15 @@ from datetime import datetime
 from pathlib import Path
 from dotenv import load_dotenv
 from django.conf import settings
-from views import PLAYLIST, TRACK, YOUTUBE, SPOTIFY
+
+PLAYLIST = "playlist"
+PLAYLIST_URLS = ["list", "playlist", "album"]
+TRACK = "track"
+TRACK_URLS = ["watch", "track"]
+YOUTUBE = "youtube"
+YOUTUBE_URLS = ["youtube", "youtu.be"]
+SPOTIFY = "spotify"
+SPOTIFY_URLS = ["spotify"]
 
 ILLEGAL_CHARS = [
     "#",
