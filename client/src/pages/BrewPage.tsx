@@ -1,7 +1,7 @@
-const BrewPage = () => {
-  return (
-    <div>BrewPage</div>
-  )
-}
+import BrewHero from "../components/BrewHero";
 
-export default BrewPage
+const BrewPage = () => {
+    return <BrewHero />;
+};
+
+export default BrewPage;
