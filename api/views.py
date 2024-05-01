@@ -1,10 +1,11 @@
+from django.http import FileResponse
 from rest_framework import status, viewsets, permissions
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from api.serializers import UserSerializer, PlaylistSerializer, TrackSerializer
+from server import views
 from server.models import Playlist, Track
 from users.models import User
-from server import views
 
 
 # Create your views here.
@@ -45,13 +46,32 @@ def get_logged_in(request):
         )
 
 
-@api_view(["PUT"])
+def download(request, path):
+    try:
+        # Determine whether file is a zip or audio file
+        if "zip" in path:
+            content_type = "application/zip"
+        else:
+            content_type = f"audio/{path.split('.')[-1]}"
+
+        # Return file to client
+        response = FileResponse(
+            open(path, "rb"), as_attachment=True, content_type=content_type
+        )
+        response["Content-Disposition"] = f"attachment; filename={path.split('/')[-1]}"
+        return response
+    except FileNotFoundError as e:
+        print(e)
+        return Response({"error": True, "message": "File not found"}, status=404)
+
+
+@api_view(["POST"])
 def brew(request):
-    if request.method == "PUT":
+    if request.method == "POST":
         # Download music
         data = request.data.get("data", None)
         link = data.get("link", None)
-        file_format = data.get("fileFormat", None)
+        file_format = data.get("fileFormat", "m4a")
         if not link or not file_format:
             return Response(
                 {
@@ -62,7 +82,7 @@ def brew(request):
             )
 
         # Download music
-        if path := brew(link, file_format):
+        if path := views.brew(link, file_format):
             # Log the download
             if request.user.is_authenticated and (music_data := views.get_data(link)):
                 # Determine if playlist
@@ -92,21 +112,31 @@ def brew(request):
                             )
                         exists = False
 
+                return Response(
+                    {
+                        "status": "success",
+                        "data": {
+                            "path": path,
+                            "pk": playlist.pk if playlist else None,
+                            "playlistExists": exists if exists else None,
+                            "musicData": (
+                                # Music data returned if logged in and link valid
+                                music_data
+                                if request.user.is_authenticated
+                                and music_data.get("playlistData", None)
+                                or music_data.get("trackData", None)
+                                else None
+                            ),
+                        },
+                        "message": "Music downloaded",
+                    },
+                    status=status.HTTP_200_OK,
+                )
             return Response(
                 {
                     "status": "success",
                     "data": {
-                        "path": path,
-                        "pk": playlist.pk if playlist else None,
-                        "playlistExists": exists if exists else None,
-                        "musicData": (
-                            # Music data returned if logged in and link valid
-                            music_data
-                            if request.user.is_authenticated
-                            and music_data.get("playlistData", None)
-                            or music_data.get("trackData", None)
-                            else None
-                        ),
+                        "path": str(path),
                     },
                     "message": "Music downloaded",
                 },
@@ -119,6 +149,34 @@ def brew(request):
             },
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+
+@api_view(["GET"])
+def get_playlists(request):
+    if request.method == "GET" and request.user.is_authenticated:
+        data = []
+        for p in Playlist.objects.filter(watcher=request.user):
+            playlist = {}
+            playlist["name"] = p.name
+            playlist["owner"] = p.owner
+            playlist["thumbnail"] = p.thumbnail
+            playlist["platform"] = p.platform
+            data.append(playlist)
+
+        return Response(
+            {
+                "status": "success",
+                "data": data,
+            },
+            status=status.HTTP_200_OK,
+        )
+    return Response(
+        {
+            "status": "error",
+            "message": "User not logged in",
+        },
+        status=status.HTTP_400_BAD_REQUEST,
+    )
 
 
 @api_view(["PUT"])
@@ -196,7 +254,7 @@ def download_playlist(request):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
         # Download playlist
-        pass
+        data = request.data.get("data", None)
 
 
 @api_view(["DELETE"])
