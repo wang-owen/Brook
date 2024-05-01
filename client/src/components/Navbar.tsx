@@ -1,46 +1,34 @@
 import { NavLink } from "react-router-dom";
 import favicon from "../assets/img/favicon.png";
 
-const Navbar = () => {
+const Navbar = ({ height }: { height: number }) => {
     const linkClass =
-        "text-white hover:bg-gray-900 hover:text-white rounded-md px-3 py-2";
-
+        "text-white hover:bg-gray-600 duration-200 rounded-md px-3 py-2";
     return (
-        <nav className="absolute z-1 w-full bg-gray-400 border-b">
-            <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-                <div className="flex h-14 items-center justify-between">
-                    <div className="flex flex-1 items-center justify-center md:items-stretch md:justify-start">
-                        {/* <!-- Logo --> */}
-                        <NavLink
-                            className="flex flex-shrink-0 items-center mr-4"
-                            to="/"
-                        >
-                            <img
-                                className="h-10 w-auto"
-                                src={favicon}
-                                alt="Brook"
-                            />
-                            <span className="hidden md:block text-white text-2xl font-bold ml-2">
-                                Brook
-                            </span>
-                        </NavLink>
-                        <div className="md:ml-auto">
-                            <div className="flex space-x-2">
-                                <NavLink to="/" className={linkClass}>
-                                    Brew
-                                </NavLink>
-                                <NavLink to="/login" className={linkClass}>
-                                    Login
-                                </NavLink>
-                                <NavLink to="/register" className={linkClass}>
-                                    Register
-                                </NavLink>
-                            </div>
-                        </div>
-                    </div>
+        <header className="fixed top-0 w-full bg-gray-500 flex justify-center shadow-xl">
+            <nav
+                className={`flex h-${height} w-2/3 items-center justify-between`}
+            >
+                {/* <!-- Logo --> */}
+                <NavLink className="flex items-center" to="/">
+                    <img className="h-10 w-auto" src={favicon} alt="Brook" />
+                    <span className="text-white text-2xl font-bold ml-2 mt-0.5 hover:opacity-50 duration-200">
+                        Brook
+                    </span>
+                </NavLink>
+                <div>
+                    <NavLink to="/" className={linkClass}>
+                        Brew
+                    </NavLink>
+                    <NavLink to="/login" className={linkClass}>
+                        Login
+                    </NavLink>
+                    <NavLink to="/register" className={linkClass}>
+                        Register
+                    </NavLink>
                 </div>
-            </div>
-        </nav>
+            </nav>
+        </header>
     );
 };
 
