@@ -9,9 +9,6 @@ export default {
         fontFamily: {
             sans: ["Roboto", "sans-serif"]
         },
-        backgroundImage: {
-            'brew-hero': "url('src/assets/img/brook-piano-transparent.png')",
-        }
     },
   },
   plugins: [],
