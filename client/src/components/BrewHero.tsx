@@ -1,6 +1,5 @@
 import { useState } from "react";
 import heroBanner from "../assets/img/brew-hero.png";
-import { redirect } from "react-router-dom";
 
 const BrewHero = ({ getFile }: { getFile: Function }) => {
     const [link, setLink] = useState("");
@@ -9,7 +8,10 @@ const BrewHero = ({ getFile }: { getFile: Function }) => {
         event.preventDefault();
 
         const path: string = await getFile(link);
-        return redirect("http://127.0.0.1:8000/download/" + path);
+
+        window.location.href = "http://127.0.0.1:8000/download/" + path;
+
+        return;
     };
 
     return (
@@ -39,7 +41,7 @@ const BrewHero = ({ getFile }: { getFile: Function }) => {
                                 />
                                 <button
                                     className="bg-blue-600 hover:bg-blue-700 -blue-600 hover:-blue-700 duration-200 text-sm -4 text-white rounded-lg float-right px-4 py-2"
-                                    type="button"
+                                    type="submit"
                                 >
                                     Brew
                                 </button>
