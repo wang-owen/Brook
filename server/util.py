@@ -269,14 +269,12 @@ def _get_youtube_track_data(link):
     track_title = response.json()["items"][0]["snippet"]["title"]
     track_artist = response.json()["items"][0]["snippet"]["channelTitle"]
 
-    data = {
+    return {
         "id": track_id,
-        "title": track_title,
+        "name": track_title,
         "artist": track_artist,
         "platform": YOUTUBE,
     }
-
-    return data
 
 
 def _get_spotify_track_data(link):
