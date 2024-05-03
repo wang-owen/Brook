@@ -6,7 +6,8 @@ from users.models import User
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
-        fields = ["username", "email", "date_joined"]
+        fields = ["username", "email", "password", "date_joined", "playlists"]
+        extra_kwargs = {"password": {"write_only": True}}
 
 
 class TrackSerializer(serializers.HyperlinkedModelSerializer):
@@ -16,8 +17,6 @@ class TrackSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class PlaylistSerializer(serializers.HyperlinkedModelSerializer):
-    tracks = TrackSerializer(many=True)
-
     class Meta:
         model = Playlist
         fields = "__all__"

@@ -9,16 +9,14 @@ const BrewPage = () => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                data: {
-                    link: link,
-                    fileFormat: "m4a",
-                },
+                link: link,
+                fileFormat: "m4a",
             }),
         });
 
         const data = await response.json();
-        if (data.status === "success") {
-            return data.data.path;
+        if (response.ok) {
+            return data.path;
         } else {
             console.log(data.message);
         }

@@ -238,6 +238,7 @@ def _get_youtube_playlist_data(link):
 
     return {
         "id": playlist_id,
+        "link": link,
         "name": playlist_name,
         "owner": playlist_owner,
         "platform": YOUTUBE,
@@ -335,6 +336,7 @@ def _get_spotify_playlist_data(link):
 
     return {
         "id": playlist_id,
+        "link": link,
         "name": response.json()["name"],
         "owner": response.json()["owner"]["display_name"],
         "platform": SPOTIFY,

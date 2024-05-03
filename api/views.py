@@ -1,92 +1,34 @@
-from django.http import FileResponse
-from rest_framework import status, viewsets, permissions
+from rest_framework import status, generics, mixins
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from django.http import Http404
 from api.serializers import UserSerializer, PlaylistSerializer, TrackSerializer
-from server import views
+from server import views as server
 from server.models import Playlist, Track
 from users.models import User
 
 
 # Create your views here.
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all().order_by("-date_joined")
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-
-class PlaylistViewSet(viewsets.ModelViewSet):
-    queryset = Playlist.objects.all()
-    serializer_class = PlaylistSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-
-class TrackViewSet(viewsets.ModelViewSet):
-    queryset = Track.objects.all()
-    serializer_class = TrackSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-
-@api_view(["GET"])
-def get_logged_in(request):
-    if request.method == "GET":
-        return Response(
-            {
-                "status": "success",
-                "data": {
-                    "logged_in": request.user.is_authenticated,
-                },
-                "message": (
-                    "User is logged in"
-                    if request.user.is_authenticated
-                    else "User is not logged in"
-                ),
-            },
-            status=status.HTTP_200_OK,
-        )
-
-
-def download(request, path):
-    try:
-        # Determine whether file is a zip or audio file
-        if "zip" in path:
-            content_type = "application/zip"
-        else:
-            content_type = f"audio/{path.split('.')[-1]}"
-
-        # Return file to client
-        response = FileResponse(
-            open(path, "rb"), as_attachment=True, content_type=content_type
-        )
-        response["Content-Disposition"] = f"attachment; filename={path.split('/')[-1]}"
-        return response
-    except FileNotFoundError as e:
-        print(e)
-        return Response({"error": True, "message": "File not found"}, status=404)
-
-
 @api_view(["POST"])
 def brew(request):
     if request.method == "POST":
         # Download music
-        data = request.data.get("data", None)
-        link = data.get("link", None)
+        data = request.data
+        link = data.get("link")
         file_format = data.get("fileFormat", "m4a")
-        if not link or not file_format:
+        if not data or not link or not file_format:
             return Response(
-                {
-                    "status": "error",
-                    "message": "Link not provided",
-                },
+                {"message": "Link not provided"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Download music
-        if path := views.brew(link, file_format):
+        if path := server.brew(link, file_format):
             # Log the download
-            if request.user.is_authenticated and (music_data := views.get_data(link)):
+            if request.user.is_authenticated and (music_data := server.get_data(link)):
                 # Determine if playlist
-                if playlist_data := music_data.get("playlistData", None):
+                if playlist_data := music_data.get("playlistData"):
                     # Determine if playlist exists in user watchlist
                     try:
                         # Update playlist
@@ -114,190 +56,149 @@ def brew(request):
 
                 return Response(
                     {
-                        "status": "success",
-                        "data": {
-                            "path": path,
-                            "pk": playlist.pk if playlist else None,
-                            "playlistExists": exists if exists else None,
-                            "musicData": (
-                                # Music data returned if logged in and link valid
-                                music_data
-                                if request.user.is_authenticated
-                                and music_data.get("playlistData", None)
-                                or music_data.get("trackData", None)
-                                else None
-                            ),
-                        },
-                        "message": "Music downloaded",
+                        "path": str(path),
+                        "pk": playlist.pk if playlist else None,
+                        "playlistExists": exists if exists else None,
+                        "musicData": (
+                            # Music data returned if logged in and link valid
+                            music_data
+                            if request.user.is_authenticated
+                            and music_data.get("playlistData")
+                            or music_data.get("trackData")
+                            else None
+                        ),
                     },
                     status=status.HTTP_200_OK,
                 )
             return Response(
-                {
-                    "status": "success",
-                    "data": {
-                        "path": str(path),
-                    },
-                    "message": "Music downloaded",
-                },
+                {"path": str(path)},
                 status=status.HTTP_200_OK,
             )
         return Response(
-            {
-                "status": "error",
-                "message": "Invalid link",
-            },
+            {"message": "Invalid link"},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
 
-@api_view(["GET"])
-def get_playlists(request):
-    if request.method == "GET" and request.user.is_authenticated:
-        data = []
-        for p in Playlist.objects.filter(watcher=request.user):
-            playlist = {}
-            playlist["name"] = p.name
-            playlist["owner"] = p.owner
-            playlist["thumbnail"] = p.thumbnail
-            playlist["platform"] = p.platform
-            data.append(playlist)
-
-        return Response(
-            {
-                "status": "success",
-                "data": data,
-            },
-            status=status.HTTP_200_OK,
-        )
-    return Response(
-        {
-            "status": "error",
-            "message": "User not logged in",
-        },
-        status=status.HTTP_400_BAD_REQUEST,
-    )
+def download(request, path):
+    return server.get_file(path)
 
 
-@api_view(["PUT"])
-def update_playlist(request):
-    # Also used to watch playlist
-    if request.method == "PUT":
-        if not request.user.is_authenticated:
+class PlaylistList(generics.GenericAPIView):
+    """
+    List all watched playlists, or begin watching a new playlist.
+    """
+
+    serializer_class = PlaylistSerializer
+
+    # List all watched playlists by user
+    def get(self, request, *args, **kwargs):
+        if self.request.user.is_authenticated:
             return Response(
-                {
-                    "status": "error",
-                    "message": "User is not logged in",
-                },
-                status=status.HTTP_401_UNAUTHORIZED,
+                Playlist.objects.filter(watcher=self.request.user),
+                status=status.HTTP_200_OK,
             )
-        # Update playlist
-        data = request.data.get("data", None)
-        link = data.get("link", None)
-        if not link:
-            return Response(
-                {
-                    "status": "error",
-                    "message": "Link not provided",
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        playlist_data = views.get_data(link)["playlistData"]
-        if not playlist_data:
-            return Response(
-                {
-                    "status": "error",
-                    "message": "Invalid playlist link",
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+    # Create new playlist and add to user watched list
+    def post(self, request, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            link = request.data.get("link")
+            data = server.get_data(link)
+            if data.get("contentType") == server.util.PLAYLIST:
+                playlistSerializer = PlaylistSerializer(
+                    data={
+                        "watcher": self.request.user,
+                        "playlist_id": data.get("id"),
+                        "link": link,
+                        "platform": data.get("platform"),
+                        "name": data.get("name"),
+                        "owner": data.get("owner"),
+                    }
+                )
+                if playlistSerializer.is_valid():
+                    playlist = playlistSerializer.save()
+
+                if trackData := data.get("trackData"):
+                    for data in trackData:
+                        trackSeralizer = TrackSerializer(
+                            data={
+                                "playlist": playlist,
+                                "track_id": data.get("id"),
+                                "name": data.get("name"),
+                                "artist": data.get("artist"),
+                                "platform": data.get("platform"),
+                            }
+                        )
+                        if trackSeralizer.is_valid():
+                            trackSeralizer.save()
+
+                return Response(status=status.HTTP_201_CREATED)
+
+            # Link is not a playlist
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        # User not logged in
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+
+class PlaylistDetail(
+    generics.GenericAPIView, mixins.RetrieveModelMixin, mixins.DestroyModelMixin
+):
+    """
+    Retrieve, update, or delete a playlist instance
+    """
+
+    queryset = Playlist.objects.all()
+    serializer_class = PlaylistSerializer
+
+    def get_object(self, pk):
         try:
-            playlist = Playlist.objects.get(
-                watcher=request.user, playlist_id=playlist_data["id"]
-            )
-            serializer = PlaylistSerializer(playlist, data=playlist_data)
-            if serializer.is_valid():
-                serializer.save()
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Playlist.objects.get(pk=pk)
         except Playlist.DoesNotExist:
-            return Response(
-                {
-                    "status": "error",
-                    "message": "Playlist does not exist",
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            raise Http404
 
-        return Response(
-            {
-                "status": "success",
-                "data": {
-                    "playlistData": serializer.data,
-                },
-                "message": "Playlist updated",
-            },
-            status=status.HTTP_200_OK,
-        )
+    def get(self, request, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            return self.retrieve(request, *args, **kwargs)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+    def put(self, request, pk):
+        if self.request.user.is_authenticated:
+            playlist = self.get_object(pk)
+            # Retrieve new information from server and update playlist
+            data = server.get_data(playlist.link)
+            updated_tracklist = data.get("playlistData", {}).get("tracks")
 
-@api_view(["GET"])
-def download_playlist(request):
-    if request.method == "GET":
-        if not request.user.is_authenticated:
-            return Response(
-                {
-                    "status": "error",
-                    "message": "User is not logged in",
-                },
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-        # Download playlist
-        data = request.data.get("data", None)
+            # Delete any removed tracks
+            for track in playlist.tracks.all():
+                if track.track_id not in updated_tracklist:
+                    track.delete()
 
+            # Add any new tracks
+            for track in updated_tracklist:
+                if not playlist.filter(track_id=track["track_id"]).exists():  # type: ignore
+                    trackSerializer = TrackSerializer(
+                        data={
+                            "playlist": playlist,
+                            "track_id": track["track_id"],
+                            "name": track["name"],
+                            "artist": track["artist"],
+                            "platform": track["platform"],
+                        },
+                    )
+                    if trackSerializer.is_valid():
+                        trackSerializer.save()
 
-@api_view(["DELETE"])
-def delete_playlist(request):
-    if request.method == "DELETE":
-        if not request.user.is_authenticated:
-            return Response(
-                {
-                    "status": "error",
-                    "message": "User is not logged in",
-                },
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-        # Delete playlist
-        data = request.data.get("data", None)
-        playlist_id = data.get("id", None)
-        if not playlist_id:
-            return Response(
-                {
-                    "status": "error",
-                    "message": "Playlist ID not provided",
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            # Update playlist data
+            playlistSerializer = PlaylistSerializer(playlist, data=data)
+            if playlistSerializer.is_valid():
+                playlistSerializer.save()
 
-        try:
-            playlist = Playlist.objects.get(
-                watcher=request.user, playlist_id=playlist_id
-            )
-            playlist.delete()
-        except Playlist.DoesNotExist:
-            return Response(
-                {
-                    "status": "error",
-                    "message": "Playlist does not exist",
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(status=status.HTTP_200_OK)
 
-        return Response(
-            {
-                "status": "success",
-                "message": "Playlist deleted",
-            },
-            status=status.HTTP_200_OK,
-        )
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+    def delete(self, request, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            return self.destroy(request, *args, **kwargs)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
