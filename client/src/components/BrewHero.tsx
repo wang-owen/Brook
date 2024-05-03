@@ -8,8 +8,9 @@ const BrewHero = ({ getFile }: { getFile: Function }) => {
         event.preventDefault();
 
         const path: string = await getFile(link);
-
-        window.location.href = "http://127.0.0.1:8000/download/" + path;
+        if (path) {
+            window.location.href = "http://127.0.0.1:8000/download/" + path;
+        }
 
         return;
     };
