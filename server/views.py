@@ -53,7 +53,9 @@ def get_data(link):
         "platform": platform,
         "contentType": content_type,
         "playlistData": (
-            util.get_playlist_data(link, platform) if content_type == util.PLAYLIST else None
+            util.get_playlist_data(link, platform)
+            if content_type == util.PLAYLIST
+            else None
         ),
         "trackData": (
             util.get_track_data(link, platform) if content_type == util.TRACK else None
@@ -62,7 +64,6 @@ def get_data(link):
 
 
 def get_file(path):
-    # Return file to client, called by brew() in index.js
     try:
         # Determine whether file is a zip or audio file
         if "zip" in path:
