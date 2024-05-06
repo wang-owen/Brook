@@ -1,10 +1,17 @@
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 
 const LoginForm = ({ login }: { login: Function }) => {
+    const [inputs, setInputs] = useState({});
+
+    const loginChange = (event: any) => {
+        const name = event.target.name;
+        const value = event.target.value;
+        setInputs((values) => ({ ...values, [name]: value }));
+    };
+
     const loginSubmit = (event: FormEvent) => {
         event.preventDefault();
-
-        login();
+        login(inputs);
     };
 
     return (
@@ -22,10 +29,11 @@ const LoginForm = ({ login }: { login: Function }) => {
                             Username
                         </label>
                         <input
+                            onChange={loginChange}
                             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none"
                             id="username"
                             name="username"
-                            type="text"
+                            type="username"
                             placeholder="Username"
                             required
                         />
@@ -38,6 +46,7 @@ const LoginForm = ({ login }: { login: Function }) => {
                             Password
                         </label>
                         <input
+                            onChange={loginChange}
                             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none"
                             id="password"
                             name="password"
@@ -49,7 +58,7 @@ const LoginForm = ({ login }: { login: Function }) => {
                     <div className="flex justify-end">
                         <button
                             className="bg-blue-600 hover:bg-blue-700 duration-200 text-white py-2 px-4 rounded"
-                            type="button"
+                            type="submit"
                         >
                             Sign In
                         </button>
