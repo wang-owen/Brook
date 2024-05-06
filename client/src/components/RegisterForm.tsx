@@ -1,10 +1,17 @@
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 
 const RegisterForm = ({ register }: { register: Function }) => {
+    const [inputs, setInputs] = useState({});
+
+    const registerChange = (event: any) => {
+        const name = event.target.name;
+        const value = event.target.value;
+        setInputs((values) => ({ ...values, [name]: value }));
+    };
+
     const registerSubmit = (event: FormEvent) => {
         event.preventDefault();
-
-        register();
+        register(inputs);
     };
 
     return (
@@ -22,6 +29,7 @@ const RegisterForm = ({ register }: { register: Function }) => {
                             Email Address
                         </label>
                         <input
+                            onChange={registerChange}
                             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none"
                             id="email"
                             name="email"
@@ -38,6 +46,7 @@ const RegisterForm = ({ register }: { register: Function }) => {
                             Username
                         </label>
                         <input
+                            onChange={registerChange}
                             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none"
                             id="username"
                             name="username"
@@ -54,6 +63,7 @@ const RegisterForm = ({ register }: { register: Function }) => {
                             Password
                         </label>
                         <input
+                            onChange={registerChange}
                             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none"
                             id="password"
                             name="password"
@@ -65,7 +75,7 @@ const RegisterForm = ({ register }: { register: Function }) => {
                     <div className="flex justify-end">
                         <button
                             className="bg-blue-600 hover:bg-blue-700 duration-200 text-white py-2 px-4 rounded"
-                            type="button"
+                            type="submit"
                         >
                             Register
                         </button>
