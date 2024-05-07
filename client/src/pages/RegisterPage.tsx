@@ -12,7 +12,6 @@ const RegisterPage = () => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(credentials),
-                credentials: "include",
             }),
             await fetch("http://127.0.0.1:8000/login/", {
                 method: "POST",
@@ -24,7 +23,15 @@ const RegisterPage = () => {
             }),
         ]);
 
-        navigate("/");
+        const registerStatus = response[0];
+        const loginStatus = response[1];
+        console.log(registerStatus.json());
+        console.log(loginStatus.json());
+
+        if (registerStatus.ok && loginStatus.ok) {
+            localStorage.setItem("loggedIn", "true");
+            navigate("/");
+        }
     };
 
     return (
