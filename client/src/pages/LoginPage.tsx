@@ -11,6 +11,7 @@ const LoginPage = () => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify(credentials),
+            credentials: "include",
         });
 
         const data = await response.json();

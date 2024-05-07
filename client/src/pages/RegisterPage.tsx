@@ -5,19 +5,26 @@ const RegisterPage = () => {
     const navigate = useNavigate();
 
     const register = async (credentials: Object) => {
-        const response = await fetch("http://127.0.0.1:8000/register/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(credentials),
-        });
+        const response = await Promise.all([
+            await fetch("http://127.0.0.1:8000/register/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(credentials),
+                credentials: "include",
+            }),
+            await fetch("http://127.0.0.1:8000/login/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(credentials),
+                credentials: "include",
+            }),
+        ]);
 
-        const data = await response.json();
-        if (response.ok) {
-            navigate("/");
-        }
-        console.log(data.message);
+        navigate("/");
     };
 
     return (
