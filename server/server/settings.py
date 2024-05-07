@@ -35,15 +35,17 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DJANGO_DEBUG", "") != "False"
 
+AUTH_USER_MODEL = "users.User"
+
 ALLOWED_HOSTS = ["127.0.0.1", ".herokuapp.com", ".wangowen.com"]
-
-CSRF_TRUSTED_ORIGINS = ["https://*.wangowen.com"]
-
-CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:8000"]
 
 CORS_ALLOW_CREDENTIALS = True
 
-AUTH_USER_MODEL = "users.User"
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    CORS_ALLOWED_ORIGINS = ["https://*.wangowen.com"]
+    CSRF_TRUSTED_ORIGINS = ["https://*.wangowen.com"]
 
 
 # Application definition
@@ -68,8 +70,8 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
