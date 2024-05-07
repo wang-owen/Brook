@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model, authenticate, login, logout
 from rest_framework import status
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.decorators import api_view
 from users.serializers import UserSerializer
 
 
@@ -34,7 +34,7 @@ def login_view(request):
     )
 
 
-@api_view(["GET"])
+@api_view(["POST"])
 def logout_view(request):
     logout(request)
     return Response({"message": "Logged out"}, status=status.HTTP_200_OK)
