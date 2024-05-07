@@ -15,10 +15,12 @@ const LoginPage = () => {
         });
 
         const data = await response.json();
+        console.log(data.message);
+
         if (response.ok) {
+            localStorage.setItem("loggedIn", "true");
             navigate("/");
         }
-        console.log(data.message);
     };
 
     return (

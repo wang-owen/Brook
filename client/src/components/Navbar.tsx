@@ -31,6 +31,40 @@ const Navbar = ({ height }: { height: number }) => {
         return null;
     };
 
+    const LogoutButton = ({ loggedIn }: { loggedIn: boolean }) => {
+        if (loggedIn) {
+            return (
+                <button
+                    className={linkClass}
+                    onClick={async () => {
+                        const response = await fetch(
+                            "http://127.0.0.1:8000/logout/",
+                            {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-CSRFToken": Cookies.get("csrftoken"),
+                                },
+                                credentials: "include",
+                            }
+                        );
+
+                        const data = await response.json();
+                        console.log(data.message);
+
+                        if (response.ok) {
+                            localStorage.removeItem("loggedIn");
+                            navigate("/");
+                        }
+                    }}
+                >
+                    Logout
+                </button>
+            );
+        }
+        return null;
+    };
+
     return (
         <header className="fixed top-0 w-full bg-gray-500 flex justify-center shadow-xl">
             <nav
@@ -59,37 +93,7 @@ const Navbar = ({ height }: { height: number }) => {
                         label="Login"
                         path={"/login" as unknown as Path}
                     />
-                    <LoggedInItem
-                        showIfLoggedIn={true}
-                        loggedIn={loggedIn}
-                        label="Logout"
-                        path={"/logout" as unknown as Path}
-                    />
-                    <button
-                        onClick={async () => {
-                            const response = await fetch(
-                                "http://127.0.0.1:8000/logout/",
-                                {
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json",
-                                        "X-CSRFToken": Cookies.get("csrftoken"),
-                                    },
-                                    credentials: "include",
-                                }
-                            );
-
-                            const data = await response.json();
-                            console.log(data.message);
-
-                            if (response.ok) {
-                                localStorage.removeItem("loggedIn");
-                                navigate("/");
-                            }
-                        }}
-                    >
-                        Logout
-                    </button>
+                    <LogoutButton loggedIn={loggedIn} />
                 </div>
             </nav>
         </header>
