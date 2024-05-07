@@ -1,9 +1,36 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, Path, useNavigate } from "react-router-dom";
 import favicon from "../assets/img/favicon.png";
+import Cookies from "js-cookie";
 
 const Navbar = ({ height }: { height: number }) => {
+    const navigate = useNavigate();
+
+    const loggedIn = localStorage.getItem("loggedIn") === "true";
+
     const linkClass =
         "text-white hover:bg-gray-600 duration-200 rounded-md px-3 py-2";
+
+    const LoggedInItem = ({
+        showIfLoggedIn,
+        loggedIn,
+        label,
+        path,
+    }: {
+        showIfLoggedIn: Boolean;
+        loggedIn: Boolean;
+        label: String;
+        path: Path;
+    }) => {
+        if (showIfLoggedIn === loggedIn) {
+            return (
+                <NavLink to={path} className={linkClass}>
+                    {label}
+                </NavLink>
+            );
+        }
+        return null;
+    };
+
     return (
         <header className="fixed top-0 w-full bg-gray-500 flex justify-center shadow-xl">
             <nav
@@ -20,12 +47,49 @@ const Navbar = ({ height }: { height: number }) => {
                     <NavLink to="/" className={linkClass}>
                         Brew
                     </NavLink>
-                    <NavLink to="/login" className={linkClass}>
-                        Login
-                    </NavLink>
-                    <NavLink to="/register" className={linkClass}>
-                        Register
-                    </NavLink>
+                    <LoggedInItem
+                        showIfLoggedIn={false}
+                        loggedIn={loggedIn}
+                        label="Register"
+                        path={"/register" as unknown as Path}
+                    />
+                    <LoggedInItem
+                        showIfLoggedIn={false}
+                        loggedIn={loggedIn}
+                        label="Login"
+                        path={"/login" as unknown as Path}
+                    />
+                    <LoggedInItem
+                        showIfLoggedIn={true}
+                        loggedIn={loggedIn}
+                        label="Logout"
+                        path={"/logout" as unknown as Path}
+                    />
+                    <button
+                        onClick={async () => {
+                            const response = await fetch(
+                                "http://127.0.0.1:8000/logout/",
+                                {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "X-CSRFToken": Cookies.get("csrftoken"),
+                                    },
+                                    credentials: "include",
+                                }
+                            );
+
+                            const data = await response.json();
+                            console.log(data.message);
+
+                            if (response.ok) {
+                                localStorage.removeItem("loggedIn");
+                                navigate("/");
+                            }
+                        }}
+                    >
+                        Logout
+                    </button>
                 </div>
             </nav>
         </header>
