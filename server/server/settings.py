@@ -43,6 +43,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
+    CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:3000"]
 else:
     CORS_ALLOWED_ORIGINS = ["https://*.wangowen.com"]
     CSRF_TRUSTED_ORIGINS = ["https://*.wangowen.com"]
