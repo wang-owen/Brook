@@ -9,22 +9,3 @@ Brook is a web app which allows users to download YouTube and Spotify tracks as 
 * When watched playlists are updated, a zip file containing any new tracks are downloaded.
 
 *Try it here:* [brook.wangowen.com](https://brook.wangowen.com/)
-
-# Usage
-Clone the repository
-```
-git clone https://github.com/wang-owen/Brook.git
-```
-
-cd into the project directory and install requirements
-```
-pip install -r requirements.txt
-```
-Add your YouTube API and Spotify Client ID and Secret to your environment variables
-
-Run the command
-```
-python manage.py runserver
-```
-
-Go to `http://127.0.0.1:8000/` in your browser
