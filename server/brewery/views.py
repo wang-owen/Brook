@@ -25,37 +25,46 @@ def brew(request):
         # Log the download
         if request.user.is_authenticated and (music_data := util.get_data(link)):
             # Determine if playlist
-            if playlist_data := music_data.get("playlistData"):
-                # Determine if playlist exists in user watchlist
+            playlist = None
+            playlist_instance = None
+            if playlist_data := music_data.get("playlist_data"):
+                playlist_data["watcher"] = request.user.id
                 try:
                     # Update playlist
                     playlist = Playlist.objects.get(
-                        watcher=request.user, playlist_id=playlist_data["id"]
+                        watcher=request.user,
+                        playlist_id=playlist_data.get("playlist_id"),
                     )
                     serializer = PlaylistSerializer(playlist, data=playlist_data)
-                    if serializer.is_valid():
-                        serializer.save()
-                    else:
-                        return Response(
-                            serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                        )
-                    exists = True
                 except Playlist.DoesNotExist:
                     # Create playlist
                     serializer = PlaylistSerializer(data=playlist_data)
+
+                if serializer.is_valid():
+                    playlist_instance = serializer.save()
+                else:
+                    print(serializer.errors)
+                    return Response(
+                        serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                # Add tracks to playlist
+                playlist_tracks = playlist_data.get("tracks")
+                for track_data in playlist_tracks:
+                    track_data["playlist"] = playlist_instance.pk  # type: ignore
+                    serializer = TrackSerializer(data=track_data)
                     if serializer.is_valid():
                         serializer.save()
                     else:
+                        print(serializer.errors)
                         return Response(
                             serializer.errors, status=status.HTTP_400_BAD_REQUEST
                         )
-                    exists = False
 
             return Response(
                 {
                     "path": str(path),
                     "pk": playlist.pk if playlist else None,
-                    "playlistExists": exists if exists else None,
                     "musicData": (
                         # Music data returned if logged in and link valid
                         music_data
@@ -92,7 +101,10 @@ class PlaylistList(APIView):
     # List all watched playlists by user
     def get(self, request, *args, **kwargs):
         return Response(
-            Playlist.objects.filter(watcher=self.request.user),
+            [
+                PlaylistSerializer(playlist).data
+                for playlist in Playlist.objects.filter(watcher=self.request.user)
+            ],
             status=status.HTTP_200_OK,
         )
 
@@ -104,7 +116,7 @@ class PlaylistList(APIView):
             playlistSerializer = PlaylistSerializer(
                 data={
                     "watcher": self.request.user,
-                    "playlist_id": data.get("id"),
+                    "playlist_id": data.get("playlist_id"),
                     "link": link,
                     "platform": data.get("platform"),
                     "name": data.get("name"),
@@ -119,7 +131,7 @@ class PlaylistList(APIView):
                     trackSeralizer = TrackSerializer(
                         data={
                             "playlist": playlist,
-                            "track_id": data.get("id"),
+                            "track_id": data.get("track_id"),
                             "name": data.get("name"),
                             "artist": data.get("artist"),
                             "platform": data.get("platform"),

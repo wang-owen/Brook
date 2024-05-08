@@ -1,9 +1,9 @@
-from django.http import FileResponse
 import sys, os, base64, shutil, requests, yt_dlp
 from datetime import datetime
 from pathlib import Path
-from dotenv import load_dotenv
+from django.http import FileResponse
 from django.conf import settings
+from dotenv import load_dotenv
 
 PLAYLIST = "playlist"
 PLAYLIST_URLS = ["list", "playlist", "album"]
@@ -113,10 +113,10 @@ def get_data(link):
     return {
         "platform": platform,
         "contentType": content_type,
-        "playlistData": (
+        "playlist_data": (
             get_playlist_data(link, platform) if content_type == PLAYLIST else None
         ),
-        "trackData": (
+        "track_data": (
             get_track_data(link, platform) if content_type == TRACK else None
         ),
     }
@@ -303,7 +303,7 @@ def _get_youtube_playlist_data(link):
             track_artist = item["snippet"]["videoOwnerChannelTitle"].split(" - ")[0]
             tracks.append(
                 {
-                    "id": track_id,
+                    "track_id": track_id,
                     "name": track_name,
                     "artist": track_artist,
                     "platform": YOUTUBE,
@@ -314,7 +314,7 @@ def _get_youtube_playlist_data(link):
             break
 
     return {
-        "id": playlist_id,
+        "playlist_id": playlist_id,
         "link": link,
         "name": playlist_name,
         "owner": playlist_owner,
@@ -348,7 +348,7 @@ def _get_youtube_track_data(link):
     track_artist = response.json()["items"][0]["snippet"]["channelTitle"]
 
     return {
-        "id": track_id,
+        "playlist_id": track_id,
         "name": track_title,
         "artist": track_artist,
         "platform": YOUTUBE,
@@ -374,7 +374,7 @@ def _get_spotify_track_data(link):
     artist = response.json()["artists"][0]["name"]
 
     return {
-        "id": track_id,
+        "track_id": track_id,
         "name": name,
         "artist": artist,
         "platform": SPOTIFY,
@@ -404,7 +404,7 @@ def _get_spotify_playlist_data(link):
         artist = item["track"]["artists"][0]["name"]
         tracks.append(
             {
-                "id": item["track"]["id"],
+                "track_id": item["track"]["id"],
                 "name": name,
                 "artist": artist,
                 "platform": SPOTIFY,
@@ -412,7 +412,7 @@ def _get_spotify_playlist_data(link):
         )
 
     return {
-        "id": playlist_id,
+        "playlist_id": playlist_id,
         "link": link,
         "name": response.json()["name"],
         "owner": response.json()["owner"]["display_name"],
@@ -451,7 +451,6 @@ def _download_youtube_track(link, file_format, dir_):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         path = ydl.prepare_filename(ydl.extract_info(link, download=True))
 
-        print(path)
         return Path(path)
 
 
