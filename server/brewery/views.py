@@ -1,8 +1,9 @@
 from django.http import Http404
-from rest_framework import status, generics, mixins, permissions
+from rest_framework import status, permissions
+from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
-from rest_framework.response import Response
+from rest_framework.reverse import reverse
 from . import util
 from brewery.models import Playlist
 from brewery.serializers import PlaylistSerializer, TrackSerializer
@@ -19,7 +20,6 @@ def brew(request):
             {"message": "Link not provided"},
             status=status.HTTP_400_BAD_REQUEST,
         )
-
     # Download music
     if path := util.brew(link, file_format):
         # Log the download
@@ -147,9 +147,7 @@ class PlaylistList(APIView):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
-class PlaylistDetail(
-    generics.GenericAPIView, mixins.RetrieveModelMixin, mixins.DestroyModelMixin
-):
+class PlaylistDetail(APIView):
     """
     Retrieve, update, or delete a playlist instance.
     """
@@ -164,8 +162,8 @@ class PlaylistDetail(
         except Playlist.DoesNotExist:
             raise Http404
 
-    def get(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
+    def get(self, request, playlist_id):
+        return Response(self.get_object(playlist_id), status=status.HTTP_200_OK)
 
     def put(self, request, playlist_id):
         playlist = self.get_object(playlist_id)
@@ -209,5 +207,6 @@ class PlaylistDetail(
 
         return Response(status=status.HTTP_200_OK)
 
-    def delete(self, request, *args, **kwargs):
-        return self.destroy(request, *args, **kwargs)
+    def delete(self, request, playlist_id):
+        Playlist.delete(self.get_object(playlist_id))
+        return Response(status=status.HTTP_204_NO_CONTENT)
