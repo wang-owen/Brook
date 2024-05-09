@@ -3,22 +3,27 @@ import Playlist from "../interfaces/Playlist";
 
 const SavedPlaylist = ({ playlist }: { playlist: Playlist }) => {
     const download = async () => {
-        const response = await fetch(
-            `http://127.0.0.1:8000/playlist/${playlist.playlist_id}`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": Cookies.get("csrftoken") || "",
-                },
-                credentials: "include",
-            }
-        );
+        const response = await fetch("http://127.0.0.1:8000/brew/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": Cookies.get("csrftoken") || "",
+            },
+            body: JSON.stringify({
+                link: playlist.link,
+                fileFormat: "m4a",
+            }),
+            credentials: "include",
+        });
 
         const data = await response.json();
         console.log(data);
+
         if (response.ok) {
-            return data.path;
+            if (data.path) {
+                window.location.href =
+                    "http://127.0.0.1:8000/download/" + data.path;
+            }
         }
     };
     const update = async () => {
@@ -36,11 +41,30 @@ const SavedPlaylist = ({ playlist }: { playlist: Playlist }) => {
 
         const data = await response.json();
         console.log(data);
-        if (response.ok) {
+        if (!response.ok) {
+            // Display error toast
         }
     };
     const remove = async () => {
-        return;
+        const response = await fetch(
+            `http://127.0.0.1:8000/playlist/${playlist.playlist_id}`,
+            {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": Cookies.get("csrftoken") || "",
+                },
+                credentials: "include",
+            }
+        );
+
+        const data = await response.json();
+        console.log(data);
+        if (response.ok) {
+            // Display success toast
+        } else {
+            // Display error toast
+        }
     };
 
     const buttonClass =
