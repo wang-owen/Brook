@@ -43,7 +43,8 @@ const Navbar = ({ height }: { height: number }) => {
                                 method: "POST",
                                 headers: {
                                     "Content-Type": "application/json",
-                                    "X-CSRFToken": Cookies.get("csrftoken"),
+                                    "X-CSRFToken":
+                                        Cookies.get("csrftoken") || "",
                                 },
                                 credentials: "include",
                             }
