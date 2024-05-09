@@ -171,19 +171,25 @@ class PlaylistDetail(
         playlist = self.get_object(playlist_id)
         # Retrieve new information from server and update playlist
         data = util.get_data(playlist.link)
-        updated_tracklist = data.get("playlistData", {}).get("tracks")
+        updated_tracklist = data.get("playlist_data", {}).get("tracks")
 
         # Delete any removed tracks
-        for track in playlist.tracks.all():
-            if track.track_id not in updated_tracklist:
+        for track in playlist.tracks.all():  # type: ignore
+            present = False
+            for track2 in updated_tracklist:
+                if track.track_id == track2.get("track_id"):
+                    present = True
+                    break
+            if not present:
                 track.delete()
+                print(f"{track.name} removed from tracklist.")
 
         # Add any new tracks
         for track in updated_tracklist:
-            if not playlist.filter(track_id=track["track_id"]).exists():  # type: ignore
+            if not playlist.tracks.filter(track_id=track["track_id"]).exists():  # type: ignore
                 trackSerializer = TrackSerializer(
                     data={
-                        "playlist": playlist,
+                        "playlist": playlist.pk,
                         "track_id": track["track_id"],
                         "name": track["name"],
                         "artist": track["artist"],
@@ -192,6 +198,9 @@ class PlaylistDetail(
                 )
                 if trackSerializer.is_valid():
                     trackSerializer.save()
+                    print(f"{track['name']} added to tracklist")
+                else:
+                    print(trackSerializer.errors)
 
         # Update playlist data
         playlistSerializer = PlaylistSerializer(playlist, data=data)
