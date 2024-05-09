@@ -100,11 +100,12 @@ class PlaylistList(APIView):
 
     # List all watched playlists by user
     def get(self, request, *args, **kwargs):
+        playlists = [
+            PlaylistSerializer(playlist).data
+            for playlist in Playlist.objects.filter(watcher=self.request.user)
+        ]
         return Response(
-            [
-                PlaylistSerializer(playlist).data
-                for playlist in Playlist.objects.filter(watcher=self.request.user)
-            ],
+            playlists,
             status=status.HTTP_200_OK,
         )
 
@@ -157,17 +158,17 @@ class PlaylistDetail(
     serializer_class = PlaylistSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_object(self, pk):
+    def get_object(self, playlist_id):
         try:
-            return Playlist.objects.get(pk=pk)
+            return Playlist.objects.get(playlist_id=playlist_id)
         except Playlist.DoesNotExist:
             raise Http404
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
 
-    def put(self, request, pk):
-        playlist = self.get_object(pk)
+    def put(self, request, playlist_id):
+        playlist = self.get_object(playlist_id)
         # Retrieve new information from server and update playlist
         data = util.get_data(playlist.link)
         updated_tracklist = data.get("playlistData", {}).get("tracks")

@@ -1,3 +1,4 @@
+import Cookies from "js-cookie";
 import BrewHero from "../components/BrewHero";
 import SavedPlaylists from "../components/SavedPlaylists";
 
@@ -7,18 +8,20 @@ const BrewPage = () => {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "X-CSRFToken": Cookies.get("csrftoken") || "",
             },
             body: JSON.stringify({
                 link: link,
                 fileFormat: "m4a",
             }),
+            credentials: "include",
         });
 
         const data = await response.json();
+        console.log(data);
+
         if (response.ok) {
             return data.path;
-        } else {
-            console.log(data.message);
         }
     };
 
