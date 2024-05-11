@@ -4,7 +4,7 @@ import BrewHero from "../components/BrewHero";
 import SavedPlaylists from "../components/SavedPlaylists";
 import Playlist from "../interfaces/Playlist";
 
-const BrewPage = () => {
+const BrewPage = ({ loggedIn }: { loggedIn: boolean }) => {
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
 
     const getBrewData = async (link: string) => {
@@ -29,10 +29,7 @@ const BrewPage = () => {
 
         if (response.ok) {
             if (data) {
-                if (
-                    localStorage.getItem("loggedIn") === "true" &&
-                    data.musicData.contentType === "playlist"
-                ) {
+                if (loggedIn && data.musicData.contentType === "playlist") {
                     const p = data.musicData.playlist_data;
                     setPlaylists([
                         {
@@ -139,18 +136,22 @@ const BrewPage = () => {
             const data = await getPlaylists();
             setPlaylists(data);
         };
-        fetchData();
+        if (loggedIn) {
+            fetchData();
+        }
     }, []);
 
     return (
         <>
             <BrewHero getBrewData={getBrewData} />
-            <SavedPlaylists
-                playlists={playlists}
-                watchPlaylist={watchPlaylist}
-                handlePlaylistUpdate={handlePlaylistUpdate}
-                handlePlaylistRemove={handlePlaylistRemove}
-            />
+            {loggedIn ? (
+                <SavedPlaylists
+                    playlists={playlists}
+                    watchPlaylist={watchPlaylist}
+                    handlePlaylistUpdate={handlePlaylistUpdate}
+                    handlePlaylistRemove={handlePlaylistRemove}
+                />
+            ) : null}
         </>
     );
 };

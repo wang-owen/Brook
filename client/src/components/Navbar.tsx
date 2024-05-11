@@ -2,10 +2,14 @@ import { NavLink, Path, useNavigate } from "react-router-dom";
 import favicon from "../assets/img/favicon.png";
 import Cookies from "js-cookie";
 
-const Navbar = ({ height }: { height: number }) => {
+const Navbar = ({
+    loggedIn,
+    height,
+}: {
+    loggedIn: boolean;
+    height: number;
+}) => {
     const navigate = useNavigate();
-
-    const loggedIn = localStorage.getItem("loggedIn") === "true";
 
     const linkClass =
         "text-white hover:bg-gray-600 duration-200 rounded-md px-3 py-2";
@@ -54,7 +58,6 @@ const Navbar = ({ height }: { height: number }) => {
                         console.log(data.message);
 
                         if (response.ok) {
-                            localStorage.removeItem("loggedIn");
                             navigate("/");
                         }
                     }}
