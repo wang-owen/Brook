@@ -57,12 +57,17 @@ PLAYLISTS_DIR = MUSIC_DIR / "Playlists"
 TRACKS_DIR = MUSIC_DIR / "Tracks"
 DEFAULT_FILE_FORMAT = "m4a"
 
-if not MUSIC_DIR.exists():
-    MUSIC_DIR.mkdir()
-if not PLAYLISTS_DIR.exists():
-    PLAYLISTS_DIR.mkdir()
-if not TRACKS_DIR.exists():
-    TRACKS_DIR.mkdir()
+
+def _mkdirs():
+    if not MUSIC_DIR.exists():
+        MUSIC_DIR.mkdir()
+    if not PLAYLISTS_DIR.exists():
+        PLAYLISTS_DIR.mkdir()
+    if not TRACKS_DIR.exists():
+        TRACKS_DIR.mkdir()
+
+
+_mkdirs()
 
 
 def _get_platform(link):
@@ -87,6 +92,8 @@ def _get_content_type(link):
 
 
 def brew(link, file_format):
+    _mkdirs()
+
     platform = _get_platform(link)
     content_type = _get_content_type(link)
 
