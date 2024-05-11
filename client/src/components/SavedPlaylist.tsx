@@ -1,7 +1,15 @@
 import Cookies from "js-cookie";
 import Playlist from "../interfaces/Playlist";
 
-const SavedPlaylist = ({ playlist }: { playlist: Playlist }) => {
+const SavedPlaylist = ({
+    playlist,
+    onUpdate,
+    onRemove,
+}: {
+    playlist: Playlist;
+    onUpdate: (updatedPlaylist: Playlist) => void;
+    onRemove: (removedPlaylistId: string) => void;
+}) => {
     const download = async () => {
         const response = await fetch("http://127.0.0.1:8000/brew/", {
             method: "POST",
@@ -16,8 +24,11 @@ const SavedPlaylist = ({ playlist }: { playlist: Playlist }) => {
             credentials: "include",
         });
 
-        const data = await response.json();
-        console.log(data);
+        let data = null;
+        if (response.headers.get("Content-Type") !== null) {
+            data = await response.json();
+            console.log(data);
+        }
 
         if (response.ok) {
             if (data.path) {
@@ -39,11 +50,15 @@ const SavedPlaylist = ({ playlist }: { playlist: Playlist }) => {
             }
         );
 
-        const data = await response.json();
-        console.log(data);
+        if (response.headers.get("Content-Type") !== null) {
+            const data = await response.json();
+            console.log(data);
+        }
+
         if (!response.ok) {
             // Display error toast
         }
+        onUpdate(playlist); // Update the playlist in the parent component
     };
     const remove = async () => {
         const response = await fetch(
@@ -58,13 +73,17 @@ const SavedPlaylist = ({ playlist }: { playlist: Playlist }) => {
             }
         );
 
-        const data = await response.json();
-        console.log(data);
+        if (response.headers.get("Content-Type") !== null) {
+            const data = await response.json();
+            console.log(data);
+        }
+
         if (response.ok) {
             // Display success toast
         } else {
             // Display error toast
         }
+        onRemove(playlist.playlist_id); // Remove the playlist from the parent component
     };
 
     const buttonClass =

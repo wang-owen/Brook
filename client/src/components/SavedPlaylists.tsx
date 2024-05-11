@@ -42,6 +42,24 @@ const SavedPlaylists = () => {
         fetchData();
     }, []);
 
+    const handlePlaylistUpdate = async (updatedPlaylist: Playlist) => {
+        // Update the playlist in state
+        const updatedPlaylists = playlists.map((playlist) =>
+            playlist.playlist_id === updatedPlaylist.playlist_id
+                ? updatedPlaylist
+                : playlist
+        );
+        setPlaylists(updatedPlaylists);
+    };
+
+    const handlePlaylistRemove = async (removedPlaylistId: string) => {
+        // Remove the playlist from state
+        const updatedPlaylists = playlists.filter(
+            (playlist) => playlist.playlist_id !== removedPlaylistId
+        );
+        setPlaylists(updatedPlaylists);
+    };
+
     return (
         <>
             <section>
@@ -50,6 +68,8 @@ const SavedPlaylists = () => {
                         <SavedPlaylist
                             key={playlist.playlist_id}
                             playlist={playlist}
+                            onUpdate={handlePlaylistUpdate}
+                            onRemove={handlePlaylistRemove}
                         />
                     ))}
                 </div>
