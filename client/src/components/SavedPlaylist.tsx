@@ -73,7 +73,7 @@ const SavedPlaylist = ({
             }
         );
 
-        if (response.headers.get("Content-Type") !== null) {
+        if (response.headers.get("Content-Type") === "application/json") {
             const data = await response.json();
             console.log(data);
         }
