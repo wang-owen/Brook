@@ -63,7 +63,7 @@ def brew(request):
                 {
                     "path": str(path),
                     "pk": playlist.pk if playlist else None,  # type: ignore
-                    "musicData": (
+                    "music_data": (
                         # Music data returned if logged in and link valid
                         music_data
                         if request.user.is_authenticated
@@ -123,15 +123,15 @@ class PlaylistList(APIView):
                     playlist_id=playlist_data.get("playlist_id"),
                 ):
                     return Response(playlist_data, status.HTTP_409_CONFLICT)
-                playlistSerializer = PlaylistSerializer(
+                playlist_serializer = PlaylistSerializer(
                     data={"watcher": self.request.user.pk, **playlist_data}
                 )
-                if playlistSerializer.is_valid():
-                    playlist = playlistSerializer.save()
+                if playlist_serializer.is_valid():
+                    playlist = playlist_serializer.save()
                 else:
-                    print(playlistSerializer.errors)
+                    print(playlist_serializer.errors)
                     return Response(
-                        playlistSerializer.errors, status=status.HTTP_400_BAD_REQUEST
+                        playlist_serializer.errors, status=status.HTTP_400_BAD_REQUEST
                     )
 
                 if trackData := playlist_data.get("tracks"):
@@ -196,29 +196,29 @@ class PlaylistDetail(APIView):
         for track in updated_tracklist:
             if not playlist.tracks.filter(track_id=track["track_id"]).exists():  # type: ignore
                 new_tracks.append(track)
-                trackSerializer = TrackSerializer(
+                track_serializer = TrackSerializer(
                     data={"playlist": playlist.pk, **track},
                 )
-                if trackSerializer.is_valid():
-                    trackSerializer.save()
+                if track_serializer.is_valid():
+                    track_serializer.save()
                     print(f"{track['name']} added to tracklist")
                 else:
-                    print(trackSerializer.errors)
+                    print(track_serializer.errors)
                     return Response(
-                        trackSerializer.errors, status=status.HTTP_400_BAD_REQUEST
+                        track_serializer.errors, status=status.HTTP_400_BAD_REQUEST
                     )
 
         # Update playlist data
-        playlistSerializer = PlaylistSerializer(
+        playlist_serializer = PlaylistSerializer(
             playlist,
             data={"watcher": self.request.user.pk, **playlist_data},
         )
-        if playlistSerializer.is_valid():
-            playlistSerializer.save()
+        if playlist_serializer.is_valid():
+            playlist_serializer.save()
         else:
-            print(playlistSerializer.errors)
+            print(playlist_serializer.errors)
             return Response(
-                playlistSerializer.errors, status=status.HTTP_400_BAD_REQUEST
+                playlist_serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
 
         path = None
