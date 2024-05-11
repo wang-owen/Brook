@@ -26,7 +26,6 @@ def brew(request):
         if request.user.is_authenticated and (music_data := util.get_data(link)):
             # Determine if playlist
             playlist = None
-            playlist_instance = None
             if playlist_data := music_data.get("playlist_data"):
                 playlist_data["watcher"] = request.user.id
                 try:
@@ -41,7 +40,7 @@ def brew(request):
                     serializer = PlaylistSerializer(data=playlist_data)
 
                 if serializer.is_valid():
-                    playlist_instance = serializer.save()
+                    playlist = serializer.save()
                 else:
                     print(serializer.errors)
                     return Response(
@@ -51,7 +50,7 @@ def brew(request):
                 # Add tracks to playlist
                 playlist_tracks = playlist_data.get("tracks")
                 for track_data in playlist_tracks:
-                    track_data["playlist"] = playlist_instance.pk  # type: ignore
+                    track_data["playlist"] = playlist.pk  # type: ignore
                     serializer = TrackSerializer(data=track_data)
                     if serializer.is_valid():
                         serializer.save()
@@ -64,13 +63,15 @@ def brew(request):
             return Response(
                 {
                     "path": str(path),
-                    "pk": playlist.pk if playlist else None,
+                    "pk": playlist.pk if playlist else None,  # type: ignore
                     "musicData": (
                         # Music data returned if logged in and link valid
                         music_data
                         if request.user.is_authenticated
-                        and music_data.get("playlistData")
-                        or music_data.get("trackData")
+                        and (
+                            music_data.get("playlist_data")
+                            or music_data.get("track_data")
+                        )
                         else None
                     ),
                 },
@@ -102,7 +103,9 @@ class PlaylistList(APIView):
     def get(self, request, *args, **kwargs):
         playlists = [
             PlaylistSerializer(playlist).data
-            for playlist in Playlist.objects.filter(watcher=self.request.user)
+            for playlist in Playlist.objects.filter(watcher=self.request.user).order_by(
+                "-last_modified"
+            )
         ]
         return Response(
             playlists,
@@ -209,4 +212,4 @@ class PlaylistDetail(APIView):
 
     def delete(self, request, playlist_id):
         Playlist.delete(self.get_object(playlist_id))
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({"message": "Playlist removed"}, status=status.HTTP_200_OK)
