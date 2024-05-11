@@ -29,8 +29,8 @@ const BrewPage = ({ loggedIn }: { loggedIn: boolean }) => {
 
         if (response.ok) {
             if (data) {
-                if (loggedIn && data.musicData.contentType === "playlist") {
-                    const p = data.musicData.playlist_data;
+                if (loggedIn && data.music_data.contentType === "playlist") {
+                    const p = data.music_data.playlist_data;
                     setPlaylists([
                         {
                             playlist_id: p.playlist_id,
