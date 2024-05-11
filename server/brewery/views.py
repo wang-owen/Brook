@@ -117,34 +117,48 @@ class PlaylistList(APIView):
         link = request.data.get("link")
         data = util.get_data(link)
         if data.get("contentType") == util.PLAYLIST:
-            playlistSerializer = PlaylistSerializer(
-                data={
-                    "watcher": self.request.user,
-                    "playlist_id": data.get("playlist_id"),
-                    "link": link,
-                    "platform": data.get("platform"),
-                    "name": data.get("name"),
-                    "owner": data.get("owner"),
-                }
-            )
-            if playlistSerializer.is_valid():
-                playlist = playlistSerializer.save()
-
-            if trackData := data.get("trackData"):
-                for data in trackData:
-                    trackSeralizer = TrackSerializer(
-                        data={
-                            "playlist": playlist,
-                            "track_id": data.get("track_id"),
-                            "name": data.get("name"),
-                            "artist": data.get("artist"),
-                            "platform": data.get("platform"),
-                        }
+            if playlistData := data.get("playlist_data"):
+                playlistSerializer = PlaylistSerializer(
+                    data={
+                        "playlist_id": playlistData.get("playlist_id"),
+                        "watcher": self.request.user.pk,
+                        "name": playlistData.get("name"),
+                        "owner": playlistData.get("owner"),
+                        "link": link,
+                        "platform": playlistData.get("platform"),
+                        "thumbnail": playlistData.get("thumbnail"),
+                    }
+                )
+                if playlistSerializer.is_valid():
+                    playlist = playlistSerializer.save()
+                else:
+                    print(playlistSerializer.errors)
+                    return Response(
+                        playlistSerializer.errors, status=status.HTTP_400_BAD_REQUEST
                     )
-                    if trackSeralizer.is_valid():
-                        trackSeralizer.save()
 
-            return Response(status=status.HTTP_201_CREATED)
+                if trackData := playlistData.get("tracks"):
+                    print(trackData)
+                    for track in trackData:
+                        trackSeralizer = TrackSerializer(
+                            data={
+                                "track_id": track.get("track_id"),
+                                "playlist": playlist.pk,  # type: ignore
+                                "name": track.get("name"),
+                                "artist": track.get("artist"),
+                                "platform": track.get("platform"),
+                            }
+                        )
+                        if trackSeralizer.is_valid():
+                            trackSeralizer.save()
+                        else:
+                            print(trackSeralizer.errors)
+                            return Response(
+                                trackSeralizer.errors,
+                                status=status.HTTP_400_BAD_REQUEST,
+                            )
+
+                return Response(playlistData, status=status.HTTP_201_CREATED)
 
         # Link is not a playlist
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)

@@ -80,6 +80,41 @@ const BrewPage = () => {
         return playlists;
     };
 
+    const watchPlaylist = async (link: string) => {
+        const response = await fetch("http://127.0.0.1:8000/playlist/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": Cookies.get("csrftoken") || "",
+            },
+            body: JSON.stringify({
+                link: link,
+            }),
+            credentials: "include",
+        });
+
+        let data = null;
+        if (response.headers.get("Content-Type") !== null) {
+            data = await response.json();
+            console.log(data);
+        }
+
+        if (response.ok) {
+            setPlaylists([
+                {
+                    playlist_id: data.playlist_id,
+                    name: data.name,
+                    owner: data.owner,
+                    link: data.link,
+                    platform: data.platform,
+                    thumbnail: data.thumbnail,
+                    last_modified: data.last_modified,
+                },
+                ...playlists,
+            ]);
+        }
+    };
+
     const handlePlaylistUpdate = async (updatedPlaylist: Playlist) => {
         // Update the playlist in state
         setPlaylists([
@@ -112,6 +147,7 @@ const BrewPage = () => {
             <BrewHero getBrewData={getBrewData} />
             <SavedPlaylists
                 playlists={playlists}
+                watchPlaylist={watchPlaylist}
                 handlePlaylistUpdate={handlePlaylistUpdate}
                 handlePlaylistRemove={handlePlaylistRemove}
             />
