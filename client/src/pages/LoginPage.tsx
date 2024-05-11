@@ -18,7 +18,6 @@ const LoginPage = () => {
         console.log(data.message);
 
         if (response.ok) {
-            localStorage.setItem("loggedIn", "true");
             navigate("/");
         }
     };

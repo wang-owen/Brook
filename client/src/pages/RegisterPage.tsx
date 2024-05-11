@@ -29,7 +29,6 @@ const RegisterPage = () => {
         console.log(loginStatus.json());
 
         if (registerStatus.ok && loginStatus.ok) {
-            localStorage.setItem("loggedIn", "true");
             navigate("/");
         }
     };
