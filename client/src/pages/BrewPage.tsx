@@ -96,20 +96,25 @@ const BrewPage = ({ loggedIn }: { loggedIn: boolean }) => {
             console.log(data);
         }
 
-        if (response.ok) {
-            setPlaylists([
-                {
-                    playlist_id: data.playlist_id,
-                    name: data.name,
-                    owner: data.owner,
-                    link: data.link,
-                    platform: data.platform,
-                    thumbnail: data.thumbnail,
-                    last_modified: data.last_modified,
-                },
-                ...playlists,
-            ]);
+        if (!response.ok) {
+            setPlaylists(
+                playlists.filter(
+                    (playlist) => playlist.playlist_id !== data.playlist_id
+                )
+            );
         }
+        setPlaylists([
+            {
+                playlist_id: data.playlist_id,
+                name: data.name,
+                owner: data.owner,
+                link: data.link,
+                platform: data.platform,
+                thumbnail: data.thumbnail,
+                last_modified: data.last_modified,
+            },
+            ...playlists,
+        ]);
     };
 
     const handlePlaylistUpdate = async (updatedPlaylist: Playlist) => {
@@ -136,9 +141,9 @@ const BrewPage = ({ loggedIn }: { loggedIn: boolean }) => {
             const data = await getPlaylists();
             setPlaylists(data);
         };
-        if (loggedIn) {
-            fetchData();
-        }
+        // if (loggedIn) {
+        fetchData();
+        // }
     }, []);
 
     return (

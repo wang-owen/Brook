@@ -11,7 +11,7 @@ const BrewHero = ({
     const brewSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
 
-        const path: Promise<string> = getBrewData(link);
+        const path: string = await getBrewData(link);
         if (path) {
             window.location.href = "http://127.0.0.1:8000/download/" + path;
         }
