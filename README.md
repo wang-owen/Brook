@@ -4,8 +4,6 @@
 
 Brook is a web app which allows users to download YouTube and Spotify tracks as well as entire playlists.
 * Users may create accounts and save playlists
-* Playlists are automatically added to *Recent Playlists* when downloaded as long as user is logged in
-* Added playlists keep track of new and removed tracks since its last update
-* When watched playlists are updated, a zip file containing any new tracks are downloaded.
-
-*Try it here:* [brook.wangowen.com](https://brook.wangowen.com/)
+* Playlists are automatically added to *Saved Playlists* when downloaded as long as user is logged in
+* Saved playlists track changes any changes to the playlist
+* When saved playlists are "updated", a zip file containing any new tracks are downloaded.
