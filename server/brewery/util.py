@@ -91,24 +91,33 @@ def _get_content_type(link):
     return None
 
 
-def brew(link, file_format):
+def brew(
+    link=None, new_tracks=None, playlist_name=None, platform=None, file_format="m4a"
+):
     _mkdirs()
 
-    platform = _get_platform(link)
-    content_type = _get_content_type(link)
+    if link:
+        platform = _get_platform(link)
+        content_type = _get_content_type(link)
 
-    # Invalid link
-    if not platform or not content_type:
-        return False
-
-    try:
-        if content_type == PLAYLIST:
-            return download_playlist(link, file_format, platform)
-        elif content_type == TRACK:
-            return download_track(link, file_format, platform)
-    except (KeyError, IndexError):
         # Invalid link
-        return False
+        if not platform or not content_type:
+            return False
+
+        try:
+            if content_type == PLAYLIST:
+                return download_playlist(link, file_format, platform)
+            elif content_type == TRACK:
+                return download_track(link, file_format, platform)
+        except (KeyError, IndexError):
+            # Invalid link
+            return False
+    elif new_tracks:
+        try:
+            return download_new_tracks(new_tracks, playlist_name, platform, file_format)
+        except (KeyError, IndexError):
+            # Invalid link
+            return False
 
     return False
 
@@ -180,17 +189,45 @@ def download_playlist(link, file_format, platform):
     return False
 
 
-def download_track(link, file_format, platform):
-    dir_ = TRACKS_DIR / datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
-    if dir_.exists():
-        return False
-    dir_.mkdir()
+def download_track(link, file_format, platform, dir_=None):
+    if not dir_:
+        dir_ = TRACKS_DIR / datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
+        if dir_.exists():
+            return False
+        dir_.mkdir()
 
     if platform == YOUTUBE:
         return _download_youtube_track(link, file_format, dir_)
     elif platform == SPOTIFY:
         return _download_spotify_track(link, file_format, dir_)
     return False
+
+
+def download_new_tracks(new_tracks, playlist_name, platform, file_format):
+    dir_ = PLAYLISTS_DIR / datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
+    if dir_.exists():
+        return False
+    dir_.mkdir()
+
+    # playlist_name = _get_youtube_playlist_data(link)["name"]
+    playlist_name = f"{playlist_name}-UPDATED"
+    # Remove illegal filename characters from playlist name
+    for char in ILLEGAL_CHARS:
+        playlist_name = playlist_name.replace(char, "-")
+    playlist_dir = dir_ / playlist_name
+
+    for track in new_tracks:
+        download_track(
+            _get_track_link(platform, track.get("track_id")),
+            file_format,
+            platform,
+            dir_=playlist_dir,
+        )
+
+    path = shutil.make_archive(str(playlist_dir), "zip", playlist_dir)
+    shutil.rmtree(playlist_dir)
+
+    return Path(path)
 
 
 def get_playlist_data(link, platform):

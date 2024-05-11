@@ -3,7 +3,6 @@ from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
-from rest_framework.reverse import reverse
 from . import util
 from brewery.models import Playlist
 from brewery.serializers import PlaylistSerializer, TrackSerializer
@@ -21,7 +20,7 @@ def brew(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
     # Download music
-    if path := util.brew(link, file_format):
+    if path := util.brew(link=link, file_format=file_format):
         # Log the download
         if request.user.is_authenticated and (music_data := util.get_data(link)):
             # Determine if playlist
@@ -117,17 +116,15 @@ class PlaylistList(APIView):
         link = request.data.get("link")
         data = util.get_data(link)
         if data.get("contentType") == util.PLAYLIST:
-            if playlistData := data.get("playlist_data"):
+            if playlist_data := data.get("playlist_data"):
+                # Playlist is already saved
+                if Playlist.objects.filter(
+                    watcher=self.request.user,
+                    playlist_id=playlist_data.get("playlist_id"),
+                ):
+                    return Response(playlist_data, status.HTTP_409_CONFLICT)
                 playlistSerializer = PlaylistSerializer(
-                    data={
-                        "playlist_id": playlistData.get("playlist_id"),
-                        "watcher": self.request.user.pk,
-                        "name": playlistData.get("name"),
-                        "owner": playlistData.get("owner"),
-                        "link": link,
-                        "platform": playlistData.get("platform"),
-                        "thumbnail": playlistData.get("thumbnail"),
-                    }
+                    data={"watcher": self.request.user.pk, **playlist_data}
                 )
                 if playlistSerializer.is_valid():
                     playlist = playlistSerializer.save()
@@ -137,17 +134,10 @@ class PlaylistList(APIView):
                         playlistSerializer.errors, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                if trackData := playlistData.get("tracks"):
-                    print(trackData)
+                if trackData := playlist_data.get("tracks"):
                     for track in trackData:
                         trackSeralizer = TrackSerializer(
-                            data={
-                                "track_id": track.get("track_id"),
-                                "playlist": playlist.pk,  # type: ignore
-                                "name": track.get("name"),
-                                "artist": track.get("artist"),
-                                "platform": track.get("platform"),
-                            }
+                            data={"playlist": playlist.pk, **track}  # type: ignore
                         )
                         if trackSeralizer.is_valid():
                             trackSeralizer.save()
@@ -158,7 +148,7 @@ class PlaylistList(APIView):
                                 status=status.HTTP_400_BAD_REQUEST,
                             )
 
-                return Response(playlistData, status=status.HTTP_201_CREATED)
+                return Response(playlist_data, status=status.HTTP_201_CREATED)
 
         # Link is not a playlist
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -182,11 +172,13 @@ class PlaylistDetail(APIView):
     def get(self, request, playlist_id):
         return Response(self.get_object(playlist_id), status=status.HTTP_200_OK)
 
+    # Update playlist
     def put(self, request, playlist_id):
         playlist = self.get_object(playlist_id)
         # Retrieve new information from server and update playlist
         data = util.get_data(playlist.link)
-        updated_tracklist = data.get("playlist_data", {}).get("tracks")
+        playlist_data = data.get("playlist_data", {})
+        updated_tracklist = playlist_data.get("tracks")
 
         # Delete any removed tracks
         for track in playlist.tracks.all():  # type: ignore
@@ -200,29 +192,43 @@ class PlaylistDetail(APIView):
                 print(f"{track.name} removed from tracklist.")
 
         # Add any new tracks
+        new_tracks = []
         for track in updated_tracklist:
             if not playlist.tracks.filter(track_id=track["track_id"]).exists():  # type: ignore
+                new_tracks.append(track)
                 trackSerializer = TrackSerializer(
-                    data={
-                        "playlist": playlist.pk,
-                        "track_id": track["track_id"],
-                        "name": track["name"],
-                        "artist": track["artist"],
-                        "platform": track["platform"],
-                    },
+                    data={"playlist": playlist.pk, **track},
                 )
                 if trackSerializer.is_valid():
                     trackSerializer.save()
                     print(f"{track['name']} added to tracklist")
                 else:
                     print(trackSerializer.errors)
+                    return Response(
+                        trackSerializer.errors, status=status.HTTP_400_BAD_REQUEST
+                    )
 
         # Update playlist data
-        playlistSerializer = PlaylistSerializer(playlist, data=data)
+        playlistSerializer = PlaylistSerializer(
+            playlist,
+            data={"watcher": self.request.user.pk, **playlist_data},
+        )
         if playlistSerializer.is_valid():
             playlistSerializer.save()
+        else:
+            print(playlistSerializer.errors)
+            return Response(
+                playlistSerializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
 
-        return Response(status=status.HTTP_200_OK)
+        path = None
+        if len(new_tracks) > 0:
+            path = util.brew(
+                new_tracks=new_tracks,
+                playlist_name=playlist_data.get("name"),
+                platform=data.get("platform"),
+            )
+        return Response({"path": str(path)}, status=status.HTTP_200_OK)
 
     def delete(self, request, playlist_id):
         Playlist.delete(self.get_object(playlist_id))

@@ -50,12 +50,18 @@ const SavedPlaylist = ({
             }
         );
 
+        let data = null;
         if (response.headers.get("Content-Type") !== null) {
-            const data = await response.json();
+            data = await response.json();
             console.log(data);
         }
 
-        if (!response.ok) {
+        if (response.ok) {
+            if (data.path) {
+                window.location.href =
+                    "http://127.0.0.1:8000/download/" + data.path;
+            }
+        } else {
             // Display error toast
         }
         onUpdate(playlist); // Update the playlist in the parent component
