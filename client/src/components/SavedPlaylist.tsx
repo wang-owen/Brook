@@ -8,7 +8,7 @@ const SavedPlaylist = ({
 }: {
     playlist: Playlist;
     onUpdate: (updatedPlaylist: Playlist) => void;
-    onRemove: (removedPlaylistId: string) => void;
+    onRemove: (removedPlaylistID: string) => void;
 }) => {
     const download = async () => {
         const response = await fetch("http://127.0.0.1:8000/brew/", {
@@ -64,7 +64,7 @@ const SavedPlaylist = ({
         } else {
             // Display error toast
         }
-        onUpdate(playlist); // Update the playlist in the parent component
+        onUpdate(data.playlist_data); // Update the playlist in the parent component
     };
     const remove = async () => {
         const response = await fetch(
@@ -101,7 +101,8 @@ const SavedPlaylist = ({
                     <img
                         className="w-full"
                         src={playlist.thumbnail.toString()}
-                        alt="Thumbnail"
+                        key={playlist.thumbnail.toString()}
+                        alt={`${playlist.name} thumbnail`}
                     />
                     <div className="px-6 pt-4 pb-2 text-center font-semibold">
                         <span>{playlist.name}</span>

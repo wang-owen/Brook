@@ -5,7 +5,6 @@ interface Playlist {
     link: URL;
     thumbnail: URL;
     platform: string;
-    last_modified: Date;
 }
 
 export default Playlist;

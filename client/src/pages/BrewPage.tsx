@@ -39,7 +39,6 @@ const BrewPage = ({ loggedIn }: { loggedIn: boolean }) => {
                             link: p.link,
                             platform: p.platform,
                             thumbnail: p.thumbnail,
-                            last_modified: p.last_modified,
                         },
                         ...playlists,
                     ]);
@@ -70,7 +69,6 @@ const BrewPage = ({ loggedIn }: { loggedIn: boolean }) => {
                     link: p.link,
                     platform: p.platform,
                     thumbnail: p.thumbnail,
-                    last_modified: p.last_modified,
                 });
             });
         }
@@ -90,11 +88,8 @@ const BrewPage = ({ loggedIn }: { loggedIn: boolean }) => {
             credentials: "include",
         });
 
-        let data = null;
-        if (response.headers.get("Content-Type") !== null) {
-            data = await response.json();
-            console.log(data);
-        }
+        const data = await response.json();
+        console.log(data);
 
         if (!response.ok) {
             setPlaylists(
@@ -111,7 +106,6 @@ const BrewPage = ({ loggedIn }: { loggedIn: boolean }) => {
                 link: data.link,
                 platform: data.platform,
                 thumbnail: data.thumbnail,
-                last_modified: data.last_modified,
             },
             ...playlists,
         ]);
@@ -119,19 +113,23 @@ const BrewPage = ({ loggedIn }: { loggedIn: boolean }) => {
 
     const handlePlaylistUpdate = async (updatedPlaylist: Playlist) => {
         // Update the playlist in state
-        setPlaylists([
-            updatedPlaylist,
-            ...playlists.filter(
-                (playlist) =>
-                    playlist.playlist_id !== updatedPlaylist.playlist_id
-            ),
-        ]);
+        setTimeout(
+            () =>
+                setPlaylists([
+                    updatedPlaylist,
+                    ...playlists.filter(
+                        (playlist) =>
+                            playlist.playlist_id !== updatedPlaylist.playlist_id
+                    ),
+                ]),
+            1 // thumbnail doesn't update unless delay, temp fix
+        );
     };
 
-    const handlePlaylistRemove = async (removedPlaylistId: string) => {
+    const handlePlaylistRemove = async (removedPlaylistID: string) => {
         // Remove the playlist from state
         const updatedPlaylists = playlists.filter(
-            (playlist) => playlist.playlist_id !== removedPlaylistId
+            (playlist) => playlist.playlist_id !== removedPlaylistID
         );
         setPlaylists(updatedPlaylists);
     };
