@@ -11,7 +11,7 @@ const SavedPlaylists = ({
     playlists: Playlist[];
     watchPlaylist: (link: string) => void;
     handlePlaylistUpdate: (updatedPlaylist: Playlist) => void;
-    handlePlaylistRemove: (removedPlaylistId: string) => void;
+    handlePlaylistRemove: (removedPlaylistID: string) => void;
 }) => {
     const [showInput, setShowInput] = useState(false);
     const [watchLink, setWatchLink] = useState("");

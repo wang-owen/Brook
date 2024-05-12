@@ -170,7 +170,10 @@ class PlaylistDetail(APIView):
             raise Http404
 
     def get(self, request, playlist_id):
-        return Response(self.get_object(playlist_id), status=status.HTTP_200_OK)
+        return Response(
+            PlaylistSerializer(self.get_object(playlist_id)).data,
+            status=status.HTTP_200_OK,
+        )
 
     # Update playlist
     def put(self, request, playlist_id):
@@ -228,7 +231,10 @@ class PlaylistDetail(APIView):
                 playlist_name=playlist_data.get("name"),
                 platform=data.get("platform"),
             )
-        return Response({"path": str(path)}, status=status.HTTP_200_OK)
+        return Response(
+            {"path": str(path) if path else None, "playlist_data": playlist_data},
+            status=status.HTTP_200_OK,
+        )
 
     def delete(self, request, playlist_id):
         Playlist.delete(self.get_object(playlist_id))
