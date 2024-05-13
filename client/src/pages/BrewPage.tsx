@@ -3,6 +3,7 @@ import Cookies from "js-cookie";
 import BrewHero from "../components/BrewHero";
 import SavedPlaylists from "../components/SavedPlaylists";
 import Playlist from "../interfaces/Playlist";
+import { toast } from "react-toastify";
 
 const BrewPage = ({ loggedIn }: { loggedIn: boolean }) => {
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -109,6 +110,8 @@ const BrewPage = ({ loggedIn }: { loggedIn: boolean }) => {
             },
             ...playlists,
         ]);
+
+        toast.success("Playlist saved");
     };
 
     const handlePlaylistUpdate = async (updatedPlaylist: Playlist) => {
@@ -132,6 +135,7 @@ const BrewPage = ({ loggedIn }: { loggedIn: boolean }) => {
             (playlist) => playlist.playlist_id !== removedPlaylistID
         );
         setPlaylists(updatedPlaylists);
+        toast.success("Playlist removed");
     };
 
     useEffect(() => {

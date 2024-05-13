@@ -1,7 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import LoginForm from "../components/LoginForm";
+import { toast } from "react-toastify";
 
-const LoginPage = () => {
+const LoginPage = ({
+    setLoggedIn,
+}: {
+    setLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
     const navigate = useNavigate();
 
     const login = async (credentials: Object) => {
@@ -18,7 +23,9 @@ const LoginPage = () => {
         console.log(data.message);
 
         if (response.ok) {
+            setLoggedIn(true);
             navigate("/");
+            toast.success("Logged in");
         }
     };
 

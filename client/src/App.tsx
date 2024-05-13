@@ -38,10 +38,21 @@ const App = () => {
 
     const router = createBrowserRouter(
         createRoutesFromElements(
-            <Route path="/" element={<MainLayout loggedIn={loggedIn} />}>
+            <Route
+                path="/"
+                element={
+                    <MainLayout loggedIn={loggedIn} setLoggedIn={setLoggedIn} />
+                }
+            >
                 <Route index element={<BrewPage loggedIn={loggedIn} />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/login" element={<LoginPage />} />
+                <Route
+                    path="/register"
+                    element={<RegisterPage setLoggedIn={setLoggedIn} />}
+                />
+                <Route
+                    path="/login"
+                    element={<LoginPage setLoggedIn={setLoggedIn} />}
+                />
             </Route>
         )
     );
