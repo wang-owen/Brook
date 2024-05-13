@@ -34,7 +34,7 @@ const App = () => {
             }
         };
         fetchLoggedIn();
-    }, []);
+    }, [loggedIn]);
 
     const router = createBrowserRouter(
         createRoutesFromElements(

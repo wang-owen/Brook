@@ -143,10 +143,10 @@ const BrewPage = ({ loggedIn }: { loggedIn: boolean }) => {
             const data = await getPlaylists();
             setPlaylists(data);
         };
-        // if (loggedIn) {
-        fetchData();
-        // }
-    }, []);
+        if (loggedIn) {
+            fetchData();
+        }
+    }, [loggedIn]);
 
     return (
         <>
