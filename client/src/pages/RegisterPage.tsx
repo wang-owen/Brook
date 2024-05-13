@@ -1,7 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import RegisterForm from "../components/RegisterForm";
+import { toast } from "react-toastify";
 
-const RegisterPage = () => {
+const RegisterPage = ({
+    setLoggedIn,
+}: {
+    setLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
     const navigate = useNavigate();
 
     const register = async (credentials: Object) => {
@@ -29,7 +34,9 @@ const RegisterPage = () => {
         console.log(loginStatus.json());
 
         if (registerStatus.ok && loginStatus.ok) {
+            setLoggedIn(true);
             navigate("/");
+            toast.success("Registered");
         }
     };
 

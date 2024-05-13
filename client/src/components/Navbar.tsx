@@ -1,13 +1,16 @@
 import { NavLink, Path, useNavigate } from "react-router-dom";
 import favicon from "../assets/img/favicon.png";
 import Cookies from "js-cookie";
+import { toast } from "react-toastify";
 
 const Navbar = ({
-    loggedIn,
     height,
+    loggedIn,
+    setLoggedIn,
 }: {
-    loggedIn: boolean;
     height: number;
+    loggedIn: boolean;
+    setLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
     const navigate = useNavigate();
 
@@ -58,7 +61,9 @@ const Navbar = ({
                         console.log(data.message);
 
                         if (response.ok) {
+                            setLoggedIn(false);
                             navigate("/");
+                            toast.success("Logged out");
                         }
                     }}
                 >
