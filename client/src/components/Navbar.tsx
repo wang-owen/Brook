@@ -4,18 +4,16 @@ import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 
 const Navbar = ({
-    height,
     loggedIn,
     setLoggedIn,
 }: {
-    height: number;
     loggedIn: boolean;
     setLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
     const navigate = useNavigate();
 
     const linkClass =
-        "text-white hover:bg-gray-600 duration-200 rounded-md px-3 py-2";
+        "text-white text-sm hover:bg-gray-600 hover:text-base duration-200 rounded-sm px-3 py-2";
 
     const LoggedInItem = ({
         showIfLoggedIn,
@@ -76,9 +74,7 @@ const Navbar = ({
 
     return (
         <header className="fixed top-0 w-full bg-gray-500 flex justify-center shadow-xl">
-            <nav
-                className={`flex h-${height} w-2/3 items-center justify-between`}
-            >
+            <nav className={`flex h-full w-2/3 items-center justify-between`}>
                 {/* <!-- Logo --> */}
                 <NavLink className="flex items-center" to="/">
                     <img className="h-10 w-auto" src={favicon} alt="Brook" />
