@@ -11,14 +11,9 @@ const MainLayout = ({
     loggedIn: boolean;
     setLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-    const navbarHeight: number = 12;
     return (
         <>
-            <Navbar
-                height={navbarHeight}
-                loggedIn={loggedIn}
-                setLoggedIn={setLoggedIn}
-            />
+            <Navbar loggedIn={loggedIn} setLoggedIn={setLoggedIn} />
             <Outlet />
             <Footer />
             <ToastContainer />
