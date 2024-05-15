@@ -20,12 +20,12 @@ const BrewHero = ({
     };
 
     const [inputHover, setInputHover] = useState(false);
-    const formClass = `bg-gray-900 rounded-lg p-3 py-2 shadow-2xl w-${
-        inputHover ? "1/2" : "1/5"
-    } duration-1000`;
-    const inputClass = `absolute h-0 mt-9 w-${
-        inputHover ? "full" : "0"
-    } border-white border-b-2 hover:w-full duration-1000 ease-in-out`;
+    const formClass = `bg-gray-900 rounded-lg p-3 py-2 shadow-2xl duration-1000 ${
+        inputHover ? "w-1/2" : "w-1/5"
+    }`;
+    const inputBar = `absolute h-0 mt-9 border-white border-b-2 hover:w-full duration-1000 ease-in-out ${
+        inputHover ? "w-full" : "w-0"
+    }`;
 
     return (
         <section>
@@ -55,7 +55,7 @@ const BrewHero = ({
                                         setInputHover(!inputHover);
                                     }}
                                 />
-                                <div className={inputClass}></div>
+                                <div className={inputBar}></div>
                                 <button
                                     className="bg-blue-600 hover:bg-blue-700 -blue-600 hover:-blue-700 duration-200 text-sm -4 text-white rounded-lg float-right px-4 py-2"
                                     type="submit"
