@@ -48,11 +48,17 @@ const BrewHero = ({
                                     onChange={(event) => {
                                         setLink(event.target.value);
                                     }}
+                                    onFocus={() => {
+                                        setInputHover(true);
+                                    }}
+                                    onBlur={() => {
+                                        setInputHover(false);
+                                    }}
                                     onMouseOver={() => {
-                                        setInputHover(!inputHover);
+                                        setInputHover(true);
                                     }}
                                     onMouseOut={() => {
-                                        setInputHover(!inputHover);
+                                        setInputHover(false);
                                     }}
                                 />
                                 <div className={inputBar}></div>
