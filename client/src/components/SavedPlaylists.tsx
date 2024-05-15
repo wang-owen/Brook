@@ -55,11 +55,17 @@ const SavedPlaylists = ({
                                         onChange={(event) => {
                                             setWatchLink(event.target.value);
                                         }}
+                                        onFocus={() => {
+                                            setInputHover(true);
+                                        }}
+                                        onBlur={() => {
+                                            setInputHover(false);
+                                        }}
                                         onMouseOver={() => {
-                                            setInputHover(!inputHover);
+                                            setInputHover(true);
                                         }}
                                         onMouseOut={() => {
-                                            setInputHover(!inputHover);
+                                            setInputHover(false);
                                         }}
                                     />
                                     <div className={inputClass}></div>
