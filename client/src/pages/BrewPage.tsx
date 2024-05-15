@@ -90,28 +90,24 @@ const BrewPage = ({ loggedIn }: { loggedIn: boolean }) => {
         });
 
         const data = await response.json();
-        console.log(data);
+        // console.log(data);
 
-        if (!response.ok) {
-            setPlaylists(
-                playlists.filter(
-                    (playlist) => playlist.playlist_id !== data.playlist_id
-                )
-            );
+        if (response.ok) {
+            setPlaylists([
+                {
+                    playlist_id: data.playlist_id,
+                    name: data.name,
+                    owner: data.owner,
+                    link: data.link,
+                    platform: data.platform,
+                    thumbnail: data.thumbnail,
+                },
+                ...playlists,
+            ]);
+            toast.success("Playlist saved");
+        } else {
+            toast.error("Playlist already exists");
         }
-        setPlaylists([
-            {
-                playlist_id: data.playlist_id,
-                name: data.name,
-                owner: data.owner,
-                link: data.link,
-                platform: data.platform,
-                thumbnail: data.thumbnail,
-            },
-            ...playlists,
-        ]);
-
-        toast.success("Playlist saved");
     };
 
     const handlePlaylistUpdate = async (updatedPlaylist: Playlist) => {
