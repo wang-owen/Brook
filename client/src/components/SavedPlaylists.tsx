@@ -80,7 +80,7 @@ const SavedPlaylists = ({
                         ) : null}
                     </div>
                 </div>
-                <div className="m-4 grid grid-cols-4 gap-4 justify-evenly justify-items-center items-center content-center">
+                <div className="m-4 grid grid-cols-5 gap-5 justify-evenly justify-items-center items-center content-center">
                     {playlists.map((playlist) => (
                         <SavedPlaylist
                             key={playlist.playlist_id}
