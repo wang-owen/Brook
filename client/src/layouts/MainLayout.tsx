@@ -10,7 +10,7 @@ const MainLayout = ({}: {}) => {
             <Navbar />
             <Outlet />
             <Footer />
-            <ToastContainer />
+            <ToastContainer newestOnTop />
         </>
     );
 };

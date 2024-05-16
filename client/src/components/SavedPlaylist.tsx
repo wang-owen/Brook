@@ -34,7 +34,6 @@ const SavedPlaylist = ({
         let data = null;
         if (response.headers.get("Content-Type") !== null) {
             data = await response.json();
-            console.log(data);
         }
 
         if (response.ok) {
@@ -63,7 +62,6 @@ const SavedPlaylist = ({
         let data = null;
         if (response.headers.get("Content-Type") !== null) {
             data = await response.json();
-            console.log(data);
         }
 
         if (response.ok) {
@@ -71,35 +69,30 @@ const SavedPlaylist = ({
                 window.location.href =
                     "http://127.0.0.1:8000/download/" + data.path;
             }
-        } else {
-            // Display error toast
+            // Update the playlist in the parent component
+            onUpdate(data.playlist_data);
         }
-        onUpdate(data.playlist_data); // Update the playlist in the parent component
     };
     const remove = async () => {
-        const response = await fetch(
-            `http://127.0.0.1:8000/playlist/${playlist.playlist_id}`,
-            {
+        const response = await toast.promise(
+            fetch(`http://127.0.0.1:8000/playlist/${playlist.playlist_id}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
                     "X-CSRFToken": Cookies.get("csrftoken") || "",
                 },
                 credentials: "include",
+            }),
+            {
+                pending: "Removing playlist...",
+                success: `${String.fromCodePoint(0x1f4a3)} Playlist removed`,
             }
         );
 
-        if (response.headers.get("Content-Type") === "application/json") {
-            const data = await response.json();
-            console.log(data);
-        }
-
         if (response.ok) {
-            toast.success(`${String.fromCodePoint(0x1f4a3)} Playlist removed`);
-        } else {
-            // Display error toast
+            // Remove playlist from parent component
+            onRemove(playlist.playlist_id);
         }
-        onRemove(playlist.playlist_id); // Remove the playlist from the parent component
     };
 
     const buttonClass =
