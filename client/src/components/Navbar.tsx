@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { NavLink, Path, useNavigate } from "react-router-dom";
-import favicon from "../assets/img/favicon.png";
+import navbarIcon from "../assets/img/navbar-icon.png";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import { LoginContext } from "../App.jsx";
@@ -75,7 +75,7 @@ const Navbar = () => {
             <nav className={`flex h-full w-2/3 items-center justify-between`}>
                 {/* <!-- Logo --> */}
                 <NavLink className="flex items-center" to="/">
-                    <img className="h-10 w-auto" src={favicon} alt="Brook" />
+                    <img className="h-10 w-auto" src={navbarIcon} alt="Brook" />
                     <span className="text-white text-2xl font-bold ml-2 mt-0.5 hover:opacity-50 duration-200">
                         Brook
                     </span>
