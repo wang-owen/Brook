@@ -39,9 +39,8 @@ const Navbar = () => {
                 <button
                     className={linkClass}
                     onClick={async () => {
-                        const response = await fetch(
-                            "http://127.0.0.1:8000/logout/",
-                            {
+                        const response = await toast.promise(
+                            fetch("http://127.0.0.1:8000/logout/", {
                                 method: "POST",
                                 headers: {
                                     "Content-Type": "application/json",
@@ -49,18 +48,18 @@ const Navbar = () => {
                                         Cookies.get("csrftoken") || "",
                                 },
                                 credentials: "include",
+                            }),
+                            {
+                                pending: "Logging out...",
+                                success: `${String.fromCodePoint(
+                                    0x1f4a4
+                                )} Logged out`,
                             }
                         );
-
-                        const data = await response.json();
-                        console.log(data.message);
 
                         if (response.ok) {
                             setLoggedIn(false);
                             navigate("/");
-                            toast.success(
-                                `${String.fromCodePoint(0x1f4a4)} Logged out`
-                            );
                         }
                     }}
                 >
@@ -72,7 +71,7 @@ const Navbar = () => {
     };
 
     return (
-        <header className="fixed top-0 w-full bg-gray-500 flex justify-center shadow-xl">
+        <header className="fixed top-0 w-full bg-gray-500 flex justify-center shadow-xl z-10">
             <nav className={`flex h-full w-2/3 items-center justify-between`}>
                 {/* <!-- Logo --> */}
                 <NavLink className="flex items-center" to="/">

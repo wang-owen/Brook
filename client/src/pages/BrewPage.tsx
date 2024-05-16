@@ -34,7 +34,6 @@ const BrewPage = () => {
         let data = null;
         if (response.headers.get("Content-Type") !== null) {
             data = await response.json();
-            console.log(data);
         }
 
         if (response.ok) {
@@ -86,17 +85,22 @@ const BrewPage = () => {
     };
 
     const watchPlaylist = async (link: string) => {
-        const response = await fetch("http://127.0.0.1:8000/playlist/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": Cookies.get("csrftoken") || "",
-            },
-            body: JSON.stringify({
-                link: link,
+        const response = await toast.promise(
+            fetch("http://127.0.0.1:8000/playlist/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": Cookies.get("csrftoken") || "",
+                },
+                body: JSON.stringify({
+                    link: link,
+                }),
+                credentials: "include",
             }),
-            credentials: "include",
-        });
+            {
+                pending: "Retrieving playlist data...",
+            }
+        );
 
         let data = null;
         if (response.headers.get("Content-Type") !== null) {
@@ -115,7 +119,7 @@ const BrewPage = () => {
                 },
                 ...playlists,
             ]);
-            toast.success(`${String.fromCodePoint(0x1f4be)} Playlist saved`);
+            toast.success(`${String.fromCodePoint(0x1f4be)} Playlist saved!`);
         } else if (response.status === 409) {
             toast.error("Playlist already exists");
         } else {
