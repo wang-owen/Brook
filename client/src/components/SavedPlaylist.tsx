@@ -1,5 +1,6 @@
 import Cookies from "js-cookie";
 import Playlist from "../interfaces/Playlist";
+import { toast } from "react-toastify";
 
 const SavedPlaylist = ({
     playlist,
@@ -11,18 +12,24 @@ const SavedPlaylist = ({
     onRemove: (removedPlaylistID: string) => void;
 }) => {
     const download = async () => {
-        const response = await fetch("http://127.0.0.1:8000/brew/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": Cookies.get("csrftoken") || "",
-            },
-            body: JSON.stringify({
-                link: playlist.link,
-                fileFormat: "m4a",
+        const response = await toast.promise(
+            fetch("http://127.0.0.1:8000/brew/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": Cookies.get("csrftoken") || "",
+                },
+                body: JSON.stringify({
+                    link: playlist.link,
+                    fileFormat: "m4a",
+                }),
+                credentials: "include",
             }),
-            credentials: "include",
-        });
+            {
+                pending: `${String.fromCodePoint(0x1f3bb)} Brewing music...`,
+                success: `${String.fromCodePoint(0x1f3a7)} Music downloaded!`,
+            }
+        );
 
         let data = null;
         if (response.headers.get("Content-Type") !== null) {
@@ -38,15 +45,18 @@ const SavedPlaylist = ({
         }
     };
     const update = async () => {
-        const response = await fetch(
-            `http://127.0.0.1:8000/playlist/${playlist.playlist_id}`,
-            {
+        const response = await toast.promise(
+            fetch(`http://127.0.0.1:8000/playlist/${playlist.playlist_id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                     "X-CSRFToken": Cookies.get("csrftoken") || "",
                 },
                 credentials: "include",
+            }),
+            {
+                pending: "Updating playlist...",
+                success: `${String.fromCodePoint(0x1f3a7)} Playlist updated!`,
             }
         );
 
@@ -85,7 +95,7 @@ const SavedPlaylist = ({
         }
 
         if (response.ok) {
-            // Display success toast
+            toast.success(`${String.fromCodePoint(0x1f4a3)} Playlist removed`);
         } else {
             // Display error toast
         }

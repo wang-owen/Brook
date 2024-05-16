@@ -1,12 +1,11 @@
+import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import RegisterForm from "../components/RegisterForm";
 import { toast } from "react-toastify";
+import RegisterForm from "../components/RegisterForm";
+import { LoginContext } from "../App.jsx";
 
-const RegisterPage = ({
-    setLoggedIn,
-}: {
-    setLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
-}) => {
+const RegisterPage = () => {
+    const { setLoggedIn } = useContext(LoginContext);
     const navigate = useNavigate();
 
     const register = async (credentials: Object) => {
@@ -36,7 +35,7 @@ const RegisterPage = ({
         if (registerStatus.ok && loginStatus.ok) {
             setLoggedIn(true);
             navigate("/");
-            toast.success("Registered");
+            toast.success(`${String.fromCodePoint(0x1f37b)} Registered!`);
         }
     };
 

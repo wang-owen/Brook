@@ -1,26 +1,35 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect, useContext } from "react";
 import Cookies from "js-cookie";
+import { toast } from "react-toastify";
 import BrewHero from "../components/BrewHero";
 import SavedPlaylists from "../components/SavedPlaylists";
 import Playlist from "../interfaces/Playlist";
-import { toast } from "react-toastify";
+import { LoginContext } from "../App.jsx";
 
-const BrewPage = ({ loggedIn }: { loggedIn: boolean }) => {
+const BrewPage = () => {
+    const { loggedIn } = useContext(LoginContext);
+
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
 
     const getBrewData = async (link: string) => {
-        const response = await fetch("http://127.0.0.1:8000/brew/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": Cookies.get("csrftoken") || "",
-            },
-            body: JSON.stringify({
-                link: link,
-                fileFormat: "m4a",
+        const response = await toast.promise(
+            fetch("http://127.0.0.1:8000/brew/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": Cookies.get("csrftoken") || "",
+                },
+                body: JSON.stringify({
+                    link: link,
+                    fileFormat: "m4a",
+                }),
+                credentials: "include",
             }),
-            credentials: "include",
-        });
+            {
+                pending: `${String.fromCodePoint(0x1f3bb)} Brewing music...`,
+                success: `${String.fromCodePoint(0x1f3a7)} Music downloaded!`,
+            }
+        );
 
         let data = null;
         if (response.headers.get("Content-Type") !== null) {
@@ -89,8 +98,10 @@ const BrewPage = ({ loggedIn }: { loggedIn: boolean }) => {
             credentials: "include",
         });
 
-        const data = await response.json();
-        // console.log(data);
+        let data = null;
+        if (response.headers.get("Content-Type") !== null) {
+            data = await response.json();
+        }
 
         if (response.ok) {
             setPlaylists([
@@ -104,9 +115,11 @@ const BrewPage = ({ loggedIn }: { loggedIn: boolean }) => {
                 },
                 ...playlists,
             ]);
-            toast.success("Playlist saved");
-        } else {
+            toast.success(`${String.fromCodePoint(0x1f4be)} Playlist saved`);
+        } else if (response.status === 409) {
             toast.error("Playlist already exists");
+        } else {
+            toast.error("Invalid link");
         }
     };
 
@@ -131,7 +144,6 @@ const BrewPage = ({ loggedIn }: { loggedIn: boolean }) => {
             (playlist) => playlist.playlist_id !== removedPlaylistID
         );
         setPlaylists(updatedPlaylists);
-        toast.success("Playlist removed");
     };
 
     useEffect(() => {

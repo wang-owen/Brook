@@ -1,15 +1,12 @@
+import { useContext } from "react";
 import { NavLink, Path, useNavigate } from "react-router-dom";
 import favicon from "../assets/img/favicon.png";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
+import { LoginContext } from "../App.jsx";
 
-const Navbar = ({
-    loggedIn,
-    setLoggedIn,
-}: {
-    loggedIn: boolean;
-    setLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
-}) => {
+const Navbar = () => {
+    const { loggedIn, setLoggedIn } = useContext(LoginContext);
     const navigate = useNavigate();
 
     const linkClass =
@@ -61,7 +58,9 @@ const Navbar = ({
                         if (response.ok) {
                             setLoggedIn(false);
                             navigate("/");
-                            toast.success("Logged out");
+                            toast.success(
+                                `${String.fromCodePoint(0x1f4a4)} Logged out`
+                            );
                         }
                     }}
                 >
