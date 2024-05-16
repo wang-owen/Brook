@@ -1,12 +1,12 @@
+import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import LoginForm from "../components/LoginForm";
 import { toast } from "react-toastify";
+import { LoginContext } from "../App.jsx";
 
-const LoginPage = ({
-    setLoggedIn,
-}: {
-    setLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
-}) => {
+const LoginPage = () => {
+    const { setLoggedIn } = useContext(LoginContext);
+
     const navigate = useNavigate();
 
     const login = async (credentials: Object) => {
@@ -25,7 +25,9 @@ const LoginPage = ({
         if (response.ok) {
             setLoggedIn(true);
             navigate("/");
-            toast.success("Logged in");
+            toast.success(
+                `${String.fromCodePoint(0x1f44b)} Logged in!`
+            );
         }
     };
 

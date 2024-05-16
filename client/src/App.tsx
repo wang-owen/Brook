@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext } from "react";
 import {
     Route,
     createBrowserRouter,
@@ -10,6 +10,16 @@ import MainLayout from "./layouts/MainLayout";
 import BrewPage from "./pages/BrewPage";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
+
+interface LoginContextProps {
+    loggedIn: boolean;
+    setLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export const LoginContext = createContext<LoginContextProps>({
+    loggedIn: false,
+    setLoggedIn: () => {},
+});
 
 const App = () => {
     const [loggedIn, setLoggedIn] = useState(false);
@@ -38,25 +48,18 @@ const App = () => {
 
     const router = createBrowserRouter(
         createRoutesFromElements(
-            <Route
-                path="/"
-                element={
-                    <MainLayout loggedIn={loggedIn} setLoggedIn={setLoggedIn} />
-                }
-            >
-                <Route index element={<BrewPage loggedIn={loggedIn} />} />
-                <Route
-                    path="/register"
-                    element={<RegisterPage setLoggedIn={setLoggedIn} />}
-                />
-                <Route
-                    path="/login"
-                    element={<LoginPage setLoggedIn={setLoggedIn} />}
-                />
+            <Route path="/" element={<MainLayout />}>
+                <Route index element={<BrewPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/login" element={<LoginPage />} />
             </Route>
         )
     );
-    return <RouterProvider router={router} />;
+    return (
+        <LoginContext.Provider value={{ loggedIn, setLoggedIn }}>
+            <RouterProvider router={router} />
+        </LoginContext.Provider>
+    );
 };
 
 export default App;

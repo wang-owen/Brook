@@ -4,16 +4,10 @@ import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
-const MainLayout = ({
-    loggedIn,
-    setLoggedIn,
-}: {
-    loggedIn: boolean;
-    setLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
-}) => {
+const MainLayout = ({}: {}) => {
     return (
         <>
-            <Navbar loggedIn={loggedIn} setLoggedIn={setLoggedIn} />
+            <Navbar />
             <Outlet />
             <Footer />
             <ToastContainer />
