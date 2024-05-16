@@ -165,7 +165,9 @@ class PlaylistDetail(APIView):
 
     def get_object(self, playlist_id):
         try:
-            return Playlist.objects.get(playlist_id=playlist_id)
+            return Playlist.objects.get(
+                watcher=self.request.user, playlist_id=playlist_id
+            )
         except Playlist.DoesNotExist:
             raise Http404
 
