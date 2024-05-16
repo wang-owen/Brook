@@ -27,7 +27,8 @@ const BrewPage = () => {
             }),
             {
                 pending: `${String.fromCodePoint(0x1f3bb)} Brewing music...`,
-                success: `${String.fromCodePoint(0x1f3a7)} Music downloaded!`,
+                // success: `${String.fromCodePoint(0x1f3a7)} Music downloaded!`,
+                // error: "Invalid link",
             }
         );
 
@@ -53,7 +54,10 @@ const BrewPage = () => {
                     ]);
                 }
             }
+            toast.success(`${String.fromCodePoint(0x1f3a7)} Music downloaded!`);
             return data.path;
+        } else {
+            toast.error("Invalid link");
         }
     };
 
