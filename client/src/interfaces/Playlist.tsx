@@ -1,8 +1,10 @@
 interface Playlist {
-    title: string;
+    playlist_id: string;
+    name: string;
     owner: string;
-    thumbnail: string;
+    link: URL;
+    thumbnail: URL;
     platform: string;
 }
 
-export default Playlist
+export default Playlist;

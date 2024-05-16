@@ -1,14 +1,16 @@
+import { useContext } from "react";
 import { NavLink, Path, useNavigate } from "react-router-dom";
 import favicon from "../assets/img/favicon.png";
 import Cookies from "js-cookie";
+import { toast } from "react-toastify";
+import { LoginContext } from "../App.jsx";
 
-const Navbar = ({ height }: { height: number }) => {
+const Navbar = () => {
+    const { loggedIn, setLoggedIn } = useContext(LoginContext);
     const navigate = useNavigate();
 
-    const loggedIn = localStorage.getItem("loggedIn") === "true";
-
     const linkClass =
-        "text-white hover:bg-gray-600 duration-200 rounded-md px-3 py-2";
+        "text-white text-sm hover:bg-gray-600 hover:text-base duration-200 rounded-sm px-3 py-2";
 
     const LoggedInItem = ({
         showIfLoggedIn,
@@ -37,23 +39,26 @@ const Navbar = ({ height }: { height: number }) => {
                 <button
                     className={linkClass}
                     onClick={async () => {
-                        const response = await fetch(
-                            "http://127.0.0.1:8000/logout/",
-                            {
+                        const response = await toast.promise(
+                            fetch("http://127.0.0.1:8000/logout/", {
                                 method: "POST",
                                 headers: {
                                     "Content-Type": "application/json",
-                                    "X-CSRFToken": Cookies.get("csrftoken"),
+                                    "X-CSRFToken":
+                                        Cookies.get("csrftoken") || "",
                                 },
                                 credentials: "include",
+                            }),
+                            {
+                                pending: "Logging out...",
+                                success: `${String.fromCodePoint(
+                                    0x1f4a4
+                                )} Logged out`,
                             }
                         );
 
-                        const data = await response.json();
-                        console.log(data.message);
-
                         if (response.ok) {
-                            localStorage.removeItem("loggedIn");
+                            setLoggedIn(false);
                             navigate("/");
                         }
                     }}
@@ -66,10 +71,8 @@ const Navbar = ({ height }: { height: number }) => {
     };
 
     return (
-        <header className="fixed top-0 w-full bg-gray-500 flex justify-center shadow-xl">
-            <nav
-                className={`flex h-${height} w-2/3 items-center justify-between`}
-            >
+        <header className="fixed top-0 w-full bg-gray-500 flex justify-center shadow-xl z-10">
+            <nav className={`flex h-full w-2/3 items-center justify-between`}>
                 {/* <!-- Logo --> */}
                 <NavLink className="flex items-center" to="/">
                     <img className="h-10 w-auto" src={favicon} alt="Brook" />

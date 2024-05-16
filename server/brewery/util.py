@@ -1,9 +1,9 @@
-from django.http import FileResponse
 import sys, os, base64, shutil, requests, yt_dlp
 from datetime import datetime
 from pathlib import Path
-from dotenv import load_dotenv
+from django.http import FileResponse
 from django.conf import settings
+from dotenv import load_dotenv
 
 PLAYLIST = "playlist"
 PLAYLIST_URLS = ["list", "playlist", "album"]
@@ -57,12 +57,17 @@ PLAYLISTS_DIR = MUSIC_DIR / "Playlists"
 TRACKS_DIR = MUSIC_DIR / "Tracks"
 DEFAULT_FILE_FORMAT = "m4a"
 
-if not MUSIC_DIR.exists():
-    MUSIC_DIR.mkdir()
-if not PLAYLISTS_DIR.exists():
-    PLAYLISTS_DIR.mkdir()
-if not TRACKS_DIR.exists():
-    TRACKS_DIR.mkdir()
+
+def _mkdirs():
+    if not MUSIC_DIR.exists():
+        MUSIC_DIR.mkdir()
+    if not PLAYLISTS_DIR.exists():
+        PLAYLISTS_DIR.mkdir()
+    if not TRACKS_DIR.exists():
+        TRACKS_DIR.mkdir()
+
+
+_mkdirs()
 
 
 def _get_platform(link):
@@ -86,22 +91,33 @@ def _get_content_type(link):
     return None
 
 
-def brew(link, file_format):
-    platform = _get_platform(link)
-    content_type = _get_content_type(link)
+def brew(
+    link=None, new_tracks=None, playlist_name=None, platform=None, file_format="m4a"
+):
+    _mkdirs()
 
-    # Invalid link
-    if not platform or not content_type:
-        return False
+    if link:
+        platform = _get_platform(link)
+        content_type = _get_content_type(link)
 
-    try:
-        if content_type == PLAYLIST:
-            return download_playlist(link, file_format, platform)
-        elif content_type == TRACK:
-            return download_track(link, file_format, platform)
-    except (KeyError, IndexError):
         # Invalid link
-        return False
+        if not platform or not content_type:
+            return False
+
+        try:
+            if content_type == PLAYLIST:
+                return download_playlist(link, file_format, platform)
+            elif content_type == TRACK:
+                return download_track(link, file_format, platform)
+        except (KeyError, IndexError):
+            # Invalid link
+            return False
+    elif new_tracks:
+        try:
+            return download_new_tracks(new_tracks, playlist_name, platform, file_format)
+        except (KeyError, IndexError):
+            # Invalid link
+            return False
 
     return False
 
@@ -113,10 +129,10 @@ def get_data(link):
     return {
         "platform": platform,
         "contentType": content_type,
-        "playlistData": (
+        "playlist_data": (
             get_playlist_data(link, platform) if content_type == PLAYLIST else None
         ),
-        "trackData": (
+        "track_data": (
             get_track_data(link, platform) if content_type == TRACK else None
         ),
     }
@@ -173,17 +189,45 @@ def download_playlist(link, file_format, platform):
     return False
 
 
-def download_track(link, file_format, platform):
-    dir_ = TRACKS_DIR / datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
-    if dir_.exists():
-        return False
-    dir_.mkdir()
+def download_track(link, file_format, platform, dir_=None):
+    if not dir_:
+        dir_ = TRACKS_DIR / datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
+        if dir_.exists():
+            return False
+        dir_.mkdir()
 
     if platform == YOUTUBE:
         return _download_youtube_track(link, file_format, dir_)
     elif platform == SPOTIFY:
         return _download_spotify_track(link, file_format, dir_)
     return False
+
+
+def download_new_tracks(new_tracks, playlist_name, platform, file_format):
+    dir_ = PLAYLISTS_DIR / datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
+    if dir_.exists():
+        return False
+    dir_.mkdir()
+
+    # playlist_name = _get_youtube_playlist_data(link)["name"]
+    playlist_name = f"{playlist_name}-UPDATED"
+    # Remove illegal filename characters from playlist name
+    for char in ILLEGAL_CHARS:
+        playlist_name = playlist_name.replace(char, "-")
+    playlist_dir = dir_ / playlist_name
+
+    for track in new_tracks:
+        download_track(
+            _get_track_link(platform, track.get("track_id")),
+            file_format,
+            platform,
+            dir_=playlist_dir,
+        )
+
+    path = shutil.make_archive(str(playlist_dir), "zip", playlist_dir)
+    shutil.rmtree(playlist_dir)
+
+    return Path(path)
 
 
 def get_playlist_data(link, platform):
@@ -303,7 +347,7 @@ def _get_youtube_playlist_data(link):
             track_artist = item["snippet"]["videoOwnerChannelTitle"].split(" - ")[0]
             tracks.append(
                 {
-                    "id": track_id,
+                    "track_id": track_id,
                     "name": track_name,
                     "artist": track_artist,
                     "platform": YOUTUBE,
@@ -314,7 +358,7 @@ def _get_youtube_playlist_data(link):
             break
 
     return {
-        "id": playlist_id,
+        "playlist_id": playlist_id,
         "link": link,
         "name": playlist_name,
         "owner": playlist_owner,
@@ -348,7 +392,7 @@ def _get_youtube_track_data(link):
     track_artist = response.json()["items"][0]["snippet"]["channelTitle"]
 
     return {
-        "id": track_id,
+        "playlist_id": track_id,
         "name": track_title,
         "artist": track_artist,
         "platform": YOUTUBE,
@@ -374,7 +418,7 @@ def _get_spotify_track_data(link):
     artist = response.json()["artists"][0]["name"]
 
     return {
-        "id": track_id,
+        "track_id": track_id,
         "name": name,
         "artist": artist,
         "platform": SPOTIFY,
@@ -404,7 +448,7 @@ def _get_spotify_playlist_data(link):
         artist = item["track"]["artists"][0]["name"]
         tracks.append(
             {
-                "id": item["track"]["id"],
+                "track_id": item["track"]["id"],
                 "name": name,
                 "artist": artist,
                 "platform": SPOTIFY,
@@ -412,7 +456,7 @@ def _get_spotify_playlist_data(link):
         )
 
     return {
-        "id": playlist_id,
+        "playlist_id": playlist_id,
         "link": link,
         "name": response.json()["name"],
         "owner": response.json()["owner"]["display_name"],
@@ -451,7 +495,6 @@ def _download_youtube_track(link, file_format, dir_):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         path = ydl.prepare_filename(ydl.extract_info(link, download=True))
 
-        print(path)
         return Path(path)
 
 
