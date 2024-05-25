@@ -71,7 +71,7 @@ const Navbar = () => {
     };
 
     return (
-        <header className="fixed top-0 w-full bg-gray-500 flex justify-center shadow-xl z-10">
+        <header className="fixed top-0 w-full bg-gray-500 flex justify-center shadow-xl z-10 animate-fadeInFromTop">
             <nav className={`flex h-full w-2/3 items-center justify-between`}>
                 {/* <!-- Logo --> */}
                 <NavLink className="flex items-center" to="/">

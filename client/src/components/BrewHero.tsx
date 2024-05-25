@@ -30,12 +30,14 @@ const BrewHero = ({
     return (
         <section>
             <div
-                className="flex h-dvh bg-cover bg-no-repeat items-center shadow-lg"
+                className="flex h-dvh bg-cover bg-no-repeat items-center shadow-lg bg-gray-700"
                 style={{ backgroundImage: `url(${heroBanner})` }}
             >
-                <div className="w-full">
-                    <div className="mb-14 text-center text-5xl">
-                        <h1>Brook</h1>
+                <div className="w-full animate-fadeInFromBottom">
+                    <div className="flex justify-center">
+                        <h1 className="m-12 text-7xl h-full bg-gradient-to-r from-blue-800 to-blue-100 text-transparent bg-clip-text flex items-center font-semibold text-center drop-shadow-2xl">
+                            Brook
+                        </h1>
                     </div>
                     <div className="flex justify-center">
                         <form onSubmit={brewSubmit} className={formClass}>
@@ -63,7 +65,7 @@ const BrewHero = ({
                                 />
                                 <div className={inputBar}></div>
                                 <button
-                                    className="bg-blue-600 hover:bg-blue-700 -blue-600 hover:-blue-700 duration-200 text-sm -4 text-white rounded-lg float-right px-4 py-2"
+                                    className="bg-blue-600 hover:bg-blue-700 duration-200 text-sm text-white rounded-lg float-right px-4 py-2"
                                     type="submit"
                                 >
                                     Brew
