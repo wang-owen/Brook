@@ -99,7 +99,7 @@ const SavedPlaylist = ({
         "inline-block bg-gray-200 hover:bg-gray-300 duration-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 hover:text-gray-800 mr-2 mb-2";
     return (
         <>
-            <div className="max-w-sm rounded shadow-lg">
+            <div className="max-w-sm rounded shadow-lg bg-white">
                 <a href={playlist.link.toString()} target="_blank">
                     <img
                         className="w-full"
