@@ -41,6 +41,8 @@ const SavedPlaylist = ({
                 window.location.href =
                     "http://127.0.0.1:8000/download/" + data.path;
             }
+            // Update position of playlist
+            onUpdate(data.music_data.playlist_data);
         }
     };
     const update = async () => {
@@ -99,7 +101,7 @@ const SavedPlaylist = ({
         "inline-block bg-gray-200 hover:bg-gray-300 duration-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 hover:text-gray-800 mr-2 mb-2";
     return (
         <>
-            <div className="max-w-sm rounded shadow-lg bg-white">
+            <div className="max-w-sm rounded shadow-lg bg-white animate-fadeInFromLeft">
                 <a href={playlist.link.toString()} target="_blank">
                     <img
                         className="w-full"

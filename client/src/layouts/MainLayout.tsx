@@ -6,12 +6,12 @@ import Footer from "../components/Footer";
 
 const MainLayout = ({}: {}) => {
     return (
-        <body className="animate-fadeIn bg-gray-200">
+        <div className="animate-fadeIn bg-gray-200">
             <Navbar />
             <Outlet />
             <Footer />
             <ToastContainer newestOnTop />
-        </body>
+        </div>
     );
 };
 
