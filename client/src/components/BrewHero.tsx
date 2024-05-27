@@ -1,22 +1,12 @@
 import { useState } from "react";
 import heroBanner from "../assets/img/brew-hero.png";
 
-const BrewHero = ({
-    getBrewData,
-}: {
-    getBrewData: (link: string) => Promise<string>;
-}) => {
+const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
     const [link, setLink] = useState("");
 
     const brewSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-
-        const path: string = await getBrewData(link);
-        if (path) {
-            window.location.href = "http://127.0.0.1:8000/download/" + path;
-        }
-
-        return;
+        return brew(link);
     };
 
     const [inputHover, setInputHover] = useState(false);
