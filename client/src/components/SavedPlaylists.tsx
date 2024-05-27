@@ -4,11 +4,13 @@ import Playlist from "../interfaces/Playlist";
 
 const SavedPlaylists = ({
     playlists,
+    brew,
     watchPlaylist,
     handlePlaylistUpdate,
     handlePlaylistRemove,
 }: {
     playlists: Playlist[];
+    brew: (link: string) => any;
     watchPlaylist: (link: string) => void;
     handlePlaylistUpdate: (updatedPlaylist: Playlist) => void;
     handlePlaylistRemove: (removedPlaylistID: string) => void;
@@ -88,6 +90,7 @@ const SavedPlaylists = ({
                         <SavedPlaylist
                             key={playlist.playlist_id}
                             playlist={playlist}
+                            brew={brew}
                             onUpdate={handlePlaylistUpdate}
                             onRemove={handlePlaylistRemove}
                         />

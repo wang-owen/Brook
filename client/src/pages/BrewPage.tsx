@@ -11,8 +11,9 @@ const BrewPage = () => {
 
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
 
-    const getBrewData = async (link: string) => {
-        const response = await toast.promise(
+    const brew = async (link: string) => {
+        let data: any = null;
+        toast.promise(
             fetch("http://127.0.0.1:8000/brew/", {
                 method: "POST",
                 headers: {
@@ -24,41 +25,58 @@ const BrewPage = () => {
                     fileFormat: "m4a",
                 }),
                 credentials: "include",
+            }).then(async (response) => {
+                if (response.ok) {
+                    if (response.headers.get("Content-Type") !== null) {
+                        data = await response.json();
+                    }
+                    if (
+                        loggedIn &&
+                        data.music_data.contentType === "playlist"
+                    ) {
+                        const p = data.music_data.playlist_data;
+                        setPlaylists([
+                            {
+                                playlist_id: p.playlist_id,
+                                name: p.name,
+                                owner: p.owner,
+                                link: p.link,
+                                platform: p.platform,
+                                thumbnail: p.thumbnail,
+                            },
+                            ...playlists,
+                        ]);
+                    }
+                    window.location.href =
+                        "http://127.0.0.1:8000/download/" + data.path;
+                }
             }),
             {
                 pending: `${String.fromCodePoint(0x1f3bb)} Brewing music...`,
-                // success: `${String.fromCodePoint(0x1f3a7)} Music downloaded!`,
-                // error: "Invalid link",
+                success: {
+                    render() {
+                        return (
+                            <div>
+                                {String.fromCodePoint(0x1f3a7)} Music
+                                downloaded!
+                                <button
+                                    className="m-2 px-2 border rounded-md"
+                                    onClick={() => {
+                                        window.location.href =
+                                            "http://127.0.0.1:8000/download/" +
+                                            data.path;
+                                    }}
+                                >
+                                    Retry
+                                </button>
+                            </div>
+                        );
+                    },
+                },
+                error: "Invalid link",
             }
         );
-
-        let data = null;
-        if (response.headers.get("Content-Type") !== null) {
-            data = await response.json();
-        }
-
-        if (response.ok) {
-            if (data) {
-                if (loggedIn && data.music_data.contentType === "playlist") {
-                    const p = data.music_data.playlist_data;
-                    setPlaylists([
-                        {
-                            playlist_id: p.playlist_id,
-                            name: p.name,
-                            owner: p.owner,
-                            link: p.link,
-                            platform: p.platform,
-                            thumbnail: p.thumbnail,
-                        },
-                        ...playlists,
-                    ]);
-                }
-            }
-            toast.success(`${String.fromCodePoint(0x1f3a7)} Music downloaded!`);
-            return data.path;
-        } else {
-            toast.error("Invalid link");
-        }
+        return data;
     };
 
     const getPlaylists = async (): Promise<Playlist[]> => {
@@ -166,10 +184,11 @@ const BrewPage = () => {
 
     return (
         <>
-            <BrewHero getBrewData={getBrewData} />
+            <BrewHero brew={brew} />
             {loggedIn ? (
                 <SavedPlaylists
                     playlists={playlists}
+                    brew={brew}
                     watchPlaylist={watchPlaylist}
                     handlePlaylistUpdate={handlePlaylistUpdate}
                     handlePlaylistRemove={handlePlaylistRemove}
