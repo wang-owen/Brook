@@ -27,7 +27,7 @@ const App = () => {
     useEffect(() => {
         const fetchLoggedIn = async () => {
             const response = await fetch(
-                "http://127.0.0.1:8000/get-logged-in",
+                "http://localhost:8000/get-logged-in",
                 {
                     method: "GET",
                     headers: {

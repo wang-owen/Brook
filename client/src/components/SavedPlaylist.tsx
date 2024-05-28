@@ -35,7 +35,7 @@ const SavedPlaylist = ({
                     }
                     if (data.path) {
                         window.location.href =
-                            "http://127.0.0.1:8000/download/" + data.path;
+                            "http://localhost:8000/download/" + data.path;
                     }
                 }
             }),
@@ -53,7 +53,7 @@ const SavedPlaylist = ({
                                         className="m-2 px-2 border rounded-md"
                                         onClick={() => {
                                             window.location.href =
-                                                "http://127.0.0.1:8000/download/" +
+                                                "http://localhost:8000/download/" +
                                                 data.path;
                                         }}
                                     >
