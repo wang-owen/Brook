@@ -30,6 +30,7 @@ const RegisterPage = () => {
             {
                 pending: "Registering user...",
                 success: `${String.fromCodePoint(0x1f37b)} Registered!`,
+                error: "Username not available",
             }
         );
 

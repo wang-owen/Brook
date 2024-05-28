@@ -10,24 +10,21 @@ const LoginPage = () => {
     const navigate = useNavigate();
 
     const login = async (credentials: Object) => {
-        const response = await toast.promise(
-            fetch("http://localhost:8000/login/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(credentials),
-                credentials: "include",
-            }),
-            {
-                pending: "Logging in...",
-                success: `${String.fromCodePoint(0x1f44b)} Logged in!`,
-            }
-        );
+        const response = await fetch("http://localhost:8000/login/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(credentials),
+            credentials: "include",
+        });
 
         if (response.ok) {
             setLoggedIn(true);
+            toast.success(`${String.fromCodePoint(0x1f44b)} Logged in!`);
             navigate("/");
+        } else {
+            toast.error("Invalid credentials");
         }
     };
 
