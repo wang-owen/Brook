@@ -1,1 +1,1 @@
-web gunicorn Brook.wsgi:application --log-file -
+web gunicorn server.wsgi:application --log-file -
