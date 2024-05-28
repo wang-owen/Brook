@@ -11,14 +11,14 @@ const RegisterPage = () => {
     const register = async (credentials: Object) => {
         const [registerResponse, loginResponse] = await toast.promise(
             Promise.all([
-                await fetch("http://127.0.0.1:8000/register/", {
+                await fetch("http://localhost:8000/register/", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify(credentials),
                 }),
-                await fetch("http://127.0.0.1:8000/login/", {
+                await fetch("http://localhost:8000/login/", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",

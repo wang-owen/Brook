@@ -11,7 +11,7 @@ const LoginPage = () => {
 
     const login = async (credentials: Object) => {
         const response = await toast.promise(
-            fetch("http://127.0.0.1:8000/login/", {
+            fetch("http://localhost:8000/login/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

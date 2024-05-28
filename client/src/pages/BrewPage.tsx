@@ -14,7 +14,7 @@ const BrewPage = () => {
     const brew = async (link: string) => {
         let data: any = null;
         toast.promise(
-            fetch("http://127.0.0.1:8000/brew/", {
+            fetch("http://localhost:8000/brew/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -48,7 +48,7 @@ const BrewPage = () => {
                         ]);
                     }
                     window.location.href =
-                        "http://127.0.0.1:8000/download/" + data.path;
+                        "http://localhost:8000/download/" + data.path;
                 }
             }),
             {
@@ -63,7 +63,7 @@ const BrewPage = () => {
                                     className="m-2 px-2 border rounded-md"
                                     onClick={() => {
                                         window.location.href =
-                                            "http://127.0.0.1:8000/download/" +
+                                            "http://localhost:8000/download/" +
                                             data.path;
                                     }}
                                 >
@@ -81,7 +81,7 @@ const BrewPage = () => {
 
     const getPlaylists = async (): Promise<Playlist[]> => {
         let playlists: Playlist[] = [];
-        const response = await fetch("http://127.0.0.1:8000/playlist/", {
+        const response = await fetch("http://localhost:8000/playlist/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -108,7 +108,7 @@ const BrewPage = () => {
 
     const watchPlaylist = async (link: string) => {
         const response = await toast.promise(
-            fetch("http://127.0.0.1:8000/playlist/", {
+            fetch("http://localhost:8000/playlist/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

@@ -40,7 +40,7 @@ const Navbar = () => {
                     className={linkClass}
                     onClick={async () => {
                         const response = await toast.promise(
-                            fetch("http://127.0.0.1:8000/logout/", {
+                            fetch("http://localhost:8000/logout/", {
                                 method: "POST",
                                 headers: {
                                     "Content-Type": "application/json",
