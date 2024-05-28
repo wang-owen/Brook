@@ -33,20 +33,23 @@ SECRET_KEY = os.environ.get(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DJANGO_DEBUG", "") != "False"
+DEBUG = int(os.environ.get("DJANGO_DEBUG", 0))
 
 AUTH_USER_MODEL = "users.User"
 
-ALLOWED_HOSTS = ["127.0.0.1", ".herokuapp.com", ".wangowen.com"]
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(" ")
 
 CORS_ALLOW_CREDENTIALS = True
 
 if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
-    CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:3000"]
+    CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:3000", "http://localhost:3000"]
 else:
     CORS_ALLOWED_ORIGINS = ["https://*.wangowen.com"]
     CSRF_TRUSTED_ORIGINS = ["https://*.wangowen.com"]
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
 
 
 # Application definition
@@ -109,17 +112,13 @@ WSGI_APPLICATION = "server.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": os.environ.get("DATABASE_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": os.environ.get("DATABASE_NAME", BASE_DIR / "db.sqlite3"),
+        "USER": os.environ.get("DATABASE_USER"),
+        "PASSWORD": os.environ.get("DATABASE_PASSWORD"),
+        "HOST": os.environ.get("DATABASE_HOST"),
+        "PORT": os.environ.get("DATABASE_PORT"),
     }
-    # "default": {
-    #     "ENGINE": "django.db.backends.postgresql",
-    #     "NAME": os.environ.get("DATABASE_NAME"),
-    #     "USER": os.environ.get("DATABASE_USER"),
-    #     "PASSWORD": os.environ.get("DATABASE_PASSWORD"),
-    #     "HOST": os.environ.get("DATABASE_HOST"),
-    #     "PORT": "5432",
-    # }
 }
 
 
