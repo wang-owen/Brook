@@ -1,0 +1,5 @@
+.venv
+.git
+.gitignore
+/Music
+db.sqlite3
