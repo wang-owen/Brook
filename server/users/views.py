@@ -37,22 +37,23 @@ def login_view(request):
     if user:
         login(request, user)
         response = Response({"message": "Logged in"}, status=status.HTTP_200_OK)
-        response.set_cookie(
-            key="sessionid",
-            value=request.session.session_key,
-            domain=os.environ.get("DJANGO_COOKIE_DOMAIN"),
-            secure=True,
-            httponly=True,
-            samesite="Lax",
-        )
-        response.set_cookie(
-            key="csrftoken",
-            value=get_token(request),
-            domain=os.environ.get("DJANGO_COOKIE_DOMAIN"),
-            secure=True,
-            httponly=False,
-            samesite="Lax",
-        )
+        if COOKIE_DOMAIN := os.environ.get("DJANGO_COOKIE_DOMAIN"):
+            response.set_cookie(
+                key="sessionid",
+                value=request.session.session_key,
+                domain=COOKIE_DOMAIN,
+                secure=True,
+                httponly=True,
+                samesite="Lax",
+            )
+            response.set_cookie(
+                key="csrftoken",
+                value=get_token(request),
+                domain=COOKIE_DOMAIN,
+                secure=True,
+                httponly=False,
+                samesite="Lax",
+            )
         return response
     return Response(
         {"message": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED
