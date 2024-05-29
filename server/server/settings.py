@@ -40,25 +40,23 @@ IS_HEROKU_APP = "DYNO" in os.environ and not "CI" in os.environ
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = 0 if IS_HEROKU_APP else int(os.environ.get("DJANGO_DEBUG", 0))
 
-
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(" ")
-
-CSRF_TRUSTED_ORIGINS = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(" ")
-
 CORS_ALLOW_CREDENTIALS = True
 
 if DEBUG:
+    ALLOWED_HOSTS = ["*"]
+    CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:3000", "http://localhost:3000"]
     CORS_ALLOW_ALL_ORIGINS = True
 else:
+    ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(" ")
+    CSRF_TRUSTED_ORIGINS = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(" ")
     CORS_ALLOWED_ORIGINS = CSRF_TRUSTED_ORIGINS
 
     SESSION_COOKIE_DOMAIN = os.environ.get("DJANGO_COOKIE_DOMAIN")
     CSRF_COOKIE_DOMAIN = SESSION_COOKIE_DOMAIN
-
     CSRF_COOKIE_HTTPONLY = False
-
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
+
     SECURE_SSL_REDIRECT = True
 
 
