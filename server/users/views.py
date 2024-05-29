@@ -50,7 +50,7 @@ def login_view(request):
             value=get_token(request),
             domain=os.environ.get("DJANGO_COOKIE_DOMAIN"),
             secure=True,
-            httponly=True,
+            httponly=False,
             samesite="Lax",
         )
         return response
