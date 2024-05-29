@@ -1,4 +1,6 @@
 from django.contrib.auth import get_user_model, authenticate, login, logout
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.middleware.csrf import get_token
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -29,7 +31,24 @@ def login_view(request):
     user = authenticate(**credentials)
     if user:
         login(request, user)
-        return Response({"message": "Logged in"}, status=status.HTTP_200_OK)
+        response = Response({"message": "Logged in"}, status=status.HTTP_200_OK)
+        response.set_cookie(
+            key="sessionid",
+            value=request.session.session_key,
+            domain=".wangowen.com",
+            secure=True,
+            httponly=True,
+            samesite="Lax",
+        )
+        response.set_cookie(
+            key="csrftoken",
+            value=get_token(request),
+            domain=".wangowen.com",
+            secure=True,
+            httponly=False,
+            samesite="Lax",
+        )
+        return response
     return Response(
         {"message": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED
     )
