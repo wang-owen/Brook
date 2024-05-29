@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 from pathlib import Path
+import dj_database_url
 from dotenv import load_dotenv
 import django_on_heroku
 
@@ -34,8 +35,10 @@ SECRET_KEY = os.environ.get(
     "django-insecure-5g#u9i(y8)lyfr72n+!_h_-52@hmz8qf78sehklmp#^r&9z&f7",
 )
 
+IS_HEROKU_APP = "DYNO" in os.environ and not "CI" in os.environ
+
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = int(os.environ.get("DJANGO_DEBUG", 0))
+DEBUG = 1 if IS_HEROKU_APP else int(os.environ.get("DJANGO_DEBUG", 0))
 
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(" ")
@@ -49,7 +52,6 @@ if DEBUG:
 else:
     CORS_ALLOWED_ORIGINS = CSRF_TRUSTED_ORIGINS
 
-    # Set session and CSRF cookies to be available on all subdomains
     SESSION_COOKIE_DOMAIN = os.environ.get("DJANGO_COOKIE_DOMAIN")
     CSRF_COOKIE_DOMAIN = SESSION_COOKIE_DOMAIN
 
@@ -117,16 +119,25 @@ WSGI_APPLICATION = "server.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": os.environ.get("DATABASE_ENGINE", "django.db.backends.sqlite3"),
-        "NAME": os.environ.get("DATABASE_NAME", BASE_DIR / "db.sqlite3"),
-        "USER": os.environ.get("DATABASE_USER"),
-        "PASSWORD": os.environ.get("DATABASE_PASSWORD"),
-        "HOST": os.environ.get("DATABASE_HOST"),
-        "PORT": os.environ.get("DATABASE_PORT"),
+if IS_HEROKU_APP:
+    DATABASES = {
+        "default": dj_database_url.config(
+            env="DATABASE_URL",
+            conn_health_checks=True,
+            ssl_require=True,
+        )
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": os.environ.get("DATABASE_ENGINE", "django.db.backends.sqlite3"),
+            "NAME": os.environ.get("DATABASE_NAME", BASE_DIR / "db.sqlite3"),
+            "USER": os.environ.get("DATABASE_USER"),
+            "PASSWORD": os.environ.get("DATABASE_PASSWORD"),
+            "HOST": os.environ.get("DATABASE_HOST"),
+            "PORT": os.environ.get("DATABASE_PORT"),
+        }
+    }
 
 
 # Password validation
