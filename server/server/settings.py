@@ -50,11 +50,10 @@ else:
     CORS_ALLOWED_ORIGINS = CSRF_TRUSTED_ORIGINS
 
     # Set session and CSRF cookies to be available on all subdomains
-    SESSION_COOKIE_DOMAIN = ".wangowen.com"
-    CSRF_COOKIE_DOMAIN = ".wangowen.com"
+    SESSION_COOKIE_DOMAIN = os.environ.get("DJANGO_COOKIE_DOMAIN")
+    CSRF_COOKIE_DOMAIN = SESSION_COOKIE_DOMAIN
 
-    # Ensure your CSRF cookie is sent in the response
-    CSRF_COOKIE_HTTPONLY = False
+    CSRF_COOKIE_HTTPONLY = True
 
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
