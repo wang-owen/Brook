@@ -1,3 +1,4 @@
+import os
 from django.contrib.auth import get_user_model, authenticate, login, logout
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.middleware.csrf import get_token
@@ -6,9 +7,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from users.serializers import UserSerializer
+from dotenv import load_dotenv
 
 
 # Create your views here.
+load_dotenv()
+
 User = get_user_model()
 
 
@@ -26,6 +30,7 @@ def register_view(request):
 
 
 @api_view(["POST"])
+@ensure_csrf_cookie
 def login_view(request):
     credentials = request.data
     user = authenticate(**credentials)
@@ -35,7 +40,7 @@ def login_view(request):
         response.set_cookie(
             key="sessionid",
             value=request.session.session_key,
-            domain=".wangowen.com",
+            domain=os.environ.get("DJANGO_COOKIE_DOMAIN"),
             secure=True,
             httponly=True,
             samesite="Lax",
@@ -43,9 +48,9 @@ def login_view(request):
         response.set_cookie(
             key="csrftoken",
             value=get_token(request),
-            domain=".wangowen.com",
+            domain=os.environ.get("DJANGO_COOKIE_DOMAIN"),
             secure=True,
-            httponly=False,
+            httponly=True,
             samesite="Lax",
         )
         return response
