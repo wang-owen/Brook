@@ -12,7 +12,9 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 from pathlib import Path
+import dj_database_url
 from dotenv import load_dotenv
+import django_on_heroku
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,6 +24,7 @@ MUSIC_DIR = Path("Music")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+AUTH_USER_MODEL = "users.User"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -32,21 +35,29 @@ SECRET_KEY = os.environ.get(
     "django-insecure-5g#u9i(y8)lyfr72n+!_h_-52@hmz8qf78sehklmp#^r&9z&f7",
 )
 
+IS_HEROKU_APP = "DYNO" in os.environ and not "CI" in os.environ
+
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DJANGO_DEBUG", "") != "False"
-
-AUTH_USER_MODEL = "users.User"
-
-ALLOWED_HOSTS = ["127.0.0.1", ".herokuapp.com", ".wangowen.com"]
+DEBUG = 0 if IS_HEROKU_APP else int(os.environ.get("DJANGO_DEBUG", 0))
 
 CORS_ALLOW_CREDENTIALS = True
 
 if DEBUG:
+    ALLOWED_HOSTS = ["*"]
+    CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:3000", "http://localhost:3000"]
     CORS_ALLOW_ALL_ORIGINS = True
-    CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:3000"]
 else:
-    CORS_ALLOWED_ORIGINS = ["https://*.wangowen.com"]
-    CSRF_TRUSTED_ORIGINS = ["https://*.wangowen.com"]
+    ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(" ")
+    CSRF_TRUSTED_ORIGINS = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(" ")
+    CORS_ALLOWED_ORIGINS = CSRF_TRUSTED_ORIGINS
+
+    SESSION_COOKIE_DOMAIN = os.environ.get("DJANGO_COOKIE_DOMAIN")
+    CSRF_COOKIE_DOMAIN = SESSION_COOKIE_DOMAIN
+    CSRF_COOKIE_HTTPONLY = False
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+
+    SECURE_SSL_REDIRECT = True
 
 
 # Application definition
@@ -71,10 +82,9 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -107,20 +117,25 @@ WSGI_APPLICATION = "server.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+if IS_HEROKU_APP:
+    DATABASES = {
+        "default": dj_database_url.config(
+            env="DATABASE_URL",
+            conn_health_checks=True,
+            ssl_require=True,
+        )
     }
-    # "default": {
-    #     "ENGINE": "django.db.backends.postgresql",
-    #     "NAME": os.environ.get("DATABASE_NAME"),
-    #     "USER": os.environ.get("DATABASE_USER"),
-    #     "PASSWORD": os.environ.get("DATABASE_PASSWORD"),
-    #     "HOST": os.environ.get("DATABASE_HOST"),
-    #     "PORT": "5432",
-    # }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": os.environ.get("DATABASE_ENGINE", "django.db.backends.sqlite3"),
+            "NAME": os.environ.get("DATABASE_NAME", BASE_DIR / "db.sqlite3"),
+            "USER": os.environ.get("DATABASE_USER"),
+            "PASSWORD": os.environ.get("DATABASE_PASSWORD"),
+            "HOST": os.environ.get("DATABASE_HOST"),
+            "PORT": os.environ.get("DATABASE_PORT"),
+        }
+    }
 
 
 # Password validation
@@ -160,6 +175,7 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = Path.joinpath(BASE_DIR, "staticfiles")
 STATICFILES_DIRS = (Path.joinpath(BASE_DIR, STATIC_URL),)
+django_on_heroku.settings(locals())
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

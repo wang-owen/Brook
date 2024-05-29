@@ -46,18 +46,8 @@ def brew(request):
                         serializer.errors, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                # Add tracks to playlist
-                playlist_tracks = playlist_data.get("tracks")
-                for track_data in playlist_tracks:
-                    track_data["playlist"] = playlist.pk  # type: ignore
-                    serializer = TrackSerializer(data=track_data)
-                    if serializer.is_valid():
-                        serializer.save()
-                    else:
-                        print(serializer.errors)
-                        return Response(
-                            serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                        )
+                # Update playlist tracks
+                update_playlist_tracks(playlist, playlist_data.get("tracks"))
 
             return Response(
                 {
@@ -183,35 +173,11 @@ class PlaylistDetail(APIView):
         # Retrieve new information from server and update playlist
         data = util.get_data(playlist.link)
         playlist_data = data.get("playlist_data", {})
-        updated_tracklist = playlist_data.get("tracks")
 
-        # Delete any removed tracks
-        for track in playlist.tracks.all():  # type: ignore
-            present = False
-            for track2 in updated_tracklist:
-                if track.track_id == track2.get("track_id"):
-                    present = True
-                    break
-            if not present:
-                track.delete()
-                print(f"{track.name} removed from tracklist.")
-
-        # Add any new tracks
-        new_tracks = []
-        for track in updated_tracklist:
-            if not playlist.tracks.filter(track_id=track["track_id"]).exists():  # type: ignore
-                new_tracks.append(track)
-                track_serializer = TrackSerializer(
-                    data={"playlist": playlist.pk, **track},
-                )
-                if track_serializer.is_valid():
-                    track_serializer.save()
-                    print(f"{track['name']} added to tracklist")
-                else:
-                    print(track_serializer.errors)
-                    return Response(
-                        track_serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                    )
+        new_tracks = update_playlist_tracks(playlist, playlist_data.get("tracks"))
+        # If error response is returned
+        if isinstance(new_tracks, Response):
+            return new_tracks
 
         # Update playlist data
         playlist_serializer = PlaylistSerializer(
@@ -241,3 +207,33 @@ class PlaylistDetail(APIView):
     def delete(self, request, playlist_id):
         Playlist.delete(self.get_object(playlist_id))
         return Response({"message": "Playlist removed"}, status=status.HTTP_200_OK)
+
+
+def update_playlist_tracks(playlist, tracks):
+    # Delete any removed tracks
+    for track in playlist.tracks.all():
+        present = False
+        for track2 in tracks:
+            if track.track_id == track2.get("track_id"):
+                present = True
+                break
+        if not present:
+            track.delete()
+            print(f"{track.name} removed from tracklist.")
+
+    # Add any new tracks
+    new_tracks = []
+    for track in tracks:
+        if not playlist.tracks.filter(track_id=track["track_id"]).exists():
+            new_tracks.append(track)
+            track_serializer = TrackSerializer(
+                data={"playlist": playlist.pk, **track},
+            )
+            if track_serializer.is_valid():
+                track_serializer.save()
+            else:
+                print(track_serializer.errors)
+                return Response(
+                    track_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                )
+    return new_tracks

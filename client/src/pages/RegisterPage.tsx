@@ -11,14 +11,14 @@ const RegisterPage = () => {
     const register = async (credentials: Object) => {
         const [registerResponse, loginResponse] = await toast.promise(
             Promise.all([
-                await fetch("http://127.0.0.1:8000/register/", {
+                await fetch(`${import.meta.env.VITE_API_URL}/register/`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify(credentials),
                 }),
-                await fetch("http://127.0.0.1:8000/login/", {
+                await fetch(`${import.meta.env.VITE_API_URL}/login/`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -30,6 +30,7 @@ const RegisterPage = () => {
             {
                 pending: "Registering user...",
                 success: `${String.fromCodePoint(0x1f37b)} Registered!`,
+                error: "Username not available",
             }
         );
 

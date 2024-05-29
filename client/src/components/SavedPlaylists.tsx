@@ -4,11 +4,13 @@ import Playlist from "../interfaces/Playlist";
 
 const SavedPlaylists = ({
     playlists,
+    brew,
     watchPlaylist,
     handlePlaylistUpdate,
     handlePlaylistRemove,
 }: {
     playlists: Playlist[];
+    brew: (link: string) => any;
     watchPlaylist: (link: string) => void;
     handlePlaylistUpdate: (updatedPlaylist: Playlist) => void;
     handlePlaylistRemove: (removedPlaylistID: string) => void;
@@ -25,8 +27,8 @@ const SavedPlaylists = ({
     };
 
     const [inputHover, setInputHover] = useState(false);
-    const formClass = `bg-gray-900 rounded-lg p-3 py-2 shadow-2xl w-${
-        inputHover ? "1/2" : "1/5"
+    const formClass = `bg-gray-900 rounded-lg p-3 py-2 shadow-2xl ${
+        inputHover ? "w-1/2" : "w-1/4 2xl:w-1/5"
     } duration-1000`;
     const inputClass = `absolute h-0 mt-9 w-${
         inputHover ? "full" : "0"
@@ -39,13 +41,16 @@ const SavedPlaylists = ({
                     <h1 className="text-3xl">Saved Playlists</h1>
                     <button
                         onClick={() => setShowInput(!showInput)}
-                        className="my-5 border border-y-black rounded-lg py-1 px-7 bg-gray-400 hover:bg-gray-500 duration-200 text-white"
+                        className="my-5 border border-black rounded-lg py-1 px-7 bg-gray-400 hover:bg-gray-500 duration-200 text-black"
                     >
                         Add
                     </button>
                     <div className="flex justify-center">
                         {showInput ? (
-                            <form onSubmit={watchSubmit} className={formClass}>
+                            <form
+                                onSubmit={watchSubmit}
+                                className={`${formClass} animate-fadeInFromTop`}
+                            >
                                 <div className="relative flex justify-between items-center mx-5 my-2">
                                     <input
                                         className="bg-transparent text-white w-full border-none focus:outline-none"
@@ -70,7 +75,7 @@ const SavedPlaylists = ({
                                     />
                                     <div className={inputClass}></div>
                                     <button
-                                        className="bg-blue-600 hover:bg-blue-700 -blue-600 hover:-blue-700 duration-200 text-sm -4 text-white rounded-lg float-right px-4 py-2"
+                                        className="bg-blue-600 hover:bg-blue-700 duration-200 text-sm text-white rounded-lg float-right px-4 py-2"
                                         type="submit"
                                     >
                                         Add
@@ -80,11 +85,12 @@ const SavedPlaylists = ({
                         ) : null}
                     </div>
                 </div>
-                <div className="m-4 grid grid-cols-4 gap-4 justify-evenly justify-items-center items-center content-center">
+                <div className="m-4 grid grid-cols-5 gap-5 justify-evenly justify-items-center items-center content-center animate-fadeInFromLeft">
                     {playlists.map((playlist) => (
                         <SavedPlaylist
                             key={playlist.playlist_id}
                             playlist={playlist}
+                            brew={brew}
                             onUpdate={handlePlaylistUpdate}
                             onRemove={handlePlaylistRemove}
                         />

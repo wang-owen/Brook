@@ -1,12 +1,18 @@
+import os
 from django.contrib.auth import get_user_model, authenticate, login, logout
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.middleware.csrf import get_token
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from users.serializers import UserSerializer
+from dotenv import load_dotenv
 
 
 # Create your views here.
+load_dotenv()
+
 User = get_user_model()
 
 
@@ -24,12 +30,31 @@ def register_view(request):
 
 
 @api_view(["POST"])
+@ensure_csrf_cookie
 def login_view(request):
     credentials = request.data
     user = authenticate(**credentials)
     if user:
         login(request, user)
-        return Response({"message": "Logged in"}, status=status.HTTP_200_OK)
+        response = Response({"message": "Logged in"}, status=status.HTTP_200_OK)
+        if COOKIE_DOMAIN := os.environ.get("DJANGO_COOKIE_DOMAIN"):
+            response.set_cookie(
+                key="sessionid",
+                value=request.session.session_key,
+                domain=COOKIE_DOMAIN,
+                secure=True,
+                httponly=True,
+                samesite="Lax",
+            )
+            response.set_cookie(
+                key="csrftoken",
+                value=get_token(request),
+                domain=COOKIE_DOMAIN,
+                secure=True,
+                httponly=False,
+                samesite="Lax",
+            )
+        return response
     return Response(
         {"message": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED
     )
