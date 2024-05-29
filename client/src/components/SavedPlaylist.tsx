@@ -21,7 +21,7 @@ const SavedPlaylist = ({
     const update = async () => {
         let data: any = null;
         toast.promise(
-            fetch(`http://127.0.0.1:8000/playlist/${playlist.playlist_id}`, {
+            fetch(`${import.meta.env.VITE_API_URL}/playlist/${playlist.playlist_id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -35,7 +35,7 @@ const SavedPlaylist = ({
                     }
                     if (data.path) {
                         window.location.href =
-                            "http://localhost:8000/download/" + data.path;
+                            `${import.meta.env.VITE_API_URL}/download/` + data.path;
                     }
                 }
             }),
@@ -53,7 +53,7 @@ const SavedPlaylist = ({
                                         className="m-2 px-2 border rounded-md"
                                         onClick={() => {
                                             window.location.href =
-                                                "http://localhost:8000/download/" +
+                                                `${import.meta.env.VITE_API_URL}/download/` +
                                                 data.path;
                                         }}
                                     >
@@ -71,7 +71,7 @@ const SavedPlaylist = ({
 
     const remove = async () => {
         const response = await toast.promise(
-            fetch(`http://127.0.0.1:8000/playlist/${playlist.playlist_id}`, {
+            fetch(`${import.meta.env.VITE_API_URL}/playlist/${playlist.playlist_id}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",

@@ -27,7 +27,7 @@ const App = () => {
     useEffect(() => {
         const fetchLoggedIn = async () => {
             const response = await fetch(
-                "http://localhost:8000/get-logged-in",
+                `${import.meta.env.VITE_API_URL}/get-logged-in`,
                 {
                     method: "GET",
                     headers: {

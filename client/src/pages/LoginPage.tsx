@@ -10,7 +10,7 @@ const LoginPage = () => {
     const navigate = useNavigate();
 
     const login = async (credentials: Object) => {
-        const response = await fetch("http://localhost:8000/login/", {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/login/`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
