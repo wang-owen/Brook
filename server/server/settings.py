@@ -14,7 +14,6 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 import django_on_heroku
-import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,6 +23,7 @@ MUSIC_DIR = Path("Music")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+AUTH_USER_MODEL = "users.User"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -37,18 +37,17 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = int(os.environ.get("DJANGO_DEBUG", 0))
 
-AUTH_USER_MODEL = "users.User"
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(" ")
+
+CSRF_TRUSTED_ORIGINS = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(" ")
 
 CORS_ALLOW_CREDENTIALS = True
 
 if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
-    CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:3000", "http://localhost:3000"]
 else:
-    CORS_ALLOWED_ORIGINS = ["https://*.wangowen.com"]
-    CSRF_TRUSTED_ORIGINS = ["https://*.wangowen.com"]
+    CORS_ALLOWED_ORIGINS = CSRF_TRUSTED_ORIGINS
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
     SECURE_SSL_REDIRECT = True
