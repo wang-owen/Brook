@@ -11,7 +11,7 @@ const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
 
     const [inputHover, setInputHover] = useState(false);
     const formClass = `bg-gray-900 rounded-lg p-3 py-2 shadow-2xl duration-1000 ${
-        inputHover ? "w-1/2" : "w-1/5"
+        inputHover ? "w-1/2" : "w-1/4 2xl:w-1/5"
     }`;
     const inputBar = `absolute h-0 mt-9 border-white border-b-2 hover:w-full duration-1000 ease-in-out ${
         inputHover ? "w-full" : "w-0"

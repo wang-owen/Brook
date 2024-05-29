@@ -27,8 +27,8 @@ const SavedPlaylists = ({
     };
 
     const [inputHover, setInputHover] = useState(false);
-    const formClass = `bg-gray-900 rounded-lg p-3 py-2 shadow-2xl w-${
-        inputHover ? "1/2" : "1/5"
+    const formClass = `bg-gray-900 rounded-lg p-3 py-2 shadow-2xl ${
+        inputHover ? "w-1/2" : "w-1/4 2xl:w-1/5"
     } duration-1000`;
     const inputClass = `absolute h-0 mt-9 w-${
         inputHover ? "full" : "0"
