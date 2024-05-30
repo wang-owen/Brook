@@ -1,4 +1,4 @@
-from django.http import Http404
+from django.http import FileResponse, Http404
 from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -98,8 +98,12 @@ def brew(request):
     )
 
 
+@api_view(["GET"])
 def download(request, path):
-    return util.get_file(path)
+    file = open(path, "rb")
+    response = FileResponse(file)
+    response["Content-Disposition"] = f"attachment; filename='{path}'"
+    return response
 
 
 class PlaylistList(APIView):
