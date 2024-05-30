@@ -1,4 +1,3 @@
-import os
 from celery import shared_task
 from celery.result import AsyncResult
 from . import util
