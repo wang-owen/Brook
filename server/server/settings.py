@@ -37,7 +37,7 @@ SECRET_KEY = os.environ.get(
 
 IS_HEROKU_APP = "DYNO" in os.environ and not "CI" in os.environ
 
-CELERY_BROKER_URL = os.environ.get("CLOUDAMQP_URL", "db+sqlite:///results.sqlite")
+CELERY_BROKER_URL = os.environ.get("CLOUDAMQP_URL")
 CELERY_IMPORTS = "brewery.tasks"
 CELERY_RESULT_BACKEND = "django-db"
 CELERY_CACHE_BACKEND = "django-cache"
