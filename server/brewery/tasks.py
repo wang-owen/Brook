@@ -1,6 +1,6 @@
 from celery import shared_task
 from celery.result import AsyncResult
-import util
+from . import util
 
 
 def check_task_status(task_id):
@@ -13,6 +13,6 @@ def check_task_status(task_id):
 
 
 @shared_task
-def task_brew(function_name, link, file_format, dir_):
+def task_brew(function_name, *args, **kwargs):
     func = getattr(util, function_name)
-    return func(link, file_format, dir_)
+    return str(func(*args, **kwargs))

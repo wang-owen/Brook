@@ -4,7 +4,7 @@ from pathlib import Path
 from django.http import FileResponse
 from django.conf import settings
 from dotenv import load_dotenv
-from tasks import task_brew
+from .tasks import task_brew
 
 PLAYLIST = "playlist"
 PLAYLIST_URLS = ["list", "playlist", "album"]
@@ -184,10 +184,14 @@ def download_playlist(link, file_format, platform):
     dir_.mkdir()
 
     if platform == YOUTUBE:
-        task = task_brew.delay("download_youtube_playlist", link, file_format, dir_)
+        task = task_brew.delay(
+            "download_youtube_playlist", link, file_format, str(dir_)
+        )
         return task.id
     elif platform == SPOTIFY:
-        task = task_brew.delay("download_spotify_playlist", link, file_format, dir_)
+        task = task_brew.delay(
+            "download_spotify_playlist", link, file_format, str(dir_)
+        )
         return task.id
     return False
 
@@ -201,10 +205,10 @@ def download_track(link, file_format, platform, dir_=None):
 
     # Download tracks asynchronously
     if platform == YOUTUBE:
-        task = task_brew.delay("download_youtube_track", link, file_format, dir_)
+        task = task_brew.delay("download_youtube_track", link, file_format, str(dir_))
         return task.id
     elif platform == SPOTIFY:
-        task = task_brew.delay("download_spotify_track", link, file_format, dir_)
+        task = task_brew.delay("download_spotify_track", link, file_format, str(dir_))
         return task.id
     return False
 

@@ -6,12 +6,13 @@ from rest_framework.decorators import api_view
 from . import util
 from brewery.models import Playlist
 from brewery.serializers import PlaylistSerializer, TrackSerializer
-from tasks import check_task_status
+from .tasks import check_task_status
 
 
 # Create your views here.
 @api_view(["GET"])
 def get_brew_status(request):
+    print("get_brew_status!")
     data = request.data
     task_id = data.get("task_id")
     if not data or not task_id:
@@ -72,7 +73,7 @@ def brew(request):
 
             return Response(
                 {
-                    "task_id": str(task_id),
+                    "task_id": task_id,
                     "pk": playlist.pk if playlist else None,  # type: ignore
                     "music_data": (
                         # Music data returned if logged in and link valid
@@ -88,7 +89,7 @@ def brew(request):
                 status=status.HTTP_200_OK,
             )
         return Response(
-            {"task_id": str(task_id)},
+            {"task_id": task_id},
             status=status.HTTP_200_OK,
         )
     return Response(
@@ -222,7 +223,7 @@ class PlaylistDetail(APIView):
             )
         return Response(
             {
-                "task_id": str(task_id) if task_id else None,
+                "task_id": task_id if task_id else None,
                 "playlist_data": playlist_data,
             },
             status=status.HTTP_200_OK,
