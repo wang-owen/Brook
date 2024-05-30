@@ -12,84 +12,133 @@ const BrewPage = () => {
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
 
     const brew = async (link: string) => {
-        let data: any = null;
-        toast.promise(
-            fetch(`${import.meta.env.VITE_API_URL}/brew/`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": Cookies.get("csrftoken") || "",
-                },
-                body: JSON.stringify({
-                    link: link,
-                    fileFormat: "m4a",
-                }),
-                credentials: "include",
-            }).then(async (response) => {
-                if (response.ok) {
-                    if (response.headers.get("Content-Type") !== null) {
-                        data = await response.json();
-                    }
-                    if (
-                        loggedIn &&
-                        data.music_data.contentType === "playlist"
-                    ) {
-                        const p = data.music_data.playlist_data;
-                        setPlaylists([
-                            {
-                                playlist_id: p.playlist_id,
-                                name: p.name,
-                                owner: p.owner,
-                                link: p.link,
-                                platform: p.platform,
-                                thumbnail: p.thumbnail,
-                            },
-                            ...playlists,
-                        ]);
-                    }
-                    window.location.href =
-                        `${import.meta.env.VITE_API_URL}/download/` + data.path;
-                }
-            }),
-            {
-                pending: `${String.fromCodePoint(0x1f3bb)} Brewing music...`,
-                success: {
-                    render() {
-                        return (
-                            <div>
-                                {String.fromCodePoint(0x1f3a7)} Music
-                                downloaded!
-                                <button
-                                    className="m-2 px-2 border rounded-md"
-                                    onClick={() => {
-                                        window.location.href =
-                                            `${
-                                                import.meta.env.VITE_API_URL
-                                            }/download/` + data.path;
-                                    }}
-                                >
-                                    Retry
-                                </button>
-                            </div>
-                        );
-                    },
-                },
-                error: "Invalid link",
-            }
+        const toastID = toast.loading(
+            `${String.fromCodePoint(0x1f3bb)} Brewing music...`
         );
-        return data;
-    };
 
-    const getPlaylists = async (): Promise<Playlist[]> => {
-        let playlists: Playlist[] = [];
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/playlist/`, {
-            method: "GET",
+        const pollTaskStatus = async (taskID: string) => {
+            let status = "PENDING";
+            while (status !== "SUCCESS" && status !== "FAILURE") {
+                const response = await fetch(
+                    `${
+                        import.meta.env.VITE_API_URL
+                    }/check-brew-status/${taskID}`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": Cookies.get("csrftoken") || "",
+                        },
+                        credentials: "include",
+                    }
+                );
+                if (response.headers.get("Content-Type") !== null) {
+                    const data = await response.json();
+
+                    status = data.status;
+                    if (status === "SUCCESS") {
+                        window.location.href =
+                            `${import.meta.env.VITE_API_URL}/download/` +
+                            data.path;
+
+                        toast.update(toastID, {
+                            render() {
+                                return (
+                                    <div>
+                                        {String.fromCodePoint(0x1f3a7)} Music
+                                        downloaded!
+                                        <button
+                                            className="m-2 px-2 border rounded-md"
+                                            onClick={() => {
+                                                window.location.href =
+                                                    `${
+                                                        import.meta.env
+                                                            .VITE_API_URL
+                                                    }/download/` + data.path;
+                                            }}
+                                        >
+                                            Retry
+                                        </button>
+                                    </div>
+                                );
+                            },
+                            type: "success",
+                            isLoading: false,
+                            autoClose: 5000,
+                        });
+                        return true;
+                    }
+                    if (status === "FAILURE") {
+                        toast.update(toastID, {
+                            render: "Invalid link",
+                            type: "error",
+                            isLoading: false,
+                            autoClose: 5000,
+                        });
+                        return false;
+                    }
+                }
+                // Poll server every 2 seconds
+                await new Promise((resolve) => setTimeout(resolve, 2000));
+            }
+        };
+
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/brew/`, {
+            method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRFToken": Cookies.get("csrftoken") || "",
             },
+            body: JSON.stringify({
+                link: link,
+                fileFormat: "m4a",
+            }),
             credentials: "include",
         });
+
+        let data: any = null;
+        if (response.ok) {
+            if (response.headers.get("Content-Type") !== null) {
+                data = await response.json();
+            }
+            if (data.task_id) {
+                // Wait for brew result
+                const brewSuccess = await pollTaskStatus(data.task_id);
+                if (
+                    brewSuccess &&
+                    loggedIn &&
+                    data.music_data.contentType === "playlist"
+                ) {
+                    const p = data.music_data.playlist_data;
+                    setPlaylists([
+                        {
+                            playlist_id: p.playlist_id,
+                            name: p.name,
+                            owner: p.owner,
+                            link: p.link,
+                            platform: p.platform,
+                            thumbnail: p.thumbnail,
+                        },
+                        ...playlists,
+                    ]);
+                }
+            }
+        }
+    };
+
+    const getPlaylists = async (): Promise<Playlist[]> => {
+        let playlists: Playlist[] = [];
+        const response = await fetch(
+            `${import.meta.env.VITE_API_URL}/playlist/`,
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": Cookies.get("csrftoken") || "",
+                },
+                credentials: "include",
+            }
+        );
 
         const data = await response.json();
         if (response.ok) {

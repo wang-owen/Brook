@@ -6,9 +6,31 @@ from rest_framework.decorators import api_view
 from . import util
 from brewery.models import Playlist
 from brewery.serializers import PlaylistSerializer, TrackSerializer
+from .tasks import check_task_status
 
 
 # Create your views here.
+@api_view(["GET"])
+def get_brew_status(request, task_id):
+    if not task_id:
+        return Response(
+            {"message": "Task ID not provided"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    task = check_task_status(task_id)
+    task_status = task.get("status")
+    if task_status == "FAILURE":
+        return Response(
+            {"status": "FAILURE", "message": "Error downloading music"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+    if task_status == "SUCCESS":
+        return Response(
+            {"status": "SUCCESS", "path": task.get("result")}, status=status.HTTP_200_OK
+        )
+    return Response({"status": "PENDING"}, status=status.HTTP_200_OK)
+
+
 @api_view(["POST"])
 def brew(request):
     data = request.data
@@ -20,7 +42,7 @@ def brew(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
     # Download music
-    if path := util.brew(link=link, file_format=file_format):
+    if task_id := util.brew(link=link, file_format=file_format):
         # Log the download
         if request.user.is_authenticated and (music_data := util.get_data(link)):
             # Determine if playlist
@@ -51,7 +73,7 @@ def brew(request):
 
             return Response(
                 {
-                    "path": str(path),
+                    "task_id": task_id,
                     "pk": playlist.pk if playlist else None,  # type: ignore
                     "music_data": (
                         # Music data returned if logged in and link valid
@@ -67,7 +89,7 @@ def brew(request):
                 status=status.HTTP_200_OK,
             )
         return Response(
-            {"path": str(path)},
+            {"task_id": task_id},
             status=status.HTTP_200_OK,
         )
     return Response(
@@ -192,15 +214,18 @@ class PlaylistDetail(APIView):
                 playlist_serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
 
-        path = None
+        task_id = None
         if len(new_tracks) > 0:
-            path = util.brew(
+            task_id = util.brew(
                 new_tracks=new_tracks,
                 playlist_name=playlist_data.get("name"),
                 platform=data.get("platform"),
             )
         return Response(
-            {"path": str(path) if path else None, "playlist_data": playlist_data},
+            {
+                "task_id": task_id if task_id else None,
+                "playlist_data": playlist_data,
+            },
             status=status.HTTP_200_OK,
         )
 
