@@ -4,6 +4,7 @@ from pathlib import Path
 from django.http import FileResponse
 from django.conf import settings
 from dotenv import load_dotenv
+from tasks import task_brew
 
 PLAYLIST = "playlist"
 PLAYLIST_URLS = ["list", "playlist", "album"]
@@ -183,9 +184,11 @@ def download_playlist(link, file_format, platform):
     dir_.mkdir()
 
     if platform == YOUTUBE:
-        return _download_youtube_playlist(link, file_format, dir_)
+        task = task_brew.delay("download_youtube_playlist", link, file_format, dir_)
+        return task.id
     elif platform == SPOTIFY:
-        return _download_spotify_playlist(link, file_format, dir_)
+        task = task_brew.delay("download_spotify_playlist", link, file_format, dir_)
+        return task.id
     return False
 
 
@@ -196,10 +199,13 @@ def download_track(link, file_format, platform, dir_=None):
             return False
         dir_.mkdir()
 
+    # Download tracks asynchronously
     if platform == YOUTUBE:
-        return _download_youtube_track(link, file_format, dir_)
+        task = task_brew.delay("download_youtube_track", link, file_format, dir_)
+        return task.id
     elif platform == SPOTIFY:
-        return _download_spotify_track(link, file_format, dir_)
+        task = task_brew.delay("download_spotify_track", link, file_format, dir_)
+        return task.id
     return False
 
 
@@ -466,7 +472,7 @@ def _get_spotify_playlist_data(link):
     }
 
 
-def _download_youtube_track(link, file_format, dir_):
+def download_youtube_track(link, file_format, dir_):
     """Download YouTube track or playlist from link
 
     Args:
@@ -499,7 +505,7 @@ def _download_youtube_track(link, file_format, dir_):
         return Path(path)
 
 
-def _download_youtube_playlist(link, file_format, dir_):
+def download_youtube_playlist(link, file_format, dir_):
     """Download YouTube track or playlist from link
 
     Args:
@@ -579,7 +585,7 @@ def _download_youtube_search(name, artist, file_format, dir_):
         return Path(path)
 
 
-def _download_spotify_track(link, file_format, dir_):
+def download_spotify_track(link, file_format, dir_):
     """Download Spotify track from link
 
     Args:
@@ -593,7 +599,7 @@ def _download_spotify_track(link, file_format, dir_):
     return _download_youtube_search(track_name, track_artist, file_format, dir_)
 
 
-def _download_spotify_playlist(link, file_format, dir_):
+def download_spotify_playlist(link, file_format, dir_):
     """Download Spotify playlist from link
 
     Args:
