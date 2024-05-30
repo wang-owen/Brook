@@ -11,11 +11,8 @@ from .tasks import check_task_status
 
 # Create your views here.
 @api_view(["GET"])
-def get_brew_status(request):
-    print("get_brew_status!")
-    data = request.data
-    task_id = data.get("task_id")
-    if not data or not task_id:
+def get_brew_status(request, task_id):
+    if not task_id:
         return Response(
             {"message": "Task ID not provided"},
             status=status.HTTP_400_BAD_REQUEST,
@@ -24,11 +21,14 @@ def get_brew_status(request):
     task_status = task.get("status")
     if task_status == "FAILURE":
         return Response(
-            {"message": "Error downloading music"},
+            {"status": "FAILURE", "message": "Error downloading music"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
     if task_status == "SUCCESS":
-        return Response({"path": task.get("result")}, status=status.HTTP_200_OK)
+        return Response(
+            {"status": "SUCCESS", "path": task.get("result")}, status=status.HTTP_200_OK
+        )
+    return Response({"status": "PENDING"}, status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])

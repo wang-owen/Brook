@@ -38,6 +38,9 @@ SECRET_KEY = os.environ.get(
 IS_HEROKU_APP = "DYNO" in os.environ and not "CI" in os.environ
 
 CELERY_IMPORTS = "brewery.tasks"
+CELERY_RESULT_BACKEND = "django-db"
+CELERY_CACHE_BACKEND = 'django-cache'
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = 0 if IS_HEROKU_APP else int(os.environ.get("DJANGO_DEBUG", 0))
@@ -69,6 +72,7 @@ INSTALLED_APPS = [
     "users",
     "rest_framework",
     "corsheaders",
+    "django_celery_results",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
