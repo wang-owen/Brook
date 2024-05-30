@@ -219,7 +219,6 @@ def download_new_tracks(new_tracks, playlist_name, platform, file_format):
         return False
     dir_.mkdir()
 
-    # playlist_name = _get_youtube_playlist_data(link)["name"]
     playlist_name = f"{playlist_name}-UPDATED"
     # Remove illegal filename characters from playlist name
     for char in ILLEGAL_CHARS:
@@ -521,7 +520,7 @@ def download_youtube_playlist(link, file_format, dir_):
     # Remove illegal filename characters from playlist name
     for char in ILLEGAL_CHARS:
         playlist_name = playlist_name.replace(char, "-")
-    playlist_dir = dir_ / playlist_name
+    playlist_dir = Path(dir_) / playlist_name
 
     ydl_opts = {
         "outtmpl": f"{playlist_dir}/%(title)s [%(id)s].%(ext)s",
@@ -616,7 +615,7 @@ def download_spotify_playlist(link, file_format, dir_):
     # Remove illegal filename characters from playlist name
     for char in ILLEGAL_CHARS:
         playlist_name = playlist_name.replace(char, "-")
-    playlist_dir = dir_ / playlist_name
+    playlist_dir = Path(dir_) / playlist_name
 
     tracks = data["tracks"]
     for track in tracks:

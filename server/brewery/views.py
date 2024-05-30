@@ -100,10 +100,7 @@ def brew(request):
 
 @api_view(["GET"])
 def download(request, path):
-    file = open(path, "rb")
-    response = FileResponse(file)
-    response["Content-Disposition"] = f"attachment; filename='{path}'"
-    return response
+    return util.get_file(path)
 
 
 class PlaylistList(APIView):
