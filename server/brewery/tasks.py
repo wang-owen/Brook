@@ -24,5 +24,5 @@ def check_task_status(task_id):
 def task_brew(function_name, *args, **kwargs):
     func = getattr(util, function_name)
     path = func(*args, **kwargs)
-    s3.upload_file(path, "brook", path.name)
+    s3.upload_file(path, "brook", str(path))
     return str(path)
