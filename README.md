@@ -17,7 +17,9 @@ Brook is a web app which allows users to download and save YouTube and Spotify t
 ---
 
 ## 🪲 Known issues
-- [ ] CloudAMQP instance downloads files successfully, but files cannot be found on Heroku filesystem, resulting in Server Error 500 when attempting to fetch
+- [ ] Saved playlists will be duplicated if downloaded from main form
+- [ ] Spotify bug where some songs are not downloaded and/or saved to duplicate file names
+- [x] CloudAMQP instance downloads files successfully, but files cannot be found on Heroku filesystem, resulting in Server Error 500 when attempting to fetch
 - [x] Downloads that take over 30 seconds initiate a Heroku timeout (not an issue when running locally)
 
 ## 📝 To-do
