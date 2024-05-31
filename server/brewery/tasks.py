@@ -25,4 +25,4 @@ def task_brew(function_name, *args, **kwargs):
     func = getattr(util, function_name)
     path = func(*args, **kwargs)
     s3.upload_file(path, "brook", path.name)
-    return path
+    return str(path)
