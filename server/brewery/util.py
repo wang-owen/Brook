@@ -576,7 +576,7 @@ def download_youtube_playlist(link, file_format, dir_):
     return Path(path)
 
 
-def _download_youtube_search(name, artist, file_format, dir_):
+def _download_youtube_search(name, artist, track_id, file_format, dir_):
     """Download YouTube track from search query
 
     Args:
@@ -585,8 +585,13 @@ def _download_youtube_search(name, artist, file_format, dir_):
         file_format (str): file format to download track in
         dir_ (str): directory to download tracks to
     """
+    legal_name = name
+    for char in ILLEGAL_CHARS:
+        legal_name = legal_name.replace(char, "-")
+    path = Path(dir_) / f"{legal_name} [{track_id}].{file_format}"
+
     ydl_opts = {
-        "outtmpl": f"{dir_}/%(title)s [%(id)s].%(ext)s",
+        "outtmpl": f"{dir_}/{legal_name} [{track_id}].%(ext)s",
         "format": f"ba[ext={file_format}]",
         "restrictfilenames": True,
         "writethumbnail": True,
@@ -607,8 +612,7 @@ def _download_youtube_search(name, artist, file_format, dir_):
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        path = ydl.prepare_filename(ydl.extract_info(f"{name} {artist}", download=True))
-
+        ydl.extract_info(f"{name} {artist}", download=True)
         return Path(path)
 
 
@@ -621,9 +625,9 @@ def download_spotify_track(link, file_format, dir_):
         dir_ (str): directory to download tracks to
     """
     data = _get_spotify_track_data(link)
-    track_name, track_artist = data["name"], data["artist"]
-
-    return _download_youtube_search(track_name, track_artist, file_format, dir_)
+    return _download_youtube_search(
+        data["name"], data["artist"], data["track_id"], file_format, dir_
+    )
 
 
 def download_spotify_playlist(link, file_format, dir_):
@@ -644,7 +648,7 @@ def download_spotify_playlist(link, file_format, dir_):
     tracks = data["tracks"]
     for track in tracks:
         _download_youtube_search(
-            track["name"], track["artist"], file_format, playlist_dir
+            track["name"], track["artist"], track["track_id"], file_format, playlist_dir
         )
 
     # Compress folder
