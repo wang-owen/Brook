@@ -1,15 +1,21 @@
 import { useState } from "react";
+import { Id } from "react-toastify";
 import SavedPlaylist from "./SavedPlaylist";
 import Playlist from "../interfaces/Playlist";
 
 const SavedPlaylists = ({
     playlists,
+    pollTaskStatus,
     brew,
     watchPlaylist,
     handlePlaylistUpdate,
     handlePlaylistRemove,
 }: {
     playlists: Playlist[];
+    pollTaskStatus: (
+        taskID: string,
+        toastID: Id
+    ) => Promise<boolean | undefined>;
     brew: (link: string) => any;
     watchPlaylist: (link: string) => void;
     handlePlaylistUpdate: (updatedPlaylist: Playlist) => void;
@@ -89,6 +95,7 @@ const SavedPlaylists = ({
                     {playlists.map((playlist) => (
                         <SavedPlaylist
                             key={playlist.playlist_id}
+                            pollTaskStatus={pollTaskStatus}
                             playlist={playlist}
                             brew={brew}
                             onUpdate={handlePlaylistUpdate}

@@ -47,6 +47,7 @@ def brew(request):
         if request.user.is_authenticated and (music_data := util.get_data(link)):
             # Determine if playlist
             playlist = None
+            exists = 0
             if playlist_data := music_data.get("playlist_data"):
                 playlist_data["watcher"] = request.user.id
                 try:
@@ -56,6 +57,7 @@ def brew(request):
                         playlist_id=playlist_data.get("playlist_id"),
                     )
                     serializer = PlaylistSerializer(playlist, data=playlist_data)
+                    exists = 1
                 except Playlist.DoesNotExist:
                     # Create playlist
                     serializer = PlaylistSerializer(data=playlist_data)
@@ -67,14 +69,11 @@ def brew(request):
                     return Response(
                         serializer.errors, status=status.HTTP_400_BAD_REQUEST
                     )
-
-                # Update playlist tracks
-                update_playlist_tracks(playlist, playlist_data.get("tracks"))
-
             return Response(
                 {
                     "task_id": task_id,
                     "pk": playlist.pk if playlist else None,  # type: ignore
+                    "exists": 1 if exists else 0,
                     "music_data": (
                         # Music data returned if logged in and link valid
                         music_data

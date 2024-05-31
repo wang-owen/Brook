@@ -1,14 +1,19 @@
 import Cookies from "js-cookie";
 import Playlist from "../interfaces/Playlist";
-import { toast } from "react-toastify";
+import { Id, toast } from "react-toastify";
 
 const SavedPlaylist = ({
     playlist,
+    pollTaskStatus,
     brew,
     onUpdate,
     onRemove,
 }: {
     playlist: Playlist;
+    pollTaskStatus: (
+        taskID: string,
+        toastID: Id
+    ) => Promise<boolean | undefined>;
     brew: (link: string) => any;
     onUpdate: (updatedPlaylist: Playlist) => void;
     onRemove: (removedPlaylistID: string) => void;
@@ -19,66 +24,52 @@ const SavedPlaylist = ({
     };
 
     const update = async () => {
-        let data: any = null;
-        toast.promise(
-            fetch(`${import.meta.env.VITE_API_URL}/playlist/${playlist.playlist_id}`, {
+        const toastID = toast.loading(
+            `${String.fromCodePoint(0x1f3bb)} Brewing music...`
+        );
+
+        const response = await fetch(
+            `${import.meta.env.VITE_API_URL}/playlist/${playlist.playlist_id}`,
+            {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                     "X-CSRFToken": Cookies.get("csrftoken") || "",
                 },
                 credentials: "include",
-            }).then(async (response) => {
-                if (response.ok) {
-                    if (response.headers.get("Content-Type") !== null) {
-                        data = await response.json();
-                    }
-                    if (data.path) {
-                        window.location.href =
-                            `${import.meta.env.VITE_API_URL}/download/` + data.path;
-                    }
-                }
-            }),
-            {
-                pending: "Updating playlist...",
-                success: {
-                    render() {
-                        onUpdate(data.playlist_data);
-                        return (
-                            <div>
-                                {String.fromCodePoint(0x1f3a7)} Playlist
-                                updated!
-                                {data.path ? (
-                                    <button
-                                        className="m-2 px-2 border rounded-md"
-                                        onClick={() => {
-                                            window.location.href =
-                                                `${import.meta.env.VITE_API_URL}/download/` +
-                                                data.path;
-                                        }}
-                                    >
-                                        Retry
-                                    </button>
-                                ) : null}
-                            </div>
-                        );
-                    },
-                },
-                error: "Playlist does not exist",
             }
         );
+
+        let data: any = null;
+        if (response.ok) {
+            if (response.headers.get("Content-Type") !== null) {
+                data = await response.json();
+            }
+            if (data.task_id) {
+                // Wait for brew result
+                const brewSuccess = await pollTaskStatus(data.task_id, toastID);
+                if (brewSuccess) {
+                    onUpdate(data.playlist_data);
+                }
+            }
+        }
     };
 
     const remove = async () => {
         const response = await toast.promise(
-            fetch(`${import.meta.env.VITE_API_URL}/playlist/${playlist.playlist_id}`, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": Cookies.get("csrftoken") || "",
-                },
-                credentials: "include",
-            }),
+            fetch(
+                `${import.meta.env.VITE_API_URL}/playlist/${
+                    playlist.playlist_id
+                }`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": Cookies.get("csrftoken") || "",
+                    },
+                    credentials: "include",
+                }
+            ),
             {
                 pending: "Removing playlist...",
                 success: `${String.fromCodePoint(0x1f4a3)} Playlist removed`,

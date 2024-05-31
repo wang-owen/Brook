@@ -237,16 +237,26 @@ def download_new_tracks(new_tracks, playlist_name, platform, file_format):
         playlist_name = playlist_name.replace(char, "-")
     playlist_dir = dir_ / playlist_name
 
-    for track in new_tracks:
-        download_track(
-            _get_track_link(platform, track.get("track_id")),
-            file_format,
-            platform,
-            dir_=playlist_dir,
-        )
+    task = task_brew.delay(
+        "download_new_tracks_task", new_tracks, platform, file_format, str(playlist_dir)
+    )
+    return task.id
 
-    path = shutil.make_archive(str(playlist_dir), "zip", playlist_dir)
-    shutil.rmtree(playlist_dir)
+
+def download_new_tracks_task(new_tracks, platform, file_format, dir_):
+    if platform == YOUTUBE:
+        for track in new_tracks:
+            download_youtube_track(
+                _get_track_link(platform, track.get("track_id")), file_format, dir_
+            )
+    elif platform == SPOTIFY:
+        for track in new_tracks:
+            download_spotify_track(
+                _get_track_link(platform, track.get("track_id")), file_format, dir_
+            )
+
+    path = shutil.make_archive(str(dir_), "zip", dir_)
+    shutil.rmtree(dir_)
 
     return Path(path)
 
