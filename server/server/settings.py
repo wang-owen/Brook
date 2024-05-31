@@ -35,8 +35,24 @@ SECRET_KEY = os.environ.get(
     "django-insecure-5g#u9i(y8)lyfr72n+!_h_-52@hmz8qf78sehklmp#^r&9z&f7",
 )
 
+# Heroku settings
 IS_HEROKU_APP = "DYNO" in os.environ and not "CI" in os.environ
 
+# Celery settings
+CELERY_BROKER_URL = os.environ.get("CLOUDAMQP_URL")
+CELERY_IMPORTS = "brewery.tasks"
+CELERY_RESULT_BACKEND = "django-db"
+CELERY_CACHE_BACKEND = "django-cache"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "UTC"
+
+# Boto3 settings
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
+
+# Django settings
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = 0 if IS_HEROKU_APP else int(os.environ.get("DJANGO_DEBUG", 0))
 
@@ -67,6 +83,7 @@ INSTALLED_APPS = [
     "users",
     "rest_framework",
     "corsheaders",
+    "django_celery_results",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

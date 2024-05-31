@@ -4,6 +4,7 @@ from pathlib import Path
 from django.http import FileResponse
 from django.conf import settings
 from dotenv import load_dotenv
+from .tasks import task_brew
 
 PLAYLIST = "playlist"
 PLAYLIST_URLS = ["list", "playlist", "album"]
@@ -82,13 +83,15 @@ def _get_platform(link):
 
 def _get_content_type(link):
     # Need to check for playlist first since single tracks in a playlist will also contain "list" in the URL
+    content = None
     for url in PLAYLIST_URLS:
         if url in link:
-            return PLAYLIST
+            content = PLAYLIST
+            break
     for url in TRACK_URLS:
         if url in link:
             return TRACK
-    return None
+    return content
 
 
 def brew(
@@ -177,55 +180,85 @@ def _get_auth_header(token):
 
 
 def download_playlist(link, file_format, platform):
-    dir_ = PLAYLISTS_DIR / datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S")
+    dir_ = (
+        settings.BASE_DIR
+        / PLAYLISTS_DIR
+        / datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S")
+    )
     if dir_.exists():
         return False
     dir_.mkdir()
 
     if platform == YOUTUBE:
-        return _download_youtube_playlist(link, file_format, dir_)
+        task = task_brew.delay(
+            "download_youtube_playlist", link, file_format, str(dir_)
+        )
+        return task.id
     elif platform == SPOTIFY:
-        return _download_spotify_playlist(link, file_format, dir_)
+        task = task_brew.delay(
+            "download_spotify_playlist", link, file_format, str(dir_)
+        )
+        return task.id
     return False
 
 
 def download_track(link, file_format, platform, dir_=None):
     if not dir_:
-        dir_ = TRACKS_DIR / datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
+        dir_ = (
+            settings.BASE_DIR
+            / TRACKS_DIR
+            / datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
+        )
         if dir_.exists():
             return False
         dir_.mkdir()
 
+    # Download tracks asynchronously
     if platform == YOUTUBE:
-        return _download_youtube_track(link, file_format, dir_)
+        task = task_brew.delay("download_youtube_track", link, file_format, str(dir_))
+        return task.id
     elif platform == SPOTIFY:
-        return _download_spotify_track(link, file_format, dir_)
+        task = task_brew.delay("download_spotify_track", link, file_format, str(dir_))
+        return task.id
     return False
 
 
 def download_new_tracks(new_tracks, playlist_name, platform, file_format):
-    dir_ = PLAYLISTS_DIR / datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
+    dir_ = (
+        settings.BASE_DIR
+        / PLAYLISTS_DIR
+        / datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
+    )
     if dir_.exists():
         return False
     dir_.mkdir()
 
-    # playlist_name = _get_youtube_playlist_data(link)["name"]
     playlist_name = f"{playlist_name}-UPDATED"
     # Remove illegal filename characters from playlist name
     for char in ILLEGAL_CHARS:
         playlist_name = playlist_name.replace(char, "-")
     playlist_dir = dir_ / playlist_name
 
-    for track in new_tracks:
-        download_track(
-            _get_track_link(platform, track.get("track_id")),
-            file_format,
-            platform,
-            dir_=playlist_dir,
-        )
+    task = task_brew.delay(
+        "download_new_tracks_task", new_tracks, platform, file_format, str(playlist_dir)
+    )
+    return task.id
 
-    path = shutil.make_archive(str(playlist_dir), "zip", playlist_dir)
-    shutil.rmtree(playlist_dir)
+
+def download_new_tracks_task(new_tracks, platform, file_format, dir_):
+    if platform == YOUTUBE:
+        for track in new_tracks:
+            download_youtube_track(
+                _get_track_link(platform, track.get("track_id")), file_format, dir_
+            )
+    elif platform == SPOTIFY:
+        for track in new_tracks:
+            download_spotify_track(
+                _get_track_link(platform, track.get("track_id")), file_format, dir_
+            )
+
+    path = shutil.make_archive(str(dir_), "zip", dir_)
+    shutil.rmtree(dir_)
 
     return Path(path)
 
@@ -466,7 +499,7 @@ def _get_spotify_playlist_data(link):
     }
 
 
-def _download_youtube_track(link, file_format, dir_):
+def download_youtube_track(link, file_format, dir_):
     """Download YouTube track or playlist from link
 
     Args:
@@ -499,7 +532,7 @@ def _download_youtube_track(link, file_format, dir_):
         return Path(path)
 
 
-def _download_youtube_playlist(link, file_format, dir_):
+def download_youtube_playlist(link, file_format, dir_):
     """Download YouTube track or playlist from link
 
     Args:
@@ -511,7 +544,7 @@ def _download_youtube_playlist(link, file_format, dir_):
     # Remove illegal filename characters from playlist name
     for char in ILLEGAL_CHARS:
         playlist_name = playlist_name.replace(char, "-")
-    playlist_dir = dir_ / playlist_name
+    playlist_dir = Path(dir_) / playlist_name
 
     ydl_opts = {
         "outtmpl": f"{playlist_dir}/%(title)s [%(id)s].%(ext)s",
@@ -543,7 +576,7 @@ def _download_youtube_playlist(link, file_format, dir_):
     return Path(path)
 
 
-def _download_youtube_search(name, artist, file_format, dir_):
+def _download_youtube_search(name, artist, track_id, file_format, dir_):
     """Download YouTube track from search query
 
     Args:
@@ -552,8 +585,13 @@ def _download_youtube_search(name, artist, file_format, dir_):
         file_format (str): file format to download track in
         dir_ (str): directory to download tracks to
     """
+    legal_name = name
+    for char in ILLEGAL_CHARS:
+        legal_name = legal_name.replace(char, "-")
+    path = Path(dir_) / f"{legal_name} [{track_id}].{file_format}"
+
     ydl_opts = {
-        "outtmpl": f"{dir_}/%(title)s [%(id)s].%(ext)s",
+        "outtmpl": f"{dir_}/{legal_name} [{track_id}].%(ext)s",
         "format": f"ba[ext={file_format}]",
         "restrictfilenames": True,
         "writethumbnail": True,
@@ -574,12 +612,11 @@ def _download_youtube_search(name, artist, file_format, dir_):
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        path = ydl.prepare_filename(ydl.extract_info(f"{name} {artist}", download=True))
-
+        ydl.extract_info(f"{name} {artist}", download=True)
         return Path(path)
 
 
-def _download_spotify_track(link, file_format, dir_):
+def download_spotify_track(link, file_format, dir_):
     """Download Spotify track from link
 
     Args:
@@ -588,12 +625,12 @@ def _download_spotify_track(link, file_format, dir_):
         dir_ (str): directory to download tracks to
     """
     data = _get_spotify_track_data(link)
-    track_name, track_artist = data["name"], data["artist"]
+    return _download_youtube_search(
+        data["name"], data["artist"], data["track_id"], file_format, dir_
+    )
 
-    return _download_youtube_search(track_name, track_artist, file_format, dir_)
 
-
-def _download_spotify_playlist(link, file_format, dir_):
+def download_spotify_playlist(link, file_format, dir_):
     """Download Spotify playlist from link
 
     Args:
@@ -606,12 +643,12 @@ def _download_spotify_playlist(link, file_format, dir_):
     # Remove illegal filename characters from playlist name
     for char in ILLEGAL_CHARS:
         playlist_name = playlist_name.replace(char, "-")
-    playlist_dir = dir_ / playlist_name
+    playlist_dir = Path(dir_) / playlist_name
 
     tracks = data["tracks"]
     for track in tracks:
         _download_youtube_search(
-            track["name"], track["artist"], file_format, playlist_dir
+            track["name"], track["artist"], track["track_id"], file_format, playlist_dir
         )
 
     # Compress folder

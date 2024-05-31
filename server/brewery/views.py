@@ -1,4 +1,4 @@
-from django.http import Http404
+from django.http import FileResponse, Http404
 from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -6,9 +6,31 @@ from rest_framework.decorators import api_view
 from . import util
 from brewery.models import Playlist
 from brewery.serializers import PlaylistSerializer, TrackSerializer
+from .tasks import check_task_status
 
 
 # Create your views here.
+@api_view(["GET"])
+def get_brew_status(request, task_id):
+    if not task_id:
+        return Response(
+            {"message": "Task ID not provided"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    task = check_task_status(task_id)
+    task_status = task.get("status")
+    if task_status == "FAILURE":
+        return Response(
+            {"status": "FAILURE", "message": "Error downloading music"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+    if task_status == "SUCCESS":
+        return Response(
+            {"status": "SUCCESS", "path": task.get("result")}, status=status.HTTP_200_OK
+        )
+    return Response({"status": "PENDING"}, status=status.HTTP_200_OK)
+
+
 @api_view(["POST"])
 def brew(request):
     data = request.data
@@ -20,11 +42,12 @@ def brew(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
     # Download music
-    if path := util.brew(link=link, file_format=file_format):
+    if task_id := util.brew(link=link, file_format=file_format):
         # Log the download
         if request.user.is_authenticated and (music_data := util.get_data(link)):
             # Determine if playlist
             playlist = None
+            exists = 0
             if playlist_data := music_data.get("playlist_data"):
                 playlist_data["watcher"] = request.user.id
                 try:
@@ -34,6 +57,7 @@ def brew(request):
                         playlist_id=playlist_data.get("playlist_id"),
                     )
                     serializer = PlaylistSerializer(playlist, data=playlist_data)
+                    exists = 1
                 except Playlist.DoesNotExist:
                     # Create playlist
                     serializer = PlaylistSerializer(data=playlist_data)
@@ -45,14 +69,11 @@ def brew(request):
                     return Response(
                         serializer.errors, status=status.HTTP_400_BAD_REQUEST
                     )
-
-                # Update playlist tracks
-                update_playlist_tracks(playlist, playlist_data.get("tracks"))
-
             return Response(
                 {
-                    "path": str(path),
+                    "task_id": task_id,
                     "pk": playlist.pk if playlist else None,  # type: ignore
+                    "exists": 1 if exists else 0,
                     "music_data": (
                         # Music data returned if logged in and link valid
                         music_data
@@ -67,7 +88,7 @@ def brew(request):
                 status=status.HTTP_200_OK,
             )
         return Response(
-            {"path": str(path)},
+            {"task_id": task_id},
             status=status.HTTP_200_OK,
         )
     return Response(
@@ -76,6 +97,7 @@ def brew(request):
     )
 
 
+@api_view(["GET"])
 def download(request, path):
     return util.get_file(path)
 
@@ -192,15 +214,18 @@ class PlaylistDetail(APIView):
                 playlist_serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
 
-        path = None
+        task_id = None
         if len(new_tracks) > 0:
-            path = util.brew(
+            task_id = util.brew(
                 new_tracks=new_tracks,
                 playlist_name=playlist_data.get("name"),
                 platform=data.get("platform"),
             )
         return Response(
-            {"path": str(path) if path else None, "playlist_data": playlist_data},
+            {
+                "task_id": task_id if task_id else None,
+                "playlist_data": playlist_data,
+            },
             status=status.HTTP_200_OK,
         )
 
