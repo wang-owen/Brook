@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import Cookies from "js-cookie";
-import { toast } from "react-toastify";
+import { Id, toast } from "react-toastify";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import BrewHero from "../components/BrewHero";
@@ -12,64 +12,50 @@ const BrewPage = () => {
     const { loggedIn } = useContext(LoginContext);
 
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
-    const [fileUrl, setFileUrl] = useState("");
 
-    const brew = async (link: string) => {
-        const toastID = toast.loading(
-            `${String.fromCodePoint(0x1f3bb)} Brewing music...`
-        );
+    const pollTaskStatus = async (taskID: string, toastID: Id) => {
+        let status = "PENDING";
+        while (status !== "SUCCESS" && status !== "FAILURE") {
+            const response = await fetch(
+                `${import.meta.env.VITE_API_URL}/check-brew-status/${taskID}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": Cookies.get("csrftoken") || "",
+                    },
+                    credentials: "include",
+                }
+            );
+            if (response.headers.get("Content-Type") !== null) {
+                const data = await response.json();
 
-        const pollTaskStatus = async (taskID: string) => {
-            let status = "PENDING";
-            while (status !== "SUCCESS" && status !== "FAILURE") {
-                const response = await fetch(
-                    `${
-                        import.meta.env.VITE_API_URL
-                    }/check-brew-status/${taskID}`,
-                    {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRFToken": Cookies.get("csrftoken") || "",
+                status = data.status;
+                if (status === "SUCCESS") {
+                    // Download file from AWS S3 bucket
+                    const s3 = new S3Client({
+                        region: "us-east-1",
+                        credentials: {
+                            accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID,
+                            secretAccessKey: import.meta.env
+                                .VITE_AWS_SECRET_ACCESS_KEY,
                         },
-                        credentials: "include",
-                    }
-                );
-                if (response.headers.get("Content-Type") !== null) {
-                    const data = await response.json();
+                    });
 
-                    status = data.status;
-                    if (status === "SUCCESS") {
-                        // Download file from AWS S3 bucket
-                        const s3 = new S3Client({
-                            region: "us-east-1",
-                            credentials: {
-                                accessKeyId: import.meta.env
-                                    .VITE_AWS_ACCESS_KEY_ID,
-                                secretAccessKey: import.meta.env
-                                    .VITE_AWS_SECRET_ACCESS_KEY,
-                            },
+                    const bucketName = "brook";
+                    const objectKey = data.path;
+
+                    const command = new GetObjectCommand({
+                        Bucket: bucketName,
+                        Key: objectKey,
+                    });
+
+                    try {
+                        const signedURL = await getSignedUrl(s3, command, {
+                            expiresIn: 120,
                         });
-
-                        const bucketName = "brook";
-                        const objectKey = data.path;
-
-                        const command = new GetObjectCommand({
-                            Bucket: bucketName,
-                            Key: objectKey,
-                        });
-
-                        try {
-                            const signedUrl = await getSignedUrl(s3, command, {
-                                expiresIn: 120,
-                            });
-                            setFileUrl(signedUrl);
-                            // Trigger download
-                            window.location.href = signedUrl;
-                        } catch (err) {
-                            console.error("Error getting signed URL", err);
-                        }
-
+                        // Trigger download
+                        window.location.href = signedURL;
                         // Update toast
                         toast.update(toastID, {
                             render() {
@@ -80,7 +66,8 @@ const BrewPage = () => {
                                         <button
                                             className="m-2 px-2 border rounded-md"
                                             onClick={() => {
-                                                window.location.href = fileUrl;
+                                                window.location.href =
+                                                    signedURL;
                                             }}
                                         >
                                             Retry
@@ -92,22 +79,39 @@ const BrewPage = () => {
                             isLoading: false,
                             autoClose: 5000,
                         });
-                        return true;
-                    }
-                    if (status === "FAILURE") {
+                    } catch (err) {
+                        console.error("Error", err);
                         toast.update(toastID, {
-                            render: "Invalid link",
+                            render() {
+                                return <div>Invalid link</div>;
+                            },
                             type: "error",
                             isLoading: false,
                             autoClose: 5000,
                         });
-                        return false;
                     }
+
+                    return true;
                 }
-                // Poll server every 2 seconds
-                await new Promise((resolve) => setTimeout(resolve, 2000));
+                if (status === "FAILURE") {
+                    toast.update(toastID, {
+                        render: "Invalid link",
+                        type: "error",
+                        isLoading: false,
+                        autoClose: 5000,
+                    });
+                    return false;
+                }
             }
-        };
+            // Poll server every 2 seconds
+            await new Promise((resolve) => setTimeout(resolve, 3000));
+        }
+    };
+
+    const brew = async (link: string) => {
+        const toastID = toast.loading(
+            `${String.fromCodePoint(0x1f3bb)} Brewing music...`
+        );
 
         const response = await fetch(`${import.meta.env.VITE_API_URL}/brew/`, {
             method: "POST",
@@ -129,24 +133,46 @@ const BrewPage = () => {
             }
             if (data.task_id) {
                 // Wait for brew result
-                const brewSuccess = await pollTaskStatus(data.task_id);
+                const brewSuccess = await pollTaskStatus(data.task_id, toastID);
                 if (
                     brewSuccess &&
                     loggedIn &&
                     data.music_data.contentType === "playlist"
                 ) {
                     const p = data.music_data.playlist_data;
-                    setPlaylists([
-                        {
-                            playlist_id: p.playlist_id,
-                            name: p.name,
-                            owner: p.owner,
-                            link: p.link,
-                            platform: p.platform,
-                            thumbnail: p.thumbnail,
-                        },
-                        ...playlists,
-                    ]);
+                    if (!data.exists) {
+                        setPlaylists([
+                            {
+                                playlist_id: p.playlist_id,
+                                name: p.name,
+                                owner: p.owner,
+                                link: p.link,
+                                platform: p.platform,
+                                thumbnail: p.thumbnail,
+                            },
+                            ...playlists,
+                        ]);
+                    } else {
+                        setTimeout(
+                            () =>
+                                setPlaylists([
+                                    {
+                                        playlist_id: p.playlist_id,
+                                        name: p.name,
+                                        owner: p.owner,
+                                        link: p.link,
+                                        platform: p.platform,
+                                        thumbnail: p.thumbnail,
+                                    },
+                                    ...playlists.filter(
+                                        (playlist) =>
+                                            playlist.playlist_id !==
+                                            p.playlist_id
+                                    ),
+                                ]),
+                            100
+                        );
+                    }
                 }
             }
         }
@@ -236,7 +262,7 @@ const BrewPage = () => {
                             playlist.playlist_id !== updatedPlaylist.playlist_id
                     ),
                 ]),
-            1 // thumbnail doesn't update unless delay, temp fix
+            100 // thumbnail doesn't update unless delay, temp fix
         );
     };
 
@@ -264,6 +290,7 @@ const BrewPage = () => {
             {loggedIn ? (
                 <SavedPlaylists
                     playlists={playlists}
+                    pollTaskStatus={pollTaskStatus}
                     brew={brew}
                     watchPlaylist={watchPlaylist}
                     handlePlaylistUpdate={handlePlaylistUpdate}
