@@ -5,7 +5,6 @@ from . import util
 
 def check_task_status(task_id):
     result = AsyncResult(task_id)
-    print(result.result)
     return {
         "task_id": task_id,
         "status": result.status,
