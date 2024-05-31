@@ -148,6 +148,8 @@ def get_file(path):
             content_type = f"audio/{path.split('.')[-1]}"
 
         # Return file to client
+        print(path)
+        print(open(path, "rb"))
         response = FileResponse(
             open(path, "rb"), as_attachment=True, content_type=content_type
         )
