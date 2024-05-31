@@ -32,13 +32,18 @@ Brook is a web app which allows users to download and save YouTube and Spotify t
 
 ## ✍️ Contributing
 1. Fork this repository
-2. Create a `.env` file in the `client` root directory and add `VITE_API_URL=http://127.0.0.1:8000`
-3. Create a `.env` file in the `server` root directory and add the following:
+2. Create a `.env` file in the `client` root directory and add the following:
+     * `VITE_API_URL=http://127.0.0.1:8000`
+     * `VITE_AWS_ACCESS_KEY_ID=<your aws access key id>`
+     * `VITE_AWS_SECRET_ACCESS_KEY=<your aws secret access key>`
+4. Create a `.env` file in the `server` root directory and add the following:
      * `DJANGO_DEBUG=1`
      * `YOUTUBE_API_KEY=<your youtube data api key>`
      * `SPOTIFY_CLIENT_ID=<your spotify client id>`
      * `SPOTIFY_CLIENT_SECRET<your spotify client secret`
-4. In your terminal, `cd` into `Brook/client` and run the following:
+     * `AWS_ACCESS_KEY_ID=<your aws access key id>`
+     * `AWS_SECRET_ACCESS_KEY=<your aws secret access key>`
+5. In your terminal, `cd` into `Brook/client` and run the following:
      1. `npm install`
      2. `npm run dev`
 6. In another terminal window, `cd` into `Brook/server` and run the following:
