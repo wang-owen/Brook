@@ -148,8 +148,6 @@ def get_file(path):
             content_type = f"audio/{path.split('.')[-1]}"
 
         # Return file to client
-        print(path)
-        print(open(path, "rb"))
         response = FileResponse(
             open(path, "rb"), as_attachment=True, content_type=content_type
         )
@@ -180,7 +178,11 @@ def _get_auth_header(token):
 
 
 def download_playlist(link, file_format, platform):
-    dir_ = PLAYLISTS_DIR / datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S")
+    dir_ = (
+        settings.BASE_DIR
+        / PLAYLISTS_DIR
+        / datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S")
+    )
     if dir_.exists():
         return False
     dir_.mkdir()
@@ -200,7 +202,11 @@ def download_playlist(link, file_format, platform):
 
 def download_track(link, file_format, platform, dir_=None):
     if not dir_:
-        dir_ = TRACKS_DIR / datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
+        dir_ = (
+            settings.BASE_DIR
+            / TRACKS_DIR
+            / datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
+        )
         if dir_.exists():
             return False
         dir_.mkdir()
@@ -216,7 +222,11 @@ def download_track(link, file_format, platform, dir_=None):
 
 
 def download_new_tracks(new_tracks, playlist_name, platform, file_format):
-    dir_ = PLAYLISTS_DIR / datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
+    dir_ = (
+        settings.BASE_DIR
+        / PLAYLISTS_DIR
+        / datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
+    )
     if dir_.exists():
         return False
     dir_.mkdir()
