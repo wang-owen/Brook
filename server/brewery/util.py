@@ -83,13 +83,15 @@ def _get_platform(link):
 
 def _get_content_type(link):
     # Need to check for playlist first since single tracks in a playlist will also contain "list" in the URL
+    content = None
     for url in PLAYLIST_URLS:
         if url in link:
-            return PLAYLIST
+            content = PLAYLIST
+            break
     for url in TRACK_URLS:
         if url in link:
             return TRACK
-    return None
+    return content
 
 
 def brew(
