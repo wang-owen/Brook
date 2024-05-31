@@ -41,8 +41,6 @@ const BrewPage = () => {
                     status = data.status;
                     if (status === "SUCCESS") {
                         // Download file from AWS S3 bucket
-                        console.log(import.meta.env.VITE_AWS_ACCESS_KEY_ID);
-                        console.log(import.meta.env.VITE_AWS_SECRET_ACCESS_KEY);
                         const s3 = new S3Client({
                             region: "us-east-1",
                             credentials: {
