@@ -6,6 +6,11 @@ const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
 
     const brewSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
+        // Clear input field
+        const inputElement = document.getElementById("brew-input");
+        if (inputElement) {
+            (inputElement as HTMLInputElement).value = "";
+        }
         return brew(link);
     };
 
@@ -33,6 +38,7 @@ const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
                         <form onSubmit={brewSubmit} className={formClass}>
                             <div className="relative flex justify-between items-center mx-5 my-2">
                                 <input
+                                    id="brew-input"
                                     className="bg-transparent text-white w-full border-none focus:outline-none"
                                     type="url"
                                     name="link"

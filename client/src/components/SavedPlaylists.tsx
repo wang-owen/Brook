@@ -29,6 +29,11 @@ const SavedPlaylists = ({
 
         watchPlaylist(watchLink);
 
+        // Clear input field
+        const inputElement = document.getElementById("watch-input");
+        if (inputElement) {
+            (inputElement as HTMLInputElement).value = "";
+        }
         return;
     };
 
@@ -44,10 +49,10 @@ const SavedPlaylists = ({
         <>
             <section>
                 <div className="my-10 text-center">
-                    <h1 className="text-3xl">Saved Playlists</h1>
+                    <h1 className="text-3xl text-black">Saved Playlists</h1>
                     <button
                         onClick={() => setShowInput(!showInput)}
-                        className="my-5 border border-black rounded-lg py-1 px-7 bg-gray-400 hover:bg-gray-500 duration-200 text-black"
+                        className="btn btn-active btn-primary m-4"
                     >
                         Add
                     </button>
@@ -59,6 +64,7 @@ const SavedPlaylists = ({
                             >
                                 <div className="relative flex justify-between items-center mx-5 my-2">
                                     <input
+                                        id="watch-input"
                                         className="bg-transparent text-white w-full border-none focus:outline-none"
                                         type="url"
                                         name="link"
@@ -91,7 +97,7 @@ const SavedPlaylists = ({
                         ) : null}
                     </div>
                 </div>
-                <div className="m-4 grid grid-cols-5 gap-5 justify-evenly justify-items-center items-center content-center animate-fadeInFromLeft">
+                <div className="m-4 grid grid-cols-3 2xl:grid-cols-4 gap-4 justify-evenly justify-items-center items-center content-center animate-fadeInFromLeft">
                     {playlists.map((playlist) => (
                         <SavedPlaylist
                             key={playlist.playlist_id}
