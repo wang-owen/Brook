@@ -25,7 +25,7 @@ const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
             >
                 <div className="w-full animate-fadeInFromBottom">
                     <div className="flex justify-center">
-                        <h1 className="m-12 text-7xl h-full bg-gradient-to-r from-blue-800 via-green-400 to-blue-500 text-transparent bg-clip-text flex items-center font-semibold text-center drop-shadow-2xl">
+                        <h1 className="m-12 text-7xl h-full bg-gradient-to-r from-black via-blue-500 to-white text-transparent bg-clip-text flex items-center font-semibold text-center drop-shadow-2xl">
                             Brook
                         </h1>
                     </div>
