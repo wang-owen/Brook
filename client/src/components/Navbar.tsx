@@ -1,6 +1,5 @@
 import { useContext } from "react";
-import { NavLink, Path, useNavigate } from "react-router-dom";
-import navbarIcon from "../assets/img/navbar-icon.png";
+import { NavLink, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import { LoginContext } from "../App.jsx";
@@ -9,97 +8,61 @@ const Navbar = () => {
     const { loggedIn, setLoggedIn } = useContext(LoginContext);
     const navigate = useNavigate();
 
-    const linkClass =
-        "text-white text-sm hover:bg-gray-600 hover:text-base duration-200 rounded-sm px-3 py-2";
+    const LogoutButton = (
+        <button
+            onClick={async () => {
+                const response = await toast.promise(
+                    fetch(`${import.meta.env.VITE_API_URL}/logout/`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": Cookies.get("csrftoken") || "",
+                        },
+                        credentials: "include",
+                    }),
+                    {
+                        pending: "Logging out...",
+                        success: `${String.fromCodePoint(0x1f4a4)} Logged out`,
+                    }
+                );
 
-    const LoggedInItem = ({
-        showIfLoggedIn,
-        loggedIn,
-        label,
-        path,
-    }: {
-        showIfLoggedIn: Boolean;
-        loggedIn: Boolean;
-        label: String;
-        path: Path;
-    }) => {
-        if (showIfLoggedIn === loggedIn) {
-            return (
-                <NavLink to={path} className={linkClass}>
-                    {label}
-                </NavLink>
-            );
-        }
-        return null;
-    };
-
-    const LogoutButton = ({ loggedIn }: { loggedIn: boolean }) => {
-        if (loggedIn) {
-            return (
-                <button
-                    className={linkClass}
-                    onClick={async () => {
-                        const response = await toast.promise(
-                            fetch(`${import.meta.env.VITE_API_URL}/logout/`, {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                    "X-CSRFToken":
-                                        Cookies.get("csrftoken") || "",
-                                },
-                                credentials: "include",
-                            }),
-                            {
-                                pending: "Logging out...",
-                                success: `${String.fromCodePoint(
-                                    0x1f4a4
-                                )} Logged out`,
-                            }
-                        );
-
-                        if (response.ok) {
-                            setLoggedIn(false);
-                            navigate("/");
-                        }
-                    }}
-                >
-                    Logout
-                </button>
-            );
-        }
-        return null;
-    };
+                if (response.ok) {
+                    setLoggedIn(false);
+                    navigate("/");
+                }
+            }}
+        >
+            Logout
+        </button>
+    );
 
     return (
-        <header className="fixed top-0 w-full bg-gray-500 flex justify-center shadow-xl z-10 animate-fadeInFromTop">
-            <nav className={`flex h-full w-2/3 items-center justify-between`}>
-                {/* <!-- Logo --> */}
-                <NavLink className="flex items-center" to="/">
-                    <img className="h-10 w-auto" src={navbarIcon} alt="Brook" />
-                    <span className="text-white text-2xl font-bold ml-2 mt-0.5 hover:opacity-50 duration-200">
-                        Brook
-                    </span>
-                </NavLink>
-                <div>
-                    <NavLink to="/" className={linkClass}>
-                        Brew
-                    </NavLink>
-                    <LoggedInItem
-                        showIfLoggedIn={false}
-                        loggedIn={loggedIn}
-                        label="Register"
-                        path={"/register" as unknown as Path}
-                    />
-                    <LoggedInItem
-                        showIfLoggedIn={false}
-                        loggedIn={loggedIn}
-                        label="Login"
-                        path={"/login" as unknown as Path}
-                    />
-                    <LogoutButton loggedIn={loggedIn} />
-                </div>
-            </nav>
-        </header>
+        <div className="navbar bg-base-100">
+            <div className="flex-1">
+                <a className="btn btn-ghost text-xl">Brook</a>
+            </div>
+            <div className="flex-none">
+                <ul className="menu menu-horizontal px-1">
+                    <li>
+                        <NavLink to="/">Brew</NavLink>
+                    </li>
+                    {!loggedIn ? (
+                        <>
+                            <li>
+                                <NavLink to="/register">Register</NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="/login">Login</NavLink>
+                            </li>
+                        </>
+                    ) : (
+                        <li>
+                            <a>{LogoutButton}</a>
+                        </li>
+                    )}
+                </ul>
+            </div>
+        </div>
     );
 };
 

@@ -1,4 +1,6 @@
 import { FormEvent, useState } from "react";
+import { FaUser, FaKey } from "react-icons/fa6";
+import { IoMdMail } from "react-icons/io";
 
 const RegisterForm = ({ register }: { register: Function }) => {
     const [inputs, setInputs] = useState({});
@@ -15,74 +17,52 @@ const RegisterForm = ({ register }: { register: Function }) => {
     };
 
     return (
-        <section>
-            <div className="w-full max-w-xs">
-                <form
-                    onSubmit={registerSubmit}
-                    className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
+        <div className="border border-black rounded-lg">
+            <form onSubmit={registerSubmit}>
+                <label className="input input-bordered flex items-center gap-2 m-2">
+                    <IoMdMail />
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        className="grow"
+                        placeholder="Email"
+                        onChange={registerChange}
+                        required
+                    />
+                </label>
+                <label className="input input-bordered flex items-center gap-2 m-2">
+                    <FaUser />
+                    <input
+                        type="username"
+                        id="username"
+                        name="username"
+                        className="grow"
+                        placeholder="Username"
+                        onChange={registerChange}
+                        required
+                    />
+                </label>
+                <label className="input input-bordered flex items-center gap-2 m-2">
+                    <FaKey />
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        className="grow"
+                        placeholder="●●●●●●●●"
+                        onChange={registerChange}
+                        required
+                    />
+                </label>
+                <button
+                    type="submit"
+                    className="btn btn-primary m-2 w-1/3 float-right"
                 >
-                    <div className="mb-4">
-                        <label
-                            className="block text-gray-700 text-sm font-bold mb-2"
-                            htmlFor="email"
-                        >
-                            Email Address
-                        </label>
-                        <input
-                            onChange={registerChange}
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none"
-                            id="email"
-                            name="email"
-                            type="email"
-                            placeholder="Email Address"
-                            required
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label
-                            className="block text-gray-700 text-sm font-bold mb-2"
-                            htmlFor="username"
-                        >
-                            Username
-                        </label>
-                        <input
-                            onChange={registerChange}
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none"
-                            id="username"
-                            name="username"
-                            type="text"
-                            placeholder="Username"
-                            required
-                        />
-                    </div>
-                    <div className="mb-6">
-                        <label
-                            className="block text-gray-700 text-sm font-bold mb-2"
-                            htmlFor="password"
-                        >
-                            Password
-                        </label>
-                        <input
-                            onChange={registerChange}
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none"
-                            id="password"
-                            name="password"
-                            type="password"
-                            placeholder="******************"
-                            required
-                        />
-                    </div>
-                    <div className="flex justify-end">
-                        <button
-                            className="bg-blue-600 hover:bg-blue-700 duration-200 text-white py-2 px-4 rounded"
-                            type="submit"
-                        >
-                            Register
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </section>
+                    Register
+                </button>
+            </form>
+        </div>
     );
 };
 
