@@ -175,6 +175,13 @@ const BrewPage = () => {
                     }
                 }
             }
+        } else {
+            toast.update(toastID, {
+                render: "Invalid link",
+                type: "error",
+                isLoading: false,
+                autoClose: 5000,
+            });
         }
     };
 
