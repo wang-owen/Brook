@@ -12,15 +12,15 @@ export default {
                     "100%": { opacity: "1" },
                 },
                 fadeInFromLeft: {
-                    "0%": { opacity: "0", transform: "translateX(-25px)" },
+                    "0%": { opacity: "0", transform: "translateX(-75px)" },
                     "100%": { opacity: "1", transform: "translateX(0)" },
                 },
                 fadeInFromTop: {
-                    "0%": { opacity: "0", transform: "translateY(-25px)" },
+                    "0%": { opacity: "0", transform: "translateY(-75px)" },
                     "100%": { opacity: "1", transform: "translateY(0)" },
                 },
                 fadeInFromBottom: {
-                    "0%": { opacity: "0", transform: "translateY(25px)" },
+                    "0%": { opacity: "0", transform: "translateY(75px)" },
                     "100%": { opacity: "1", transform: "translateY(0)" },
                 },
             },

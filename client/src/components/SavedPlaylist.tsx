@@ -85,7 +85,7 @@ const SavedPlaylist = ({
     };
 
     return (
-        <div className="card w-96 bg-base-100 shadow-xl image-full hover:scale-105 duration-200">
+        <div className="card w-96 bg-base-100 shadow-2xl image-full hover:scale-105 duration-200">
             <figure>
                 <img
                     src={playlist.thumbnail.toString()}
