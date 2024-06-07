@@ -6,7 +6,7 @@ import Footer from "../components/Footer";
 
 const MainLayout = ({}: {}) => {
     return (
-        <div className="animate-fadeIn bg-gray-200">
+        <div className="animate-fadeIn bg-stone-200">
             <Navbar />
             <Outlet />
             <Footer />

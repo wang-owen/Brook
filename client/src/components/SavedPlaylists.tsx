@@ -48,20 +48,28 @@ const SavedPlaylists = ({
     return (
         <>
             <section>
+                <div className="m-4 grid grid-cols-3 2xl:grid-cols-4 gap-4 justify-evenly justify-items-center items-center content-center animate-fadeInFromLeft">
+                    {playlists.map((playlist) => (
+                        <SavedPlaylist
+                            key={playlist.playlist_id}
+                            pollTaskStatus={pollTaskStatus}
+                            playlist={playlist}
+                            brew={brew}
+                            onUpdate={handlePlaylistUpdate}
+                            onRemove={handlePlaylistRemove}
+                        />
+                    ))}
+                </div>
                 <div className="my-10 text-center">
-                    <h1 className="text-3xl text-black">Saved Playlists</h1>
                     <button
                         onClick={() => setShowInput(!showInput)}
-                        className="btn btn-active btn-primary m-4"
+                        className="btn btn-circle m-4"
                     >
-                        Add
+                        +
                     </button>
                     <div className="flex justify-center">
                         {showInput ? (
-                            <form
-                                onSubmit={watchSubmit}
-                                className={`${formClass} animate-fadeInFromTop`}
-                            >
+                            <form onSubmit={watchSubmit} className={formClass}>
                                 <div className="relative flex justify-between items-center mx-5 my-2">
                                     <input
                                         id="watch-input"
@@ -96,18 +104,6 @@ const SavedPlaylists = ({
                             </form>
                         ) : null}
                     </div>
-                </div>
-                <div className="m-4 grid grid-cols-3 2xl:grid-cols-4 gap-4 justify-evenly justify-items-center items-center content-center animate-fadeInFromLeft">
-                    {playlists.map((playlist) => (
-                        <SavedPlaylist
-                            key={playlist.playlist_id}
-                            pollTaskStatus={pollTaskStatus}
-                            playlist={playlist}
-                            brew={brew}
-                            onUpdate={handlePlaylistUpdate}
-                            onRemove={handlePlaylistRemove}
-                        />
-                    ))}
                 </div>
             </section>
         </>

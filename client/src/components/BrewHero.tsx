@@ -1,5 +1,4 @@
 import { useState } from "react";
-import heroBanner from "../assets/img/brew-hero.jpg";
 
 const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
     const [link, setLink] = useState("");
@@ -24,13 +23,10 @@ const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
 
     return (
         <section>
-            <div
-                className="flex h-dvh bg-cover bg-no-repeat items-center shadow-lg bg-gray-700"
-                style={{ backgroundImage: `url(${heroBanner})` }}
-            >
+            <div className="flex h-[60vh] bg-cover bg-no-repeat items-center">
                 <div className="w-full animate-fadeInFromBottom">
                     <div className="flex justify-center">
-                        <h1 className="m-12 text-7xl h-full bg-gradient-to-r from-black via-blue-500 to-white text-transparent bg-clip-text flex items-center font-semibold text-center drop-shadow-2xl">
+                        <h1 className="m-12 text-7xl h-full bg-gradient-to-r from-black via-blue-500 to-teal-500 text-transparent bg-clip-text flex items-center font-semibold text-center drop-shadow-2xl hover:scale-110 duration-200">
                             Brook
                         </h1>
                     </div>

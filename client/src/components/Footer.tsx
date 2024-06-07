@@ -1,4 +1,3 @@
-import navbarIcon from "../assets/img/navbar-icon.png";
 import { FaGithub } from "react-icons/fa";
 import { CgWebsite } from "react-icons/cg";
 
@@ -6,7 +5,6 @@ const Footer = () => {
     return (
         <footer className="footer items-center p-4 bg-neutral text-neutral-content">
             <aside className="items-center grid-flow-col">
-                <img className="h-10 w-auto" src={navbarIcon} alt="Brook" />
                 <p>Brook - Owen Wang</p>
             </aside>
             <nav className="grid-flow-col gap-4 md:place-self-center md:justify-self-end">
