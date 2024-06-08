@@ -2,6 +2,7 @@ import Cookies from "js-cookie";
 import Playlist from "../interfaces/Playlist";
 import { Id, toast } from "react-toastify";
 import { FaDownload, FaTrash } from "react-icons/fa6";
+import { FaExternalLinkAlt } from "react-icons/fa";
 import { RxUpdate } from "react-icons/rx";
 
 const SavedPlaylist = ({
@@ -26,9 +27,7 @@ const SavedPlaylist = ({
     };
 
     const update = async () => {
-        const toastID = toast.loading(
-            `${String.fromCodePoint(0x1f3bb)} Brewing music...`
-        );
+        const toastID = toast.loading(`Updating playlist...`);
 
         const response = await fetch(
             `${import.meta.env.VITE_API_URL}/playlist/${playlist.playlist_id}`,
@@ -53,7 +52,15 @@ const SavedPlaylist = ({
                 if (brewSuccess) {
                     onUpdate(data.playlist_data);
                 }
+            } else {
+                onUpdate(data.playlist_data);
             }
+            toast.update(toastID, {
+                render: `${String.fromCodePoint(0x1f3a7)} Updated`,
+                type: "success",
+                isLoading: false,
+                autoClose: 5000,
+            });
         }
     };
 
@@ -97,7 +104,7 @@ const SavedPlaylist = ({
                 <h2 className="card-title">{playlist.name}</h2>
                 <p>{playlist.owner}</p>
                 <div className="card-actions justify-center">
-                    <ul className="menu menu-horizontal bg-base-200 rounded-box mt-6">
+                    <ul className="menu menu-horizontal bg-base-200 rounded-box">
                         <li>
                             <a
                                 onClick={download}
@@ -123,6 +130,14 @@ const SavedPlaylist = ({
                                 data-tip="Remove"
                             >
                                 <FaTrash />
+                            </a>
+                        </li>
+                        <li>
+                            <a
+                                onClick={() => window.open(playlist.link)}
+                                className="tooltip"
+                            >
+                                <FaExternalLinkAlt />
                             </a>
                         </li>
                     </ul>

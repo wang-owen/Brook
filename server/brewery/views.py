@@ -223,7 +223,7 @@ class PlaylistDetail(APIView):
             )
         return Response(
             {
-                "task_id": task_id if task_id else None,
+                "task_id": task_id,
                 "playlist_data": playlist_data,
             },
             status=status.HTTP_200_OK,

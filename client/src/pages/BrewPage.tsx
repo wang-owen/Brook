@@ -82,9 +82,7 @@ const BrewPage = () => {
                     } catch (err) {
                         console.error("Error", err);
                         toast.update(toastID, {
-                            render() {
-                                return <div>Invalid link</div>;
-                            },
+                            render: "Invalid link",
                             type: "error",
                             isLoading: false,
                             autoClose: 5000,
