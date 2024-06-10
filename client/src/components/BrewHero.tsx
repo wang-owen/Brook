@@ -33,7 +33,7 @@ const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
             <div className={className}>
                 <div className="w-full animate-fadeInFromBottom">
                     <div className="flex justify-center">
-                        <h1 className="m-12 text-7xl h-full bg-gradient-to-r from-black via-blue-500 to-teal-500 text-transparent bg-clip-text flex items-center font-semibold text-center drop-shadow-2xl hover:scale-110 duration-200">
+                        <h1 className="m-12 text-7xl h-full bg-gradient-to-r from-black via-blue-500 to-teal-500 text-transparent bg-clip-text flex items-center font-semibold text-center hover:scale-110 duration-200">
                             Brook
                         </h1>
                     </div>
@@ -46,21 +46,13 @@ const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
                                     type="url"
                                     name="link"
                                     placeholder="YouTube/Spotify URL"
-                                    onChange={(event) => {
-                                        setLink(event.target.value);
-                                    }}
-                                    onFocus={() => {
-                                        setInputHover(true);
-                                    }}
-                                    onBlur={() => {
-                                        setInputHover(false);
-                                    }}
-                                    onMouseOver={() => {
-                                        setInputHover(true);
-                                    }}
-                                    onMouseOut={() => {
-                                        setInputHover(false);
-                                    }}
+                                    onChange={(event) =>
+                                        setLink(event.target.value)
+                                    }
+                                    onFocus={() => setInputHover(true)}
+                                    onBlur={() => setInputHover(false)}
+                                    onMouseOver={() => setInputHover(true)}
+                                    onMouseOut={() => setInputHover(false)}
                                 />
                                 <div className={inputBar}></div>
                                 <button
