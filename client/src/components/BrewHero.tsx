@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { LoginContext } from "../App";
 
 const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
+    const { loggedIn } = useContext(LoginContext);
+
     const [link, setLink] = useState("");
 
     const brewSubmit = async (event: React.FormEvent) => {
@@ -21,9 +24,13 @@ const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
         inputHover ? "w-full" : "w-0"
     }`;
 
+    const className = `flex bg-cover bg-no-repeat items-center ${
+        loggedIn ? "h-[60vh]" : "h-screen"
+    }`;
+
     return (
         <section>
-            <div className="flex h-[60vh] bg-cover bg-no-repeat items-center">
+            <div className={className}>
                 <div className="w-full animate-fadeInFromBottom">
                     <div className="flex justify-center">
                         <h1 className="m-12 text-7xl h-full bg-gradient-to-r from-black via-blue-500 to-teal-500 text-transparent bg-clip-text flex items-center font-semibold text-center drop-shadow-2xl hover:scale-110 duration-200">
