@@ -4,6 +4,8 @@ import { Id, toast } from "react-toastify";
 import { FaDownload, FaTrash } from "react-icons/fa6";
 import { FaExternalLinkAlt } from "react-icons/fa";
 import { RxUpdate } from "react-icons/rx";
+import { useContext } from "react";
+import { ThemeContext } from "../layouts/MainLayout";
 
 const SavedPlaylist = ({
     playlist,
@@ -91,8 +93,13 @@ const SavedPlaylist = ({
         }
     };
 
+    const { theme } = useContext(ThemeContext);
     return (
-        <div className="card w-96 bg-base-100 shadow-2xl image-full hover:scale-105 duration-200">
+        <div
+            className={`card w-96 bg-base-100 hover:shadow-2xl image-full hover:scale-105 ${
+                theme === "dark" ? "hover:shadow-white" : "hover:shadow-black"
+            } duration-200`}
+        >
             <figure>
                 <img
                     src={playlist.thumbnail.toString()}
