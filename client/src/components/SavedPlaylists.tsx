@@ -41,7 +41,7 @@ const SavedPlaylists = ({
     return (
         <>
             <section>
-                <div className="m-4 grid grid-cols-3 2xl:grid-cols-4 gap-4 justify-evenly justify-items-center items-center content-center animate-fadeInFromLeft">
+                <div className="m-4 grid grid-cols-3 2xl:grid-cols-4 gap-8 justify-evenly justify-items-center items-center content-center animate-fadeInFromLeft">
                     {playlists.map((playlist) => (
                         <SavedPlaylist
                             key={playlist.playlist_id}
@@ -54,7 +54,7 @@ const SavedPlaylists = ({
                     ))}
                 </div>
                 <div className="my-10 text-center">
-                    <div className="flex justify-center border">
+                    <div className="flex justify-center">
                         <button
                             onClick={() => {
                                 const watchModal = document.getElementById(
@@ -83,11 +83,11 @@ const SavedPlaylists = ({
                                         type="url"
                                         placeholder="YouTube/Spotify Playlist URL"
                                         id="watch-input"
-                                        className="input input-bordered input-primary w-full max-w-xs mx-4"
+                                        className="input input-bordered input-primary w-full max-w-xs mr-6"
                                     />
                                     <button
                                         type="submit"
-                                        className="btn btn-primary mx-4"
+                                        className="btn btn-primary mr-4"
                                         onClick={() => {
                                             const watchModal =
                                                 document.getElementById(

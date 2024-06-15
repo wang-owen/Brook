@@ -1,7 +1,9 @@
 import { useContext, useState } from "react";
 import { LoginContext } from "../App";
+import { ThemeContext } from "../layouts/MainLayout";
 
 const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
+    const { theme } = useContext(ThemeContext);
     const { loggedIn } = useContext(LoginContext);
 
     const [link, setLink] = useState("");
@@ -17,23 +19,33 @@ const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
     };
 
     const [inputHover, setInputHover] = useState(false);
-    const formClass = `bg-gray-900 rounded-lg p-3 py-2 shadow-2xl duration-1000 ${
-        inputHover ? "w-1/2" : "w-1/4 2xl:w-1/5"
+    const formClass = `bg-gray-900 rounded-lg p-3 py-2 duration-1000 ${
+        inputHover
+            ? theme === "light"
+                ? "w-1/2 shadow-2xl shadow-black"
+                : "w-1/2 shadow-2xl shadow-white"
+            : "w-1/4 2xl:w-1/5"
     }`;
     const inputBar = `absolute h-0 mt-9 border-white border-b-2 hover:w-full duration-1000 ease-in-out ${
         inputHover ? "w-full" : "w-0"
     }`;
 
-    const className = `flex bg-cover bg-no-repeat items-center ${
-        loggedIn ? "h-[60vh]" : "h-screen"
-    }`;
-
     return (
         <section>
-            <div className={className}>
+            <div
+                className={`flex bg-cover bg-no-repeat items-center ${
+                    loggedIn ? "h-[50vh]" : "h-screen"
+                }`}
+            >
                 <div className="w-full animate-fadeInFromBottom">
                     <div className="flex justify-center">
-                        <h1 className="m-12 text-7xl h-full bg-gradient-to-r from-black via-blue-500 to-teal-500 text-transparent bg-clip-text flex items-center font-semibold text-center hover:scale-110 duration-200">
+                        <h1
+                            className={`m-12 text-7xl h-full bg-gradient-to-r ${
+                                theme === "light"
+                                    ? "from-black via-blue-500 to-teal-500"
+                                    : "from-white via-blue-500 to-teal-400"
+                            } text-transparent bg-clip-text flex items-center font-semibold text-center hover:scale-110 duration-200`}
+                        >
                             Brook
                         </h1>
                     </div>

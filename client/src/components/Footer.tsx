@@ -1,11 +1,24 @@
+import { useContext } from "react";
+import { ThemeContext } from "../layouts/MainLayout";
 import { FaGithub } from "react-icons/fa";
 import { CgWebsite } from "react-icons/cg";
+import { MdOutlineLightMode, MdOutlineDarkMode } from "react-icons/md";
 
-const Footer = () => {
+const Footer = ({ toggleTheme }: { toggleTheme: () => void }) => {
+    const { theme } = useContext(ThemeContext);
     return (
         <footer className="footer items-center p-4 bg-neutral text-neutral-content">
             <aside className="items-center grid-flow-col">
-                <p>Brook - Owen Wang</p>
+                <label className="flex cursor-pointer gap-2 p-2">
+                    <MdOutlineLightMode size={25} />
+                    <input
+                        type="checkbox"
+                        className="toggle theme-controller"
+                        onChange={toggleTheme}
+                        checked={theme === "dark"}
+                    />
+                    <MdOutlineDarkMode size={25} />
+                </label>
             </aside>
             <nav className="grid-flow-col gap-4 md:place-self-center md:justify-self-end">
                 <a href="https://wangowen.com" target="_blank">
