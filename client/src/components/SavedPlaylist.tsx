@@ -96,7 +96,7 @@ const SavedPlaylist = ({
     const { theme } = useContext(ThemeContext);
     return (
         <div
-            className={`card w-96 bg-base-100 hover:shadow-2xl image-full hover:scale-105 ${
+            className={`card w-96 hover:shadow-2xl image-full hover:scale-105 ${
                 theme === "light" ? "hover:shadow-black" : "hover:shadow-white"
             } duration-200`}
         >
@@ -108,8 +108,8 @@ const SavedPlaylist = ({
                 />
             </figure>
             <div className="card-body">
-                <h2 className="card-title">{playlist.name}</h2>
-                <p>{playlist.owner}</p>
+                <h2 className="card-title text-white">{playlist.name}</h2>
+                <p className="text-white">{playlist.owner}</p>
                 <div className="card-actions justify-center">
                     <ul className="menu menu-horizontal bg-base-200 rounded-box">
                         <li>
