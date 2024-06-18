@@ -6,7 +6,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import BrewHero from "../components/BrewHero";
 import SavedPlaylists from "../components/SavedPlaylists";
 import Playlist from "../interfaces/Playlist";
-import { LoginContext } from "../App.jsx";
+import { LoginContext } from "../App";
 
 const BrewPage = () => {
     const { loggedIn } = useContext(LoginContext);
