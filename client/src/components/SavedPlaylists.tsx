@@ -21,7 +21,6 @@ const SavedPlaylists = ({
     handlePlaylistUpdate: (updatedPlaylist: Playlist) => void;
     handlePlaylistRemove: (removedPlaylistID: string) => void;
 }) => {
-    const [showInput, setShowInput] = useState(false);
     const [watchLink, setWatchLink] = useState("");
 
     const watchSubmit = async (event: React.FormEvent) => {
@@ -29,69 +28,20 @@ const SavedPlaylists = ({
 
         watchPlaylist(watchLink);
 
+        // Clear input field
+        const inputElement = document.getElementById("watch-input");
+        if (inputElement) {
+            (inputElement as HTMLInputElement).value = "";
+        }
+
+        setWatchLink("");
         return;
     };
-
-    const [inputHover, setInputHover] = useState(false);
-    const formClass = `bg-gray-900 rounded-lg p-3 py-2 shadow-2xl ${
-        inputHover ? "w-1/2" : "w-1/4 2xl:w-1/5"
-    } duration-1000`;
-    const inputClass = `absolute h-0 mt-9 w-${
-        inputHover ? "full" : "0"
-    } border-white border-b-2 hover:w-full duration-1000 ease-in-out`;
 
     return (
         <>
             <section>
-                <div className="my-10 text-center">
-                    <h1 className="text-3xl">Saved Playlists</h1>
-                    <button
-                        onClick={() => setShowInput(!showInput)}
-                        className="my-5 border border-black rounded-lg py-1 px-7 bg-gray-400 hover:bg-gray-500 duration-200 text-black"
-                    >
-                        Add
-                    </button>
-                    <div className="flex justify-center">
-                        {showInput ? (
-                            <form
-                                onSubmit={watchSubmit}
-                                className={`${formClass} animate-fadeInFromTop`}
-                            >
-                                <div className="relative flex justify-between items-center mx-5 my-2">
-                                    <input
-                                        className="bg-transparent text-white w-full border-none focus:outline-none"
-                                        type="url"
-                                        name="link"
-                                        placeholder="YouTube/Spotify Playlist URL"
-                                        onChange={(event) => {
-                                            setWatchLink(event.target.value);
-                                        }}
-                                        onFocus={() => {
-                                            setInputHover(true);
-                                        }}
-                                        onBlur={() => {
-                                            setInputHover(false);
-                                        }}
-                                        onMouseOver={() => {
-                                            setInputHover(true);
-                                        }}
-                                        onMouseOut={() => {
-                                            setInputHover(false);
-                                        }}
-                                    />
-                                    <div className={inputClass}></div>
-                                    <button
-                                        className="bg-blue-600 hover:bg-blue-700 duration-200 text-sm text-white rounded-lg float-right px-4 py-2"
-                                        type="submit"
-                                    >
-                                        Add
-                                    </button>
-                                </div>
-                            </form>
-                        ) : null}
-                    </div>
-                </div>
-                <div className="m-4 grid grid-cols-5 gap-5 justify-evenly justify-items-center items-center content-center animate-fadeInFromLeft">
+                <div className="m-4 grid grid-cols-3 2xl:grid-cols-4 gap-8 justify-evenly justify-items-center items-center content-center animate-fadeInFromLeft">
                     {playlists.map((playlist) => (
                         <SavedPlaylist
                             key={playlist.playlist_id}
@@ -102,6 +52,58 @@ const SavedPlaylists = ({
                             onRemove={handlePlaylistRemove}
                         />
                     ))}
+                </div>
+                <div className="my-10 text-center">
+                    <div className="flex justify-center">
+                        <button
+                            onClick={() => {
+                                const watchModal = document.getElementById(
+                                    "watchModal"
+                                ) as HTMLDialogElement;
+                                if (watchModal) {
+                                    watchModal.showModal();
+                                }
+                            }}
+                            className="btn btn-circle m-4"
+                        >
+                            +
+                        </button>
+                        <dialog id="watchModal" className="modal">
+                            <div className="modal-box">
+                                <form method="dialog">
+                                    <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                                        ✕
+                                    </button>
+                                </form>
+                                <form onSubmit={watchSubmit} method="dialog">
+                                    <input
+                                        onChange={(event) => {
+                                            setWatchLink(event.target.value);
+                                        }}
+                                        type="url"
+                                        placeholder="YouTube/Spotify Playlist URL"
+                                        id="watch-input"
+                                        className="input input-bordered input-primary w-full max-w-xs mr-6"
+                                    />
+                                    <button
+                                        type="submit"
+                                        className="btn btn-primary mr-4"
+                                        onClick={() => {
+                                            const watchModal =
+                                                document.getElementById(
+                                                    "watchModal"
+                                                ) as HTMLDialogElement;
+                                            if (watchModal) {
+                                                watchModal.close();
+                                            }
+                                        }}
+                                    >
+                                        Add
+                                    </button>
+                                </form>
+                            </div>
+                        </dialog>
+                    </div>
                 </div>
             </section>
         </>

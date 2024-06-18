@@ -6,7 +6,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import BrewHero from "../components/BrewHero";
 import SavedPlaylists from "../components/SavedPlaylists";
 import Playlist from "../interfaces/Playlist";
-import { LoginContext } from "../App.jsx";
+import { LoginContext } from "../App";
 
 const BrewPage = () => {
     const { loggedIn } = useContext(LoginContext);
@@ -82,9 +82,7 @@ const BrewPage = () => {
                     } catch (err) {
                         console.error("Error", err);
                         toast.update(toastID, {
-                            render() {
-                                return <div>Invalid link</div>;
-                            },
+                            render: "Invalid link",
                             type: "error",
                             isLoading: false,
                             autoClose: 5000,
@@ -175,6 +173,13 @@ const BrewPage = () => {
                     }
                 }
             }
+        } else {
+            toast.update(toastID, {
+                render: "Invalid link",
+                type: "error",
+                isLoading: false,
+                autoClose: 5000,
+            });
         }
     };
 

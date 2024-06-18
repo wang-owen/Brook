@@ -1,6 +1,11 @@
 import Cookies from "js-cookie";
 import Playlist from "../interfaces/Playlist";
 import { Id, toast } from "react-toastify";
+import { FaDownload, FaTrash } from "react-icons/fa6";
+import { FaExternalLinkAlt } from "react-icons/fa";
+import { RxUpdate } from "react-icons/rx";
+import { useContext } from "react";
+import { ThemeContext } from "../layouts/MainLayout";
 
 const SavedPlaylist = ({
     playlist,
@@ -24,9 +29,7 @@ const SavedPlaylist = ({
     };
 
     const update = async () => {
-        const toastID = toast.loading(
-            `${String.fromCodePoint(0x1f3bb)} Brewing music...`
-        );
+        const toastID = toast.loading(`Updating playlist...`);
 
         const response = await fetch(
             `${import.meta.env.VITE_API_URL}/playlist/${playlist.playlist_id}`,
@@ -51,7 +54,15 @@ const SavedPlaylist = ({
                 if (brewSuccess) {
                     onUpdate(data.playlist_data);
                 }
+            } else {
+                onUpdate(data.playlist_data);
             }
+            toast.update(toastID, {
+                render: `${String.fromCodePoint(0x1f3a7)} Updated`,
+                type: "success",
+                isLoading: false,
+                autoClose: 5000,
+            });
         }
     };
 
@@ -82,35 +93,64 @@ const SavedPlaylist = ({
         }
     };
 
-    const buttonClass =
-        "inline-block bg-gray-200 hover:bg-gray-300 duration-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 hover:text-gray-800 mr-2 mb-2";
+    const { theme } = useContext(ThemeContext);
     return (
-        <>
-            <div className="max-w-sm rounded shadow-lg bg-white animate-fadeInFromLeft">
-                <a href={playlist.link.toString()} target="_blank">
-                    <img
-                        className="w-full"
-                        src={playlist.thumbnail.toString()}
-                        key={playlist.thumbnail.toString()}
-                        alt={`${playlist.name} thumbnail`}
-                    />
-                    <div className="px-6 pt-4 pb-2 text-center font-semibold">
-                        <span>{playlist.name}</span>
-                    </div>
-                </a>
-                <div className="px-6 pt-4 pb-2 text-center">
-                    <span className={buttonClass}>
-                        <button onClick={download}>Download</button>
-                    </span>
-                    <span className={buttonClass}>
-                        <button onClick={update}>Update</button>
-                    </span>
-                    <span className={buttonClass}>
-                        <button onClick={remove}>Remove</button>
-                    </span>
+        <div
+            className={`card w-96 hover:shadow-2xl image-full hover:scale-105 ${
+                theme === "light" ? "hover:shadow-black" : "hover:shadow-white"
+            } duration-200`}
+        >
+            <figure>
+                <img
+                    src={playlist.thumbnail.toString()}
+                    key={playlist.thumbnail.toString()}
+                    alt={`${playlist.name} thumbnail`}
+                />
+            </figure>
+            <div className="card-body">
+                <h2 className="card-title text-white">{playlist.name}</h2>
+                <p className="text-white">{playlist.owner}</p>
+                <div className="card-actions justify-center">
+                    <ul className="menu menu-horizontal bg-base-200 rounded-box">
+                        <li>
+                            <a
+                                onClick={download}
+                                className="tooltip"
+                                data-tip="Download"
+                            >
+                                <FaDownload />
+                            </a>
+                        </li>
+                        <li>
+                            <a
+                                onClick={update}
+                                className="tooltip"
+                                data-tip="Update"
+                            >
+                                <RxUpdate />
+                            </a>
+                        </li>
+                        <li>
+                            <a
+                                onClick={remove}
+                                className="tooltip"
+                                data-tip="Remove"
+                            >
+                                <FaTrash />
+                            </a>
+                        </li>
+                        <li>
+                            <a
+                                onClick={() => window.open(playlist.link)}
+                                className="tooltip"
+                            >
+                                <FaExternalLinkAlt />
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 
