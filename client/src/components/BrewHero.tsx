@@ -21,7 +21,7 @@ const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
 
     const [inputHover, setInputHover] = useState(false);
     const formClass = `bg-zinc-900 rounded-lg p-3 py-2 duration-1000 border ${
-        !inputHover && (theme === "light" ? "border-black" : "border-white")
+        theme === "light" ? "border-black" : "border-white"
     } ${
         inputHover
             ? theme === "light"
@@ -44,9 +44,7 @@ const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
                     <div className="flex justify-center">
                         <div
                             className={`m-12 text-7xl h-full bg-gradient-to-r ${
-                                theme === "light"
-                                    ? "bg-black"
-                                    : "bg-white"
+                                theme === "light" ? "bg-black" : "bg-white"
                             } text-transparent bg-clip-text flex items-center font-semibold text-center hover:scale-110 duration-200`}
                         >
                             Brook
