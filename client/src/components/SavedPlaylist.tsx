@@ -97,7 +97,7 @@ const SavedPlaylist = ({
     return (
         <div
             className={`card w-96 bg-base-100 hover:shadow-2xl image-full hover:scale-105 ${
-                theme === "dark" ? "hover:shadow-white" : "hover:shadow-black"
+                theme === "light" ? "hover:shadow-black" : "hover:shadow-white"
             } duration-200`}
         >
             <figure>

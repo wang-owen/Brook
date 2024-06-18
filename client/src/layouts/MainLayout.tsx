@@ -4,6 +4,8 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import bgDark from "../assets/img/bg-dark.jpg";
+import bgLight from "../assets/img/bg-light.jpg";
 
 export const ThemeContext = createContext({
     theme: "light",
@@ -11,7 +13,7 @@ export const ThemeContext = createContext({
 });
 const MainLayout = () => {
     const [theme, setTheme] = useState(
-        localStorage.getItem("theme") || "light"
+        localStorage.getItem("theme") || "dark"
     );
     const toggleTheme = () => {
         localStorage.setItem("theme", theme === "light" ? "dark" : "light");
@@ -19,9 +21,10 @@ const MainLayout = () => {
     };
     return (
         <div
-            className={`animate-fadeIn ${
-                theme === "light" ? "bg-stone-200" : "bg-sky-950"
-            } duration-200`}
+            className={`animate-fadeIn duration-200`}
+            style={{
+                backgroundImage: `url(${theme === "light" ? bgLight : bgDark})`,
+            }}
         >
             <ThemeContext.Provider value={{ theme, toggleTheme }}>
                 <Navbar />
