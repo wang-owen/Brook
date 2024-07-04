@@ -1,8 +1,8 @@
 import { useState, createContext } from "react";
-import { Outlet } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
+// import { Outlet } from "react-router-dom";
+// import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Navbar from "../components/Navbar";
+// import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import bgDark from "../assets/img/bg-dark.jpg";
 import bgLight from "../assets/img/bg-light.jpg";
