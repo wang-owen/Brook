@@ -12,9 +12,7 @@ export const ThemeContext = createContext({
     toggleTheme: () => {},
 });
 const MainLayout = () => {
-    const [theme, setTheme] = useState(
-        localStorage.getItem("theme") || "dark"
-    );
+    const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
     const toggleTheme = () => {
         localStorage.setItem("theme", theme === "light" ? "dark" : "light");
         setTheme(theme === "light" ? "dark" : "light");
@@ -26,12 +24,22 @@ const MainLayout = () => {
                 backgroundImage: `url(${theme === "light" ? bgLight : bgDark})`,
             }}
         >
-            <ThemeContext.Provider value={{ theme, toggleTheme }}>
+            {/* <ThemeContext.Provider value={{ theme, toggleTheme }}>
                 <Navbar />
                 <Outlet />
                 <Footer toggleTheme={toggleTheme} />
             </ThemeContext.Provider>
-            <ToastContainer newestOnTop />
+            <ToastContainer newestOnTop /> */}
+            <div className="h-screen flex items-center justify-center">
+                <h1
+                    className={`animate-pulse text-7xl ${
+                        theme === "light" && "text-black"
+                    }`}
+                >
+                    🛠️ Site under maintenance...
+                </h1>
+            </div>
+            <Footer toggleTheme={toggleTheme} />
         </div>
     );
 };
