@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import LoginForm from "../components/LoginForm";
 import { toast } from "react-toastify";
-import { LoginContext } from "../App.jsx";
+import { LoginContext } from "../App";
 
 const LoginPage = () => {
     const { setLoggedIn } = useContext(LoginContext);
@@ -29,11 +29,9 @@ const LoginPage = () => {
     };
 
     return (
-        <>
-            <section className="h-screen flex justify-center items-center">
-                <LoginForm login={login} />
-            </section>
-        </>
+        <section className="h-screen flex justify-center items-center">
+            <LoginForm login={login} />
+        </section>
     );
 };
 
