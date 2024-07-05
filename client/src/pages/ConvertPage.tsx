@@ -1,9 +1,13 @@
+import { useState } from "react";
+
 const ConvertPage = () => {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+
     const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-    const redirectUri = "https://open.spotify.com/";
+    const redirectUri = "http://127.0.0.1:3000/convert";
 
     const authorizationEndpoint = "https://accounts.spotify.com/authorize";
-    // const tokenEndpoint = "https://accounts.spotify.com/api/token";
+    const tokenEndpoint = "https://accounts.spotify.com/api/token";
     const scope =
         "playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public";
 
@@ -43,15 +47,93 @@ const ConvertPage = () => {
         window.location.href = authUrl.toString(); // Redirect the user to the authorization server for login
     };
 
+    const getToken = async (code: string) => {
+        // stored in the previous step
+        let codeVerifier = localStorage.getItem("code_verifier");
+
+        const payload = {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            // @ts-ignore
+            body: new URLSearchParams({
+                client_id: clientId,
+                grant_type: "authorization_code",
+                code,
+                redirect_uri: redirectUri,
+                code_verifier: codeVerifier,
+            }),
+        };
+
+        const body = await fetch(tokenEndpoint, payload);
+        const response = body.json();
+
+        return response;
+    };
+
+    // Data structure that manages the current active token, caching it in localStorage
+    const currentToken = {
+        get access_token() {
+            return localStorage.getItem("access_token") || null;
+        },
+        get refresh_token() {
+            return localStorage.getItem("refresh_token") || null;
+        },
+        get expires_in() {
+            return localStorage.getItem("refresh_in") || null;
+        },
+        get expires() {
+            return localStorage.getItem("expires") || null;
+        },
+
+        save: function (response: any) {
+            const { access_token, refresh_token, expires_in } = response;
+            localStorage.setItem("access_token", access_token);
+            localStorage.setItem("refresh_token", refresh_token);
+            localStorage.setItem("expires_in", expires_in);
+
+            const now = new Date();
+            const expiry = new Date(now.getTime() + expires_in * 1000);
+            localStorage.setItem("expires", expiry.toString());
+        },
+    };
+
+    // On page load, try to fetch auth code from current browser search URL
+    const args = new URLSearchParams(window.location.search);
+    const code = args.get("code");
+
+    // If we find a code, we're in a callback, do a token exchange
+    if (code) {
+        getToken(code).then((token) => currentToken.save(token));
+
+        // Remove code from URL so we can refresh correctly.
+        const url = new URL(window.location.href);
+        url.searchParams.delete("code");
+
+        const updatedUrl = url.search ? url.href : url.href.replace("?", "");
+        window.history.replaceState({}, document.title, updatedUrl);
+    }
+
+    if (currentToken.access_token) {
+        isAuthenticated === false ? setIsAuthenticated(true) : null;
+    } else {
+        isAuthenticated === true ? setIsAuthenticated(false) : null;
+    }
+
     return (
-        <section className="min-h-screen flex">
+        <section className="min-h-screen">
             ConvertPage
-            <button
-                className="self-center border bg-red-500 p-2 text-black border-black hover:opacity-50 duration-300"
-                onClick={() => redirectToSpotifyAuthorize()}
-            >
-                Authorize
-            </button>
+            {isAuthenticated ? null : (
+                <div className="flex h-screen justify-center items-center">
+                    <button
+                        className="border bg-red-400 p-2 text-black border-black hover:opacity-50 duration-300 rounded-xl"
+                        onClick={() => redirectToSpotifyAuthorize()}
+                    >
+                        Authorize
+                    </button>
+                </div>
+            )}
         </section>
     );
 };
