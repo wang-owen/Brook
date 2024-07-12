@@ -97,6 +97,14 @@ const ConvertToSpotifyPage = () => {
             const expiry = new Date(now.getTime() + expires_in * 1000);
             localStorage.setItem("expires", expiry.toString());
         },
+
+        clear: function () {
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("refresh_token");
+            localStorage.removeItem("expires_in");
+            localStorage.removeItem("expires");
+            setIsAuthenticated(false);
+        },
     };
 
     useEffect(() => {
@@ -118,6 +126,13 @@ const ConvertToSpotifyPage = () => {
             window.history.replaceState({}, document.title, updatedUrl);
 
             setIsAuthenticated(true);
+            // Check if token is expired
+        } else if (
+            currentToken.expires &&
+            new Date().getTime() > new Date(currentToken.expires).getTime()
+        ) {
+            currentToken.clear();
+            setIsAuthenticated(false);
         }
 
         if (currentToken.access_token) {
@@ -131,7 +146,12 @@ const ConvertToSpotifyPage = () => {
         <section className="min-h-screen">
             {isAuthenticated ? (
                 <div className="flex h-screen justify-center items-center">
-                    <h1 className="text-4xl">User Authorized</h1>
+                    <button
+                        className="border bg-green-400 p-2 text-black font-semibold border-black hover:opacity-50 duration-300 rounded-xl"
+                        onClick={() => currentToken.clear()}
+                    >
+                        Disconnect from Spotify
+                    </button>
                 </div>
             ) : (
                 <div className="flex h-screen justify-center items-center">
