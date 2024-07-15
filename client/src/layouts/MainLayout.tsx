@@ -32,11 +32,11 @@ const MainLayout = () => {
             <ToastContainer newestOnTop /> */}
             <div className="h-screen flex items-center justify-center">
                 <h1
-                    className={`animate-pulse text-7xl ${
+                    className={`animate-pulse text-4xl ${
                         theme === "light" && "text-black"
                     }`}
                 >
-                    🛠️ Site under maintenance...
+                    🚫 Site will be brought back online as recruiting season approaches (costs money to host online)
                 </h1>
             </div>
             <Footer toggleTheme={toggleTheme} />
