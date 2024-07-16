@@ -1,15 +1,15 @@
-from django.http import FileResponse, Http404
+from django.http import Http404
 from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from . import util
+from common import utils
 from brewery.models import Playlist
 from brewery.serializers import PlaylistSerializer, TrackSerializer
 from .tasks import check_task_status
 
 
-# Create your views here.
 @api_view(["GET"])
 def get_brew_status(request, task_id):
     if not task_id:
@@ -44,7 +44,7 @@ def brew(request):
     # Download music
     if task_id := util.brew(link=link, file_format=file_format):
         # Log the download
-        if request.user.is_authenticated and (music_data := util.get_data(link)):
+        if request.user.is_authenticated and (music_data := utils.get_data(link)):
             # Determine if playlist
             playlist = None
             exists = 0
@@ -126,8 +126,8 @@ class PlaylistList(APIView):
     # Create new playlist and add to user watched list
     def post(self, request, *args, **kwargs):
         link = request.data.get("link")
-        data = util.get_data(link)
-        if data.get("contentType") == util.PLAYLIST:
+        data = utils.get_data(link)
+        if data.get("contentType") == utils.PLAYLIST:
             if playlist_data := data.get("playlist_data"):
                 # Playlist is already saved
                 if Playlist.objects.filter(
@@ -193,7 +193,7 @@ class PlaylistDetail(APIView):
     def put(self, request, playlist_id):
         playlist = self.get_object(playlist_id)
         # Retrieve new information from server and update playlist
-        data = util.get_data(playlist.link)
+        data = utils.get_data(playlist.link)
         playlist_data = data.get("playlist_data", {})
 
         new_tracks = update_playlist_tracks(playlist, playlist_data.get("tracks"))

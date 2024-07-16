@@ -290,7 +290,7 @@ const BrewPage = () => {
     }, [loggedIn]);
 
     return (
-        <>
+        <section className="min-h-screen">
             <BrewHero brew={brew} />
             {loggedIn ? (
                 <SavedPlaylists
@@ -302,7 +302,7 @@ const BrewPage = () => {
                     handlePlaylistRemove={handlePlaylistRemove}
                 />
             ) : null}
-        </>
+        </section>
     );
 };
 
