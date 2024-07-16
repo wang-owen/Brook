@@ -82,7 +82,6 @@ const ConvertToSpotifyPage = () => {
     const getRefreshToken = async () => {
         // refresh token that has been previously stored
         const refreshToken = localStorage.getItem("refresh_token");
-        const url = "https://accounts.spotify.com/api/token";
 
         const payload = {
             method: "POST",
@@ -97,12 +96,26 @@ const ConvertToSpotifyPage = () => {
             }),
         };
 
-        const body = await fetch(url, payload);
+        const body = await fetch(tokenEndpoint, payload);
         const response = await body.json();
 
         localStorage.setItem("access_token", response.accessToken);
         localStorage.setItem("refresh_token", response.refreshToken);
     };
+
+    async function getUserID() {
+        let accessToken = localStorage.getItem("access_token");
+
+        const response = await fetch("https://api.spotify.com/v1/me", {
+            headers: {
+                Authorization: "Bearer " + accessToken,
+            },
+        });
+
+        const data = await response.json();
+
+        return data.id;
+    }
 
     const convert = async (link: string) => {
         const toastID = toast.loading(
@@ -117,6 +130,8 @@ const ConvertToSpotifyPage = () => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
+                    access_token: currentToken.access_token,
+                    user_id: await getUserID(),
                     link: link,
                 }),
             }
@@ -222,18 +237,46 @@ const ConvertToSpotifyPage = () => {
         }
     }, []);
 
+    const [inputHover, setInputHover] = useState(false);
+    const formClass = `bg-zinc-900 rounded-lg p-3 py-2 duration-1000 border ${
+        theme === "light" ? "border-black" : "border-white"
+    } ${
+        inputHover
+            ? theme === "light"
+                ? "w-1/2 shadow-2xl shadow-black border-white"
+                : "w-1/2 shadow-2xl shadow-white border-black"
+            : "w-1/4 2xl:w-1/5"
+    }`;
+    const inputBar = `absolute h-0 mt-9 border-white border-b-2 hover:w-full duration-1000 ease-in-out ${
+        inputHover ? "w-full" : "w-0"
+    }`;
+
     return (
         <section className="min-h-screen">
             {isAuthenticated ? (
                 <div className="flex flex-col h-screen justify-center items-center">
-                    <form onSubmit={convertSubmit}>
-                        <div>
-                            <input
-                                id="convert-input"
-                                onChange={(event) =>
-                                    setLink(event.target.value)
-                                }
-                            />
+                    <form
+                        onSubmit={convertSubmit}
+                        className="w-full flex flex-col justify-center items-center gap-16"
+                    >
+                        <div className={formClass}>
+                            <div className="relative flex justify-between items-center mx-5 my-2">
+                                <input
+                                    id="convert-input"
+                                    className="bg-transparent text-white w-full border-none focus:outline-none"
+                                    type="url"
+                                    name="link"
+                                    placeholder="YouTube Playlist URL"
+                                    onChange={(event) =>
+                                        setLink(event.target.value)
+                                    }
+                                    onFocus={() => setInputHover(true)}
+                                    onBlur={() => setInputHover(false)}
+                                    onMouseOver={() => setInputHover(true)}
+                                    onMouseOut={() => setInputHover(false)}
+                                />
+                                <div className={inputBar} />
+                            </div>
                         </div>
                         <motion.button
                             type="submit"
@@ -267,7 +310,7 @@ const ConvertToSpotifyPage = () => {
                                 }`,
                                 padding: 25,
                                 fontWeight: "bold",
-                                width: 100,
+                                width: 200,
                                 height: 40,
                                 display: "flex",
                                 justifyContent: "center",
