@@ -8,8 +8,10 @@ import {
 import Cookies from "js-cookie";
 import MainLayout from "./layouts/MainLayout";
 import BrewPage from "./pages/BrewPage";
+import ConvertPage from "./pages/ConvertPage";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
+import ConvertToSpotifyPage from "./pages/ConvertToSpotifyPage";
 
 interface LoginContextProps {
     loggedIn: boolean;
@@ -50,6 +52,11 @@ const App = () => {
         createRoutesFromElements(
             <Route path="/" element={<MainLayout />}>
                 <Route index element={<BrewPage />} />
+                <Route path="/convert" element={<ConvertPage />} />
+                <Route
+                    path="/convert/spotify"
+                    element={<ConvertToSpotifyPage />}
+                />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/login" element={<LoginPage />} />
             </Route>

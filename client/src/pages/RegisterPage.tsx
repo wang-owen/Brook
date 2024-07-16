@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import RegisterForm from "../components/RegisterForm";
-import { LoginContext } from "../App.jsx";
+import { LoginContext } from "../App";
 
 const RegisterPage = () => {
     const { setLoggedIn } = useContext(LoginContext);
@@ -41,11 +41,9 @@ const RegisterPage = () => {
     };
 
     return (
-        <>
-            <section className="h-screen flex justify-center items-center">
-                <RegisterForm register={register} />
-            </section>
-        </>
+        <section className="h-screen flex justify-center items-center">
+            <RegisterForm register={register} />
+        </section>
     );
 };
 
