@@ -238,9 +238,7 @@ const ConvertToSpotifyPage = () => {
     }, []);
 
     const [inputHover, setInputHover] = useState(false);
-    const formClass = `bg-zinc-900 rounded-lg p-3 py-2 duration-1000 border ${
-        theme === "light" ? "border-black" : "border-white"
-    } ${
+    const formClass = `bg-zinc-900 rounded-lg p-3 py-2 duration-1000 border border-[#108954] ${
         inputHover
             ? theme === "light"
                 ? "w-1/2 shadow-2xl shadow-black border-white"
@@ -254,74 +252,85 @@ const ConvertToSpotifyPage = () => {
     return (
         <section className="min-h-screen">
             {isAuthenticated ? (
-                <div className="flex flex-col h-screen justify-center items-center">
-                    <form
-                        onSubmit={convertSubmit}
-                        className="w-full flex flex-col justify-center items-center gap-16"
-                    >
-                        <div className={formClass}>
-                            <div className="relative flex justify-between items-center mx-5 my-2">
-                                <input
-                                    id="convert-input"
-                                    className="bg-transparent text-white w-full border-none focus:outline-none"
-                                    type="url"
-                                    name="link"
-                                    placeholder="YouTube Playlist URL"
-                                    onChange={(event) =>
-                                        setLink(event.target.value)
-                                    }
-                                    onFocus={() => setInputHover(true)}
-                                    onBlur={() => setInputHover(false)}
-                                    onMouseOver={() => setInputHover(true)}
-                                    onMouseOut={() => setInputHover(false)}
-                                />
-                                <div className={inputBar} />
+                <div className="flex h-screen justify-center items-center">
+                    <div className="w-full animate-fadeInFromBottom">
+                        <div className="flex justify-center">
+                            <div
+                                className={`m-12 text-7xl h-full bg-gradient-to-r ${
+                                    theme === "light" ? "bg-black" : "bg-white"
+                                } text-transparent bg-clip-text flex items-center font-semibold text-center hover:scale-110 duration-200`}
+                            >
+                                Convert to Spotify
                             </div>
                         </div>
-                        <motion.button
-                            type="submit"
-                            initial={{
-                                backgroundImage:
-                                    "linear-gradient(to right, black, black), linear-gradient(0deg, blue, black)",
-                            }}
-                            animate={{
-                                backgroundImage: `linear-gradient(to right, ${
-                                    theme === "light"
-                                        ? "white, white"
-                                        : "black, black"
-                                }), linear-gradient(360deg, blue, ${
-                                    theme === "light" ? "white" : "black"
-                                })`,
-                            }}
-                            transition={{
-                                type: "tween",
-                                ease: "linear",
-                                duration: 3,
-                                repeat: Infinity,
-                            }}
-                            className="hover:scale-110 duration-300"
-                            style={{
-                                border: "4px solid transparent",
-                                borderRadius: "20px",
-                                backgroundClip: "padding-box, border-box",
-                                backgroundOrigin: "padding-box, border-box",
-                                color: `${
-                                    theme === "light" ? "black" : "white"
-                                }`,
-                                padding: 25,
-                                fontWeight: "bold",
-                                width: 200,
-                                height: 40,
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                            }}
+                        <form
+                            onSubmit={convertSubmit}
+                            className="w-full flex flex-col justify-center items-center gap-12"
                         >
-                            Convert to Spotify
-                        </motion.button>
-                    </form>
+                            <div className={formClass}>
+                                <div className="relative flex justify-between items-center mx-5 my-2">
+                                    <input
+                                        id="convert-input"
+                                        className="bg-transparent text-white w-full border-none focus:outline-none"
+                                        type="url"
+                                        name="link"
+                                        placeholder="YouTube Playlist URL"
+                                        onChange={(event) =>
+                                            setLink(event.target.value)
+                                        }
+                                        onFocus={() => setInputHover(true)}
+                                        onBlur={() => setInputHover(false)}
+                                        onMouseOver={() => setInputHover(true)}
+                                        onMouseOut={() => setInputHover(false)}
+                                    />
+                                    <div className={inputBar} />
+                                </div>
+                            </div>
+                            <motion.button
+                                type="submit"
+                                initial={{
+                                    backgroundImage:
+                                        "linear-gradient(to right, black, black), linear-gradient(0deg, #108954, black)",
+                                }}
+                                animate={{
+                                    backgroundImage: `linear-gradient(to right, ${
+                                        theme === "light"
+                                            ? "white, white"
+                                            : "black, black"
+                                    }), linear-gradient(360deg, #108954, ${
+                                        theme === "light" ? "white" : "black"
+                                    })`,
+                                }}
+                                transition={{
+                                    type: "tween",
+                                    ease: "linear",
+                                    duration: 3,
+                                    repeat: Infinity,
+                                }}
+                                className="hover:scale-110 duration-300"
+                                style={{
+                                    border: "4px solid transparent",
+                                    borderRadius: "20px",
+                                    backgroundClip: "padding-box, border-box",
+                                    backgroundOrigin: "padding-box, border-box",
+                                    color: `${
+                                        theme === "light" ? "black" : "white"
+                                    }`,
+                                    padding: 25,
+                                    fontWeight: "bold",
+                                    width: 100,
+                                    height: 40,
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                }}
+                            >
+                                Convert
+                            </motion.button>
+                        </form>
+                    </div>
                     <button
-                        className="border bg-green-400 p-2 text-black font-semibold border-black hover:opacity-50 duration-300 rounded-xl"
+                        className="animate-fadeIn absolute self-end my-12 btn btn-sm bg-[#108954] text-white hover:bg-green-800"
                         onClick={() => currentToken.clear()}
                     >
                         Disconnect from Spotify
@@ -330,7 +339,7 @@ const ConvertToSpotifyPage = () => {
             ) : (
                 <div className="flex h-screen justify-center items-center">
                     <button
-                        className="border bg-green-400 p-2 text-black font-semibold border-black hover:opacity-50 duration-300 rounded-xl"
+                        className="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg bg-[#108954] text-white hover:bg-green-800"
                         onClick={() => redirectToSpotifyAuthorize()}
                     >
                         Connect with Spotify
