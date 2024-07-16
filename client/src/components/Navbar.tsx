@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
-import { LoginContext } from "../App.jsx";
+import { LoginContext } from "../App";
 
 const Navbar = () => {
     const { loggedIn, setLoggedIn } = useContext(LoginContext);
@@ -45,6 +45,9 @@ const Navbar = () => {
                 <ul className="menu menu-horizontal px-1 gap-3">
                     <li>
                         <NavLink to="/">Brew</NavLink>
+                    </li>
+                    <li>
+                        <NavLink to="/convert">Convert</NavLink>
                     </li>
                     {!loggedIn ? (
                         <>
