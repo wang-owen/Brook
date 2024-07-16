@@ -1,7 +1,14 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect, useContext } from "react";
+import { ThemeContext } from "../layouts/MainLayout";
+import { motion } from "framer-motion";
+import { toast } from "react-toastify";
 
 const ConvertToSpotifyPage = () => {
+    const { theme } = useContext(ThemeContext);
+
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+    const [link, setLink] = useState("");
 
     const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
     const redirectUri = "http://127.0.0.1:3000/convert/spotify";
@@ -67,9 +74,79 @@ const ConvertToSpotifyPage = () => {
         };
 
         const body = await fetch(tokenEndpoint, payload);
-        const response = body.json();
+        const response = await body.json();
 
         return response;
+    };
+
+    const getRefreshToken = async () => {
+        // refresh token that has been previously stored
+        const refreshToken = localStorage.getItem("refresh_token");
+        const url = "https://accounts.spotify.com/api/token";
+
+        const payload = {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            // @ts-ignore
+            body: new URLSearchParams({
+                grant_type: "refresh_token",
+                refresh_token: refreshToken,
+                client_id: clientId,
+            }),
+        };
+
+        const body = await fetch(url, payload);
+        const response = await body.json();
+
+        localStorage.setItem("access_token", response.accessToken);
+        localStorage.setItem("refresh_token", response.refreshToken);
+    };
+
+    const convert = async (link: string) => {
+        const toastID = toast.loading(
+            `${String.fromCodePoint(0x1f3bb)} Brewing music...`
+        );
+
+        const response = await fetch(
+            `${import.meta.env.VITE_API_URL}/convert/spotify/`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    link: link,
+                }),
+            }
+        );
+
+        if (response.ok) {
+            toast.update(toastID, {
+                render: "Successfully converted playlist",
+                type: "success",
+                isLoading: false,
+                autoClose: 5000,
+            });
+        } else {
+            toast.update(toastID, {
+                render: "Invalid link",
+                type: "error",
+                isLoading: false,
+                autoClose: 5000,
+            });
+        }
+    };
+
+    const convertSubmit = async (event: React.FormEvent) => {
+        event.preventDefault();
+        // Clear input field
+        const inputElement = document.getElementById("convert-input");
+        if (inputElement) {
+            (inputElement as HTMLInputElement).value = "";
+        }
+        return convert(link);
     };
 
     // Data structure that manages the current active token, caching it in localStorage
@@ -131,11 +208,14 @@ const ConvertToSpotifyPage = () => {
             currentToken.expires &&
             new Date().getTime() > new Date(currentToken.expires).getTime()
         ) {
-            currentToken.clear();
-            setIsAuthenticated(false);
+            getRefreshToken();
         }
 
-        if (currentToken.access_token) {
+        if (
+            currentToken.access_token &&
+            currentToken.expires &&
+            new Date().getTime() < new Date(currentToken.expires).getTime()
+        ) {
             isAuthenticated === false ? setIsAuthenticated(true) : null;
         } else {
             isAuthenticated === true ? setIsAuthenticated(false) : null;
@@ -145,7 +225,58 @@ const ConvertToSpotifyPage = () => {
     return (
         <section className="min-h-screen">
             {isAuthenticated ? (
-                <div className="flex h-screen justify-center items-center">
+                <div className="flex flex-col h-screen justify-center items-center">
+                    <form onSubmit={convertSubmit}>
+                        <div>
+                            <input
+                                id="convert-input"
+                                onChange={(event) =>
+                                    setLink(event.target.value)
+                                }
+                            />
+                        </div>
+                        <motion.button
+                            type="submit"
+                            initial={{
+                                backgroundImage:
+                                    "linear-gradient(to right, black, black), linear-gradient(0deg, blue, black)",
+                            }}
+                            animate={{
+                                backgroundImage: `linear-gradient(to right, ${
+                                    theme === "light"
+                                        ? "white, white"
+                                        : "black, black"
+                                }), linear-gradient(360deg, blue, ${
+                                    theme === "light" ? "white" : "black"
+                                })`,
+                            }}
+                            transition={{
+                                type: "tween",
+                                ease: "linear",
+                                duration: 3,
+                                repeat: Infinity,
+                            }}
+                            className="hover:scale-110 duration-300"
+                            style={{
+                                border: "4px solid transparent",
+                                borderRadius: "20px",
+                                backgroundClip: "padding-box, border-box",
+                                backgroundOrigin: "padding-box, border-box",
+                                color: `${
+                                    theme === "light" ? "black" : "white"
+                                }`,
+                                padding: 25,
+                                fontWeight: "bold",
+                                width: 100,
+                                height: 40,
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                            }}
+                        >
+                            Convert to Spotify
+                        </motion.button>
+                    </form>
                     <button
                         className="border bg-green-400 p-2 text-black font-semibold border-black hover:opacity-50 duration-300 rounded-xl"
                         onClick={() => currentToken.clear()}
