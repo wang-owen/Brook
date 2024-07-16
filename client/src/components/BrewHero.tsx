@@ -70,7 +70,7 @@ const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
                                     onMouseOver={() => setInputHover(true)}
                                     onMouseOut={() => setInputHover(false)}
                                 />
-                                <div className={inputBar}></div>
+                                <div className={inputBar} />
                             </div>
                         </div>
                         <motion.button
