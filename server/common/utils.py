@@ -39,7 +39,7 @@ def _get_token():
     return response.json()["access_token"]
 
 
-def _get_auth_header(token):
+def get_auth_header(token):
     return {"Authorization": "Bearer " + token}
 
 
@@ -264,7 +264,7 @@ def get_spotify_track_data(link):
     track_id = get_id(link, platform=SPOTIFY, content_type=TRACK)
     response = requests.get(
         request_url + track_id,
-        headers=_get_auth_header(_get_token()),
+        headers=get_auth_header(_get_token()),
     )
     name = response.json()["name"]
     artist = response.json()["artists"][0]["name"]
@@ -291,7 +291,7 @@ def get_spotify_playlist_data(link):
     playlist_id = get_id(link, platform=SPOTIFY, content_type=PLAYLIST)
     response = requests.get(
         request_url + playlist_id,
-        headers=_get_auth_header(_get_token()),
+        headers=get_auth_header(_get_token()),
     )
 
     # Add each track name and artist to list

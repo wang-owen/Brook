@@ -4,7 +4,7 @@ from pathlib import Path
 from django.http import FileResponse
 from django.conf import settings
 from .tasks import task_brew
-from ..common import utils
+from common import utils
 
 
 ILLEGAL_CHARS = [
