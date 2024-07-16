@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from . import util
-from ..common import utils
+from common import utils
 from brewery.models import Playlist
 from brewery.serializers import PlaylistSerializer, TrackSerializer
 from .tasks import check_task_status
