@@ -21,10 +21,10 @@ Brook is a web app which allows users to download and save YouTube and Spotify t
 - [x] **[FIXED]** Downloads that take over 30 seconds initiate a Heroku timeout (not an issue when running locally)
 
 ## ⌛ Work in progress
-- Playlist conversion between platforms
+- Playlist conversion for Amazon Music and YouTube
+- Music downloads for Amazon Music
 
 ## 📝 To-do
-- [ ] Implement playlist conversion between platforms
 - [ ] Refactor database so tracks have a many-to-many relationship with playlists instead of Foreign Key (saves database space)
 - [ ] Add a download ETA to toast
 - [ ] Disable queueing more downloads as one is occurring
