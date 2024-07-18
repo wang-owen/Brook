@@ -39,7 +39,7 @@ const MainLayout = () => {
                     🚫 Site will be brought back online as recruiting season approaches (costs money to host online)
                 </h1>
             </div> */}
-            <Footer toggleTheme={toggleTheme} />
+            {/* <Footer toggleTheme={toggleTheme} /> */}
         </div>
     );
 };
