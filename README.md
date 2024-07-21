@@ -19,9 +19,9 @@ Brook offers a variety of tools regarding music streaming services.
 - [x] **[FIXED]** Downloads that take over 30 seconds initiate a Heroku timeout (not an issue when running locally)
 
 ## ⌛ Work in progress
-- Playlist conversion for Amazon Music and YouTube
-- Music downloads for Amazon Music
-- Integrate Apple Music
+- [ ] Playlist conversion for Amazon Music and YouTube
+- [ ] Music downloads for Amazon Music
+- [ ] Integrate Apple Music
 
 ## 📝 To-do
 - [ ] Refactor database so tracks have a many-to-many relationship with playlists instead of Foreign Key (saves database space)
