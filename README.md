@@ -4,7 +4,7 @@ Brook offers a variety of tools regarding music streaming services.
 * Download tracks and entire playlists from popular streaming services
 * Saved playlists track any changes made to the playlist (e.g. added/removed tracks, name change, thumbnail change etc.)
 * When saved playlists are "updated", a zip file containing any new tracks are downloaded.
-* Convert playlists between music streaming services
+* Convert (transfer) your playlists between music streaming services
 
 💻 *Try it here:* [brook.wangowen.com](https://brook.wangowen.com)
 
