@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 import requests
-from common import utils
+from common import utils, spotify
 
 
 @api_view(["PUT"])
@@ -25,7 +25,7 @@ def tospotify(request):
         response = requests.post(
             f"https://api.spotify.com/v1/users/{user_id}/playlists",
             json={"name": playlist_data.get("name"), "public": False},
-            headers=utils.get_auth_header(access_token),
+            headers=spotify.get_auth_header(access_token),
         )
         if response.ok:
             playlist_url = response.json()["external_urls"]["spotify"]
@@ -40,14 +40,14 @@ def tospotify(request):
                         "type": "track",
                         "limit": 1,
                     },
-                    headers=utils.get_auth_header(access_token),
+                    headers=spotify.get_auth_header(access_token),
                 )
                 tracks[i] = response.json()["tracks"]["items"][0]["uri"]
 
             response = requests.post(
                 f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks",
                 json={"uris": tracks},
-                headers=utils.get_auth_header(access_token),
+                headers=spotify.get_auth_header(access_token),
             )
             if response.ok:
                 return Response(
