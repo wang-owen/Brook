@@ -4,7 +4,8 @@ from pathlib import Path
 from django.http import FileResponse
 from django.conf import settings
 from .tasks import task_brew
-from common import utils
+from common import utils, youtube, spotify
+from common.headers import *
 
 
 ILLEGAL_CHARS = [
@@ -111,12 +112,12 @@ def download_playlist(link, file_format, platform):
         return False
     dir_.mkdir()
 
-    if platform == utils.YOUTUBE:
+    if platform == YOUTUBE:
         task = task_brew.delay(
             "download_youtube_playlist", link, file_format, str(dir_)
         )
         return task.id
-    elif platform == utils.SPOTIFY:
+    elif platform == SPOTIFY:
         task = task_brew.delay(
             "download_spotify_playlist", link, file_format, str(dir_)
         )
@@ -136,10 +137,10 @@ def download_track(link, file_format, platform, dir_=None):
         dir_.mkdir()
 
     # Download tracks asynchronously
-    if platform == utils.YOUTUBE:
+    if platform == YOUTUBE:
         task = task_brew.delay("download_youtube_track", link, file_format, str(dir_))
         return task.id
-    elif platform == utils.SPOTIFY:
+    elif platform == SPOTIFY:
         task = task_brew.delay("download_spotify_track", link, file_format, str(dir_))
         return task.id
     return False
@@ -168,12 +169,12 @@ def download_new_tracks(new_tracks, playlist_name, platform, file_format):
 
 
 def download_new_tracks_task(new_tracks, platform, file_format, dir_):
-    if platform == utils.YOUTUBE:
+    if platform == YOUTUBE:
         for track in new_tracks:
             download_youtube_track(
                 utils.get_track_link(platform, track.get("track_id")), file_format, dir_
             )
-    elif platform == utils.SPOTIFY:
+    elif platform == SPOTIFY:
         for track in new_tracks:
             download_spotify_track(
                 utils.get_track_link(platform, track.get("track_id")), file_format, dir_
@@ -226,7 +227,7 @@ def download_youtube_playlist(link, file_format, dir_):
         file_format (str): file format to download tracks in
         dir_ (str): directory to download tracks to
     """
-    playlist_name = utils.get_youtube_playlist_data(link)["name"]
+    playlist_name = youtube.get_youtube_playlist_data(link)["name"]
     # Remove illegal filename characters from playlist name
     for char in ILLEGAL_CHARS:
         playlist_name = playlist_name.replace(char, "-")
@@ -271,6 +272,7 @@ def _download_youtube_search(name, artist, track_id, file_format, dir_):
         file_format (str): file format to download track in
         dir_ (str): directory to download tracks to
     """
+
     legal_name = name
     for char in ILLEGAL_CHARS:
         legal_name = legal_name.replace(char, "-")
@@ -297,10 +299,6 @@ def _download_youtube_search(name, artist, track_id, file_format, dir_):
         "playlist_items": "1",
     }
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.extract_info(f"{name} {artist}", download=True)
-        return Path(path)
-
 
 def download_spotify_track(link, file_format, dir_):
     """Download Spotify track from link
@@ -310,7 +308,7 @@ def download_spotify_track(link, file_format, dir_):
         file_format (str): file format to download track in
         dir_ (str): directory to download tracks to
     """
-    data = utils.get_spotify_track_data(link)
+    data = spotify.get_spotify_track_data(link)
     return _download_youtube_search(
         data["name"], data["artist"], data["track_id"], file_format, dir_
     )
@@ -324,7 +322,7 @@ def download_spotify_playlist(link, file_format, dir_):
         file_format (str): file format to download tracks in
         dir_ (str): directory to download tracks to
     """
-    data = utils.get_spotify_playlist_data(link)
+    data = spotify.get_spotify_playlist_data(link)
     playlist_name = data["name"]
     # Remove illegal filename characters from playlist name
     for char in ILLEGAL_CHARS:
