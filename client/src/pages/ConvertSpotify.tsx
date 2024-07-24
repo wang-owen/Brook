@@ -1,17 +1,12 @@
-import { useState, useEffect, useContext } from "react";
-import { ThemeContext } from "../layouts/MainLayout";
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import ConvertForm from "../components/ConvertForm";
 
-const ConvertToSpotifyPage = () => {
-    const { theme } = useContext(ThemeContext);
-
+const ConvertSpotify = ({ color }: { color: string }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    const [link, setLink] = useState("");
-
     const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-    const redirectUri = "http://127.0.0.1:3000/convert/spotify";
+    const redirectUri = "http://127.0.0.1:3000/convert";
 
     const authorizationEndpoint = "https://accounts.spotify.com/authorize";
     const tokenEndpoint = "https://accounts.spotify.com/api/token";
@@ -118,9 +113,7 @@ const ConvertToSpotifyPage = () => {
     }
 
     const convert = async (link: string) => {
-        const toastID = toast.loading(
-            `${String.fromCodePoint(0x1f3bb)} Brewing music...`
-        );
+        const toastID = toast.loading("Converting playlist...");
 
         const response = await fetch(
             `${import.meta.env.VITE_API_URL}/convert/spotify/`,
@@ -139,7 +132,9 @@ const ConvertToSpotifyPage = () => {
 
         if (response.ok) {
             toast.update(toastID, {
-                render: "Successfully converted playlist",
+                render: `Successfully converted playlist: ${(
+                    <a href={response.url}>Link</a>
+                )}`,
                 type: "success",
                 isLoading: false,
                 autoClose: 5000,
@@ -154,7 +149,7 @@ const ConvertToSpotifyPage = () => {
         }
     };
 
-    const convertSubmit = async (event: React.FormEvent) => {
+    const convertSubmit = async (event: React.FormEvent, link: string) => {
         event.preventDefault();
         // Clear input field
         const inputElement = document.getElementById("convert-input");
@@ -237,117 +232,33 @@ const ConvertToSpotifyPage = () => {
         }
     }, []);
 
-    const [inputHover, setInputHover] = useState(false);
-    const formClass = `bg-zinc-900 rounded-lg p-3 py-2 duration-1000 border border-[#108954] ${
-        inputHover
-            ? theme === "light"
-                ? "w-1/2 shadow-2xl shadow-black border-white"
-                : "w-1/2 shadow-2xl shadow-white border-black"
-            : "w-1/4 2xl:w-1/5"
-    }`;
-    const inputBar = `absolute h-0 mt-9 border-white border-b-2 hover:w-full duration-1000 ease-in-out ${
-        inputHover ? "w-full" : "w-0"
-    }`;
-
     return (
-        <section className="min-h-screen">
+        <>
             {isAuthenticated ? (
-                <div className="flex h-screen justify-center items-center">
-                    <div className="w-full animate-fadeInFromBottom">
-                        <div className="flex justify-center">
-                            <div
-                                className={`m-12 text-7xl h-full bg-gradient-to-r ${
-                                    theme === "light" ? "bg-black" : "bg-white"
-                                } text-transparent bg-clip-text flex items-center font-semibold text-center hover:scale-110 duration-200`}
-                            >
-                                Convert to Spotify
-                            </div>
-                        </div>
-                        <form
-                            onSubmit={convertSubmit}
-                            className="w-full flex flex-col justify-center items-center gap-12"
-                        >
-                            <div className={formClass}>
-                                <div className="relative flex justify-between items-center mx-5 my-2">
-                                    <input
-                                        id="convert-input"
-                                        className="bg-transparent text-white w-full border-none focus:outline-none"
-                                        type="url"
-                                        name="link"
-                                        placeholder="YouTube Playlist URL"
-                                        onChange={(event) =>
-                                            setLink(event.target.value)
-                                        }
-                                        onFocus={() => setInputHover(true)}
-                                        onBlur={() => setInputHover(false)}
-                                        onMouseOver={() => setInputHover(true)}
-                                        onMouseOut={() => setInputHover(false)}
-                                    />
-                                    <div className={inputBar} />
-                                </div>
-                            </div>
-                            <motion.button
-                                type="submit"
-                                initial={{
-                                    backgroundImage:
-                                        "linear-gradient(to right, black, black), linear-gradient(0deg, #108954, black)",
-                                }}
-                                animate={{
-                                    backgroundImage: `linear-gradient(to right, ${
-                                        theme === "light"
-                                            ? "white, white"
-                                            : "black, black"
-                                    }), linear-gradient(360deg, #108954, ${
-                                        theme === "light" ? "white" : "black"
-                                    })`,
-                                }}
-                                transition={{
-                                    type: "tween",
-                                    ease: "linear",
-                                    duration: 3,
-                                    repeat: Infinity,
-                                }}
-                                className="hover:scale-110 duration-300"
-                                style={{
-                                    border: "4px solid transparent",
-                                    borderRadius: "20px",
-                                    backgroundClip: "padding-box, border-box",
-                                    backgroundOrigin: "padding-box, border-box",
-                                    color: `${
-                                        theme === "light" ? "black" : "white"
-                                    }`,
-                                    padding: 25,
-                                    fontWeight: "bold",
-                                    width: 100,
-                                    height: 40,
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                }}
-                            >
-                                Convert
-                            </motion.button>
-                        </form>
-                    </div>
+                <div className="flex flex-col justify-center items-center">
+                    <ConvertForm
+                        convertSubmit={convertSubmit}
+                        platformColor={color}
+                    />
                     <button
-                        className="animate-fadeIn absolute self-end my-12 btn btn-sm bg-[#108954] text-white hover:bg-green-800"
+                        className={`animate-fadeIn my-12 btn btn-sm bg-[${color}] text-white hover:bg-green-800`}
                         onClick={() => currentToken.clear()}
                     >
                         Disconnect from Spotify
                     </button>
                 </div>
             ) : (
-                <div className="flex h-screen justify-center items-center">
+                <div className="flex justify-center">
                     <button
-                        className="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg bg-[#108954] text-white hover:bg-green-800"
+                        className={`btn btn-xs sm:btn-sm md:btn-md lg:btn-lg bg-[${color}] text-white hover:bg-green-800`}
                         onClick={() => redirectToSpotifyAuthorize()}
                     >
                         Connect with Spotify
                     </button>
                 </div>
             )}
-        </section>
+        </>
     );
 };
 
-export default ConvertToSpotifyPage;
+export default ConvertSpotify;
