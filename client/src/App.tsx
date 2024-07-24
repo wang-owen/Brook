@@ -11,10 +11,6 @@ import BrewPage from "./pages/BrewPage";
 import ConvertPage from "./pages/ConvertPage";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
-import ConvertToYouTubePage from "./pages/ConvertToYouTubePage";
-import ConvertToSpotifyPage from "./pages/ConvertToSpotifyPage";
-import ConvertToApplePage from "./pages/ConvertToApplePage";
-import ConvertToAmazonPage from "./pages/ConvertToAmazonPage";
 
 interface LoginContextProps {
     loggedIn: boolean;
