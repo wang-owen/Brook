@@ -37,7 +37,7 @@ const Navbar = () => {
     );
 
     return (
-        <div className="navbar bg-zinc-950 fixed animate-fadeInFromTop z-50">
+        <div className="navbar bg-zinc-950 absolute top-0 animate-fadeInFromTop z-50">
             <div className="flex-1">
                 <a className="btn btn-ghost text-xl">Brook</a>
             </div>

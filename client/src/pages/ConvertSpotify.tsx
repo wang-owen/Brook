@@ -235,22 +235,24 @@ const ConvertSpotify = ({ color }: { color: string }) => {
     return (
         <>
             {isAuthenticated ? (
-                <div className="flex flex-col justify-center items-center">
+                <div className="flex w-full justify-center">
                     <ConvertForm
                         convertSubmit={convertSubmit}
                         platformColor={color}
                     />
                     <button
-                        className={`animate-fadeIn my-12 btn btn-sm bg-[${color}] text-white hover:bg-green-800`}
+                        className={`btn btn-sm text-white hover:opacity-80 absolute bottom-24`}
+                        style={{ backgroundColor: color }}
                         onClick={() => currentToken.clear()}
                     >
                         Disconnect from Spotify
                     </button>
                 </div>
             ) : (
-                <div className="flex justify-center">
+                <div className="flex justify-center w-full">
                     <button
-                        className={`btn btn-xs sm:btn-sm md:btn-md lg:btn-lg bg-[${color}] text-white hover:bg-green-800`}
+                        className={`btn btn-xs sm:btn-sm md:btn-md lg:btn-lg text-white hover:opacity-80`}
+                        style={{ backgroundColor: color }}
                         onClick={() => redirectToSpotifyAuthorize()}
                     >
                         Connect with Spotify
