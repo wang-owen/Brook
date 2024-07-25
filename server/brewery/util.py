@@ -140,9 +140,10 @@ def download_track(link, file_format, platform, dir_=None):
     if platform == YOUTUBE:
         task = task_brew.delay("download_youtube_track", link, file_format, str(dir_))
         return task.id
-    elif platform == SPOTIFY:
+    if platform == SPOTIFY:
         task = task_brew.delay("download_spotify_track", link, file_format, str(dir_))
         return task.id
+
     return False
 
 
