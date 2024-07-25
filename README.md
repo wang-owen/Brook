@@ -1,17 +1,15 @@
 # Brook
 
-Brook is a web app which allows users to download and save YouTube and Spotify tracks and entire playlists.
-* Users may create accounts and save playlists
-* Playlists are automatically added to *Saved Playlists* when downloaded as long as user is logged in
+Brook offers a variety of tools regarding music streaming services.
+* Download tracks and entire playlists from popular streaming services
 * Saved playlists track any changes made to the playlist (e.g. added/removed tracks, name change, thumbnail change etc.)
 * When saved playlists are "updated", a zip file containing any new tracks are downloaded.
-
-**This is meant for those who do not wish to pay for a music streaming subscription, and want an easy way to download their online playlists onto their phones.**
+* Convert (transfer) your playlists between music streaming services
 
 💻 *Try it here:* [brook.wangowen.com](https://brook.wangowen.com)
 
 
-> ⚠️ This web app is not intended for mobile devices and thus has not been tested for it
+> ⚠️ This web app is not intended for mobile devices
 ---
 
 ## 🪲 Known issues
