@@ -34,11 +34,11 @@ const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
 
     return (
         <div
-            className={`flex bg-cover bg-no-repeat items-center gap-16 ${
+            className={`flex items-center gap-16 ${
                 loggedIn ? "h-[50vh]" : "h-screen"
             }`}
         >
-            <div className="w-full animate-fadeInFromBottom">
+            <div className="w-full animate-fadeIn">
                 <div className="flex justify-center">
                     <div
                         className={`m-12 text-7xl h-full bg-gradient-to-r ${
