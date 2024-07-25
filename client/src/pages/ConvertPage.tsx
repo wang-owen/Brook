@@ -5,7 +5,8 @@ import ConvertSpotify from "./ConvertSpotify";
 const ConvertPage = () => {
     const { theme } = useContext(ThemeContext);
 
-    const platforms = ["YouTube", "Spotify", "Apple", "Amazon"];
+    const platforms = ["Spotify"];
+    // const platforms = ["YouTube", "Spotify", "Apple", "Amazon"];
     const [convertPlatform, setConvertPlatform] = useState("Spotify");
     const platformColors = new Map();
     platformColors.set("YouTube", "#ff0000");
