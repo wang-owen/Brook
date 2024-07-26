@@ -9,7 +9,7 @@ Brook offers a variety of tools regarding music streaming services.
 💻 *Try it here:* [brook.wangowen.com](https://brook.wangowen.com)
 
 
-> ⚠️ This web app is not intended for mobile devices
+> ⚠️ This web app has not been tested for mobile devices
 ---
 
 ## 🪲 Known issues
@@ -19,7 +19,7 @@ Brook offers a variety of tools regarding music streaming services.
 - [x] **[FIXED]** Downloads that take over 30 seconds initiate a Heroku timeout (not an issue when running locally)
 
 ## ⌛ Work in progress
-- Playlist conversion for and YouTube
+- Playlist conversion for YouTube
 - Integrate Apple Music
 
 ## 📝 To-do
