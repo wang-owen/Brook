@@ -9,7 +9,7 @@ Brook offers a variety of tools regarding music streaming services.
 💻 *Try it here:* [brook.wangowen.com](https://brook.wangowen.com)
 
 
-> ⚠️ This web app is not intended for mobile devices
+> ⚠️ This web app has not been tested for mobile devices
 ---
 
 ## 🪲 Known issues
@@ -19,7 +19,7 @@ Brook offers a variety of tools regarding music streaming services.
 - [x] **[FIXED]** Downloads that take over 30 seconds initiate a Heroku timeout (not an issue when running locally)
 
 ## ⌛ Work in progress
-- Playlist conversion for and YouTube
+- Playlist conversion for YouTube
 - Integrate Apple Music
 
 ## 📝 To-do
@@ -36,6 +36,7 @@ Brook offers a variety of tools regarding music streaming services.
      * `VITE_API_URL=http://127.0.0.1:8000`
      * `VITE_AWS_ACCESS_KEY_ID=<your aws access key id>`
      * `VITE_AWS_SECRET_ACCESS_KEY=<your aws secret access key>`
+     * `VITE_SPOTIFY_CLIENT_ID=<your spotify client id>`
 4. Create a `.env` file in the `server` root directory and add the following:
      * `DJANGO_DEBUG=1`
      * `YOUTUBE_API_KEY=<your youtube data api key>`
@@ -43,6 +44,7 @@ Brook offers a variety of tools regarding music streaming services.
      * `SPOTIFY_CLIENT_SECRET<your spotify client secret`
      * `AWS_ACCESS_KEY_ID=<your aws access key id>`
      * `AWS_SECRET_ACCESS_KEY=<your aws secret access key>`
+     * `USE_SQLITE=1`
 5. In your terminal, `cd` into `Brook/client` and run the following:
      1. `npm install`
      2. `npm run dev`
