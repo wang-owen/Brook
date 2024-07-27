@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import ConvertForm from "../components/ConvertForm";
+import ConvertForm from "./ConvertForm";
 
 const ConvertSpotify = ({ color }: { color: string }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
