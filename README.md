@@ -13,7 +13,6 @@ Brook offers a variety of tools regarding music streaming services.
 ---
 
 ## 🪲 Known issues
-- [ ] Brew encounters Server Error 500 on cloud hosted site, still works locally
 - [ ] Invalid link error when using shared YouTube link (YouTube updated share link, doesn't include "watch" keyword)
 - [x] **[FIXED]** Saved playlists will be duplicated if downloaded from main form
 - [x] **[FIXED]** Spotify bug where some songs are not downloaded and/or saved to duplicate file names
@@ -25,11 +24,12 @@ Brook offers a variety of tools regarding music streaming services.
 - Integrate Apple Music
 
 ## 📝 To-do
+- [ ] Integrate Apple Music
+- [ ] Integrate Amazon Music
 - [ ] Refactor database so tracks have a many-to-many relationship with playlists instead of Foreign Key (saves database space)
 - [ ] Add a download ETA to toast
 - [ ] Disable queueing more downloads as one is occurring
 - [ ] Implement "Public playlists" page, where users can opt to share their saved playlists publically
-- [ ] Integrate Apple Music and Amazon Music
 - [ ] Desktop app that automatically manages file transfers?
 
 ## ✍️ Contributing
