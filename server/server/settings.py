@@ -42,6 +42,7 @@ IS_HEROKU_APP = "DYNO" in os.environ and not "CI" in os.environ
 # Celery settings
 CELERY_BROKER_URL = os.environ.get("CLOUDAMQP_URL")
 CELERY_IMPORTS = "brewery.tasks"
+CELERY_RESULT_BACKEND = "django-db"
 CELERY_CACHE_BACKEND = "django-cache"
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
