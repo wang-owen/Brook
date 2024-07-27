@@ -101,8 +101,8 @@ const BrewPage = () => {
                     return false;
                 }
             }
-            // Poll server every 2 seconds
-            await new Promise((resolve) => setTimeout(resolve, 3000));
+            // Poll server every 2.5 seconds
+            await new Promise((resolve) => setTimeout(resolve, 2500));
         }
     };
 
