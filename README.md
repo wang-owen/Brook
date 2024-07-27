@@ -13,6 +13,7 @@ Brook offers a variety of tools regarding music streaming services.
 ---
 
 ## 🪲 Known issues
+- [ ] Brew encounters Server Error 500 on cloud hosted site, still works locally
 - [ ] Invalid link error when using shared YouTube link (YouTube updated share link, doesn't include "watch" keyword)
 - [x] **[FIXED]** Saved playlists will be duplicated if downloaded from main form
 - [x] **[FIXED]** Spotify bug where some songs are not downloaded and/or saved to duplicate file names
