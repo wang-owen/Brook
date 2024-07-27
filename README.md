@@ -13,6 +13,7 @@ Brook offers a variety of tools regarding music streaming services.
 ---
 
 ## 🪲 Known issues
+- [ ] Invalid link error when using shared YouTube link (YouTube updated share link, doesn't include "watch" keyword)
 - [x] **[FIXED]** Saved playlists will be duplicated if downloaded from main form
 - [x] **[FIXED]** Spotify bug where some songs are not downloaded and/or saved to duplicate file names
 - [x] **[FIXED]** CloudAMQP instance downloads files successfully, but files cannot be found on Heroku filesystem, resulting in Server Error 500 when attempting to fetch
