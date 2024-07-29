@@ -290,18 +290,24 @@ const BrewPage = () => {
     }, [loggedIn]);
 
     return (
-        <section className="min-h-screen">
-            <BrewHero brew={brew} />
-            {loggedIn ? (
-                <SavedPlaylists
-                    playlists={playlists}
-                    pollTaskStatus={pollTaskStatus}
-                    brew={brew}
-                    watchPlaylist={watchPlaylist}
-                    handlePlaylistUpdate={handlePlaylistUpdate}
-                    handlePlaylistRemove={handlePlaylistRemove}
-                />
-            ) : null}
+        <section className="min-h-screen flex justify-center items-center">
+            <div className="w-full">
+                <div className="min-h-[50vh] flex items-center">
+                    <BrewHero brew={brew} />
+                </div>
+                <div className="p-8">
+                    {loggedIn ? (
+                        <SavedPlaylists
+                            playlists={playlists}
+                            pollTaskStatus={pollTaskStatus}
+                            brew={brew}
+                            watchPlaylist={watchPlaylist}
+                            handlePlaylistUpdate={handlePlaylistUpdate}
+                            handlePlaylistRemove={handlePlaylistRemove}
+                        />
+                    ) : null}
+                </div>
+            </div>
         </section>
     );
 };

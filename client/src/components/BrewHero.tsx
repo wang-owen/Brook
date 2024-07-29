@@ -1,10 +1,8 @@
 import { useContext, useState } from "react";
-import { LoginContext } from "../App";
 import { ThemeContext } from "../layouts/MainLayout";
 
 const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
     const { theme } = useContext(ThemeContext);
-    const { loggedIn } = useContext(LoginContext);
 
     const [link, setLink] = useState("");
 
@@ -33,11 +31,7 @@ const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
     }`;
 
     return (
-        <div
-            className={`flex items-center gap-16 ${
-                loggedIn ? "h-[50vh]" : "h-screen"
-            }`}
-        >
+        <div className="flex items-center gap-16 w-full">
             <div className="w-full animate-fadeIn">
                 <div className="flex justify-center">
                     <div
