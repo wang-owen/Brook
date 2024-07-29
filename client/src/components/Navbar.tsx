@@ -49,9 +49,6 @@ const Navbar = () => {
                     <li>
                         <NavLink to="/convert">Convert</NavLink>
                     </li>
-                    <li>
-                        <NavLink to="/public">Public</NavLink>
-                    </li>
                     {!loggedIn ? (
                         <>
                             <li>
