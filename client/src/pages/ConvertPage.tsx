@@ -1,20 +1,23 @@
 import { useState, useContext } from "react";
 import { ThemeContext } from "../layouts/MainLayout";
-import ConvertSpotify from "./ConvertSpotify";
+import ConvertSpotify from "../components/ConvertSpotify";
+import ConvertYouTube from "../components/ConvertYouTube";
 
-const ConvertPage = () => {
+const ConvertPage = ({ platform }: { platform: string | null }) => {
     const { theme } = useContext(ThemeContext);
 
-    const platforms = ["Spotify"];
-    // const platforms = ["YouTube", "Spotify", "Apple", "Amazon"];
-    const [convertPlatform, setConvertPlatform] = useState("Spotify");
+    const [convertPlatform, setConvertPlatform] = useState(
+        platform || window.localStorage.getItem("convertPlatform") || "YouTube"
+    );
+    const platforms = ["YouTube", "Spotify"];
     const platformColors = new Map();
     platformColors.set("YouTube", "#ff0000");
     platformColors.set("Spotify", "#108954");
-    platformColors.set("Apple", "#e6335d");
-    platformColors.set("Amazon", "#05a0d1");
+    // platformColors.set("Apple", "#e6335d");
+    // platformColors.set("Amazon", "#05a0d1");
 
     const authButtons = new Map([
+        ["YouTube", <ConvertYouTube color={platformColors.get("YouTube")} />],
         ["Spotify", <ConvertSpotify color={platformColors.get("Spotify")} />],
     ]);
 
