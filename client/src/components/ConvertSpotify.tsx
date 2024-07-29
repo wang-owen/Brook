@@ -195,6 +195,13 @@ const ConvertSpotify = ({ color }: { color: string }) => {
     };
 
     useEffect(() => {
+        history.replaceState(
+            null,
+            "",
+            `${import.meta.env.VITE_CLIENT_URL}/convert/spotify`
+        );
+        window.localStorage.setItem("convertPlatform", "Spotify");
+
         // On page load, try to fetch auth code from current browser search URL
         const args = new URLSearchParams(window.location.search);
         const code = args.get("code");
