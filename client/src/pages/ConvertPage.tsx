@@ -1,6 +1,6 @@
 import { useState, useContext } from "react";
 import { ThemeContext } from "../layouts/MainLayout";
-import ConvertSpotify from "./ConvertSpotify";
+import ConvertSpotify from "../components/ConvertSpotify";
 
 const ConvertPage = () => {
     const { theme } = useContext(ThemeContext);
