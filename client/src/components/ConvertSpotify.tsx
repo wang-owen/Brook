@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import ConvertForm from "../components/ConvertForm";
+import ConvertForm from "./ConvertForm";
 
 const ConvertSpotify = ({ color }: { color: string }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-    const redirectUri = "http://127.0.0.1:3000/convert";
+    const redirectUri = `${import.meta.env.VITE_API_URL}/convert`;
 
     const authorizationEndpoint = "https://accounts.spotify.com/authorize";
     const tokenEndpoint = "https://accounts.spotify.com/api/token";
     const scope =
         "playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public";
 
-    const redirectToSpotifyAuthorize = async () => {
+    const redirectToSpotifyAuth = async () => {
         const possible =
             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         const randomValues = crypto.getRandomValues(new Uint8Array(64));
@@ -253,7 +253,7 @@ const ConvertSpotify = ({ color }: { color: string }) => {
                     <button
                         className={`btn btn-xs sm:btn-sm md:btn-md lg:btn-lg text-white hover:opacity-80`}
                         style={{ backgroundColor: color }}
-                        onClick={() => redirectToSpotifyAuthorize()}
+                        onClick={() => redirectToSpotifyAuth()}
                     >
                         Connect with Spotify
                     </button>
