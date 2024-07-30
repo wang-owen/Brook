@@ -1,23 +1,20 @@
 import { useEffect, useState } from "react";
+import { TokenHandler, convertSubmit } from "./ConvertTools";
 import ConvertForm from "./ConvertForm";
 
 const ConvertYouTube = ({ color }: { color: string }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+    const currentToken = TokenHandler("YouTube", setIsAuthenticated);
+
     const clientId = import.meta.env.VITE_YOUTUBE_CLIENT_ID;
-    const redirectUri = "http://127.0.0.1:3000/convert";
+    const clientSecret = import.meta.env.VITE_YOUTUBE_CLIENT_SECRET;
+    const redirectUri = `${window.location.origin}/convert/youtube`;
 
     const authorizationEndpoint =
         "https://accounts.google.com/o/oauth2/v2/auth";
     const tokenEndpoint = "https://oauth2.googleapis.com/token";
-    const scope =
-        "https://www.googleapis.com/auth/youtubeparhttps://oauth2.googleapis.com/tokentner";
-
-    const currentToken = {
-        clear: function () {
-            setIsAuthenticated(false);
-        },
-    };
+    const scope = "https://www.googleapis.com/auth/youtubepartner";
 
     const redirectToYouTubeAuthorize = async () => {
         const possible =
@@ -42,7 +39,8 @@ const ConvertYouTube = ({ color }: { color: string }) => {
         const authUrl = new URL(authorizationEndpoint);
         const params = {
             scope: scope,
-            access_type: "online",
+            access_type: "offline",
+            prompt: "select_account",
             response_type: "code",
             state: code_challenge_base64,
             redirect_uri: redirectUri,
@@ -53,10 +51,6 @@ const ConvertYouTube = ({ color }: { color: string }) => {
         window.location.href = authUrl.toString();
     };
 
-    const convertSubmit = () => {
-        return;
-    };
-
     const getToken = async (code: string) => {
         const payload = {
             method: "POST",
@@ -65,10 +59,11 @@ const ConvertYouTube = ({ color }: { color: string }) => {
             },
             // @ts-ignore
             body: new URLSearchParams({
-                client_id: clientId,
-                grant_type: "authorization_code",
                 code,
+                client_id: clientId,
+                client_secret: clientSecret,
                 redirect_uri: redirectUri,
+                grant_type: "authorization_code",
             }),
         };
 
@@ -78,13 +73,72 @@ const ConvertYouTube = ({ color }: { color: string }) => {
         return response;
     };
 
+    const getRefreshToken = async () => {
+        // refresh token that has been previously stored
+        const refreshToken = currentToken.refresh_token;
+
+        const payload = {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            // @ts-ignore
+            body: new URLSearchParams({
+                client_id: clientId,
+                client_secret: clientSecret,
+                refresh_token: refreshToken,
+                grant_type: "refresh_token",
+            }),
+        };
+
+        const body = await fetch(tokenEndpoint, payload);
+        const response = await body.json();
+
+        currentToken.save(response.accessToken);
+    };
+
     useEffect(() => {
-        history.replaceState(
-            null,
-            "",
-            `${import.meta.env.VITE_CLIENT_URL}/convert/youtube`
-        );
-        window.localStorage.setItem("convertPlatform", "YouTube");
+        const args = new URLSearchParams(window.location.search);
+        const code = args.get("code");
+
+        if (code) {
+            getToken(code).then((token) => currentToken.save(token));
+
+            // Remove code from URL so we can refresh correctly.
+            const url = new URL(window.location.href);
+            url.searchParams.delete("code");
+
+            const updatedUrl = url.search
+                ? url.href
+                : url.href.replace("?", "");
+            window.history.replaceState({}, document.title, updatedUrl);
+
+            setIsAuthenticated(true);
+        } else if (
+            // Check if token is expired
+            currentToken.expires &&
+            new Date().getTime() > new Date(currentToken.expires).getTime()
+        ) {
+            getRefreshToken();
+        } else {
+            history.replaceState(
+                null,
+                "",
+                `${window.location.origin}/convert/youtube`
+            );
+            window.localStorage.setItem("convertPlatform", "YouTube");
+        }
+
+        // Check if token is expired
+        if (
+            currentToken.access_token &&
+            currentToken.expires &&
+            new Date().getTime() < new Date(currentToken.expires).getTime()
+        ) {
+            isAuthenticated === false ? setIsAuthenticated(true) : null;
+        } else {
+            isAuthenticated === true ? setIsAuthenticated(false) : null;
+        }
     }, []);
 
     return (
@@ -93,6 +147,10 @@ const ConvertYouTube = ({ color }: { color: string }) => {
                 <div className="flex w-full justify-center">
                     <ConvertForm
                         convertSubmit={convertSubmit}
+                        platform="YouTube"
+                        body={{
+                            access_token: currentToken.access_token,
+                        }}
                         platformColor={color}
                     />
                     <button
