@@ -12,9 +12,7 @@ export const ThemeContext = createContext({
     toggleTheme: () => {},
 });
 const MainLayout = () => {
-    const [theme, setTheme] = useState(
-        localStorage.getItem("theme") || "dark"
-    );
+    const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
     const toggleTheme = () => {
         localStorage.setItem("theme", theme === "light" ? "dark" : "light");
         setTheme(theme === "light" ? "dark" : "light");
@@ -32,6 +30,16 @@ const MainLayout = () => {
                 <Footer toggleTheme={toggleTheme} />
             </ThemeContext.Provider>
             <ToastContainer newestOnTop />
+            {/* <div className="h-screen flex items-center justify-center">
+                <h1
+                    className={`animate-pulse text-4xl ${
+                        theme === "light" && "text-black"
+                    }`}
+                >
+                    🚫 Site will be brought back online as recruiting season approaches (costs money to host online)
+                </h1>
+            </div> */}
+            {/* <Footer toggleTheme={toggleTheme} /> */}
         </div>
     );
 };

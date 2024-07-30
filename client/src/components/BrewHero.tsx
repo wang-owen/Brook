@@ -1,11 +1,8 @@
 import { useContext, useState } from "react";
-import { motion } from "framer-motion";
-import { LoginContext } from "../App";
 import { ThemeContext } from "../layouts/MainLayout";
 
 const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
     const { theme } = useContext(ThemeContext);
-    const { loggedIn } = useContext(LoginContext);
 
     const [link, setLink] = useState("");
 
@@ -34,12 +31,8 @@ const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
     }`;
 
     return (
-        <div
-            className={`flex bg-cover bg-no-repeat items-center gap-16 ${
-                loggedIn ? "h-[50vh]" : "h-screen"
-            }`}
-        >
-            <div className="w-full animate-fadeInFromBottom">
+        <div className="flex items-center gap-16 w-full">
+            <div className="w-full animate-fadeIn">
                 <div className="flex justify-center">
                     <div
                         className={`m-12 text-7xl h-full bg-gradient-to-r ${
@@ -73,36 +66,17 @@ const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
                                 <div className={inputBar} />
                             </div>
                         </div>
-                        <motion.button
+                        <button
                             type="submit"
-                            initial={{
-                                backgroundImage:
-                                    "linear-gradient(to right, black, black), linear-gradient(0deg, blue, black)",
-                            }}
-                            animate={{
-                                backgroundImage: `linear-gradient(to right, ${
-                                    theme === "light"
-                                        ? "white, white"
-                                        : "black, black"
-                                }), linear-gradient(360deg, blue, ${
-                                    theme === "light" ? "white" : "black"
-                                })`,
-                            }}
-                            transition={{
-                                type: "tween",
-                                ease: "linear",
-                                duration: 3,
-                                repeat: Infinity,
-                            }}
                             className="hover:scale-110 duration-300"
                             style={{
                                 border: "4px solid transparent",
                                 borderRadius: "20px",
                                 backgroundClip: "padding-box, border-box",
                                 backgroundOrigin: "padding-box, border-box",
-                                color: `${
-                                    theme === "light" ? "black" : "white"
-                                }`,
+                                backgroundImage:
+                                    "linear-gradient(to right, black, black), linear-gradient(0deg, white, black)",
+                                color: "white",
                                 padding: 25,
                                 fontWeight: "bold",
                                 width: 100,
@@ -113,7 +87,7 @@ const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
                             }}
                         >
                             Brew
-                        </motion.button>
+                        </button>
                     </form>
                 </div>
             </div>
