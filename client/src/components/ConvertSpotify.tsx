@@ -1,19 +1,21 @@
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
+import { TokenHandler, convertSubmit } from "./ConvertTools";
 import ConvertForm from "./ConvertForm";
 
 const ConvertSpotify = ({ color }: { color: string }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+    const currentToken = TokenHandler("Spotify", setIsAuthenticated);
+
     const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-    const redirectUri = `${import.meta.env.VITE_API_URL}/convert`;
+    const redirectUri = `${window.location.origin}/convert/spotify`;
 
     const authorizationEndpoint = "https://accounts.spotify.com/authorize";
     const tokenEndpoint = "https://accounts.spotify.com/api/token";
     const scope =
         "playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public";
 
-    const redirectToSpotifyAuth = async () => {
+    const redirectToSpotifyAuthorize = async () => {
         const possible =
             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         const randomValues = crypto.getRandomValues(new Uint8Array(64));
@@ -108,100 +110,10 @@ const ConvertSpotify = ({ color }: { color: string }) => {
         });
 
         const data = await response.json();
-
         return data.id;
     }
 
-    const convert = async (link: string) => {
-        const toastID = toast.loading("Converting playlist...");
-
-        const response = await fetch(
-            `${import.meta.env.VITE_API_URL}/convert/spotify/`,
-            {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    access_token: currentToken.access_token,
-                    user_id: await getUserID(),
-                    link: link,
-                }),
-            }
-        );
-
-        if (response.ok) {
-            toast.update(toastID, {
-                render: `Successfully converted playlist: ${(
-                    <a href={response.url}>Link</a>
-                )}`,
-                type: "success",
-                isLoading: false,
-                autoClose: 5000,
-            });
-        } else {
-            toast.update(toastID, {
-                render: "Invalid link",
-                type: "error",
-                isLoading: false,
-                autoClose: 5000,
-            });
-        }
-    };
-
-    const convertSubmit = async (event: React.FormEvent, link: string) => {
-        event.preventDefault();
-        // Clear input field
-        const inputElement = document.getElementById("convert-input");
-        if (inputElement) {
-            (inputElement as HTMLInputElement).value = "";
-        }
-        return convert(link);
-    };
-
-    // Data structure that manages the current active token, caching it in localStorage
-    const currentToken = {
-        get access_token() {
-            return localStorage.getItem("access_token") || null;
-        },
-        get refresh_token() {
-            return localStorage.getItem("refresh_token") || null;
-        },
-        get expires_in() {
-            return localStorage.getItem("refresh_in") || null;
-        },
-        get expires() {
-            return localStorage.getItem("expires") || null;
-        },
-
-        save: function (response: any) {
-            const { access_token, refresh_token, expires_in } = response;
-            localStorage.setItem("access_token", access_token);
-            localStorage.setItem("refresh_token", refresh_token);
-            localStorage.setItem("expires_in", expires_in);
-
-            const now = new Date();
-            const expiry = new Date(now.getTime() + expires_in * 1000);
-            localStorage.setItem("expires", expiry.toString());
-        },
-
-        clear: function () {
-            localStorage.removeItem("access_token");
-            localStorage.removeItem("refresh_token");
-            localStorage.removeItem("expires_in");
-            localStorage.removeItem("expires");
-            setIsAuthenticated(false);
-        },
-    };
-
     useEffect(() => {
-        history.replaceState(
-            null,
-            "",
-            `${import.meta.env.VITE_CLIENT_URL}/convert/spotify`
-        );
-        window.localStorage.setItem("convertPlatform", "Spotify");
-
         // On page load, try to fetch auth code from current browser search URL
         const args = new URLSearchParams(window.location.search);
         const code = args.get("code");
@@ -220,14 +132,22 @@ const ConvertSpotify = ({ color }: { color: string }) => {
             window.history.replaceState({}, document.title, updatedUrl);
 
             setIsAuthenticated(true);
-            // Check if token is expired
         } else if (
+            // Check if token is expired
             currentToken.expires &&
             new Date().getTime() > new Date(currentToken.expires).getTime()
         ) {
             getRefreshToken();
+        } else {
+            history.replaceState(
+                null,
+                "",
+                `${window.location.origin}/convert/spotify`
+            );
+            window.localStorage.setItem("convertPlatform", "Spotify");
         }
 
+        // Check if token is expired
         if (
             currentToken.access_token &&
             currentToken.expires &&
@@ -245,12 +165,20 @@ const ConvertSpotify = ({ color }: { color: string }) => {
                 <div className="flex w-full justify-center">
                     <ConvertForm
                         convertSubmit={convertSubmit}
+                        platform="Spotify"
+                        body={{
+                            access_token: currentToken.access_token,
+                            user_id: getUserID(),
+                        }}
                         platformColor={color}
                     />
                     <button
                         className={`btn btn-sm text-white hover:opacity-80 absolute bottom-24`}
                         style={{ backgroundColor: color }}
-                        onClick={() => currentToken.clear()}
+                        onClick={() => {
+                            currentToken.clear();
+                            setIsAuthenticated(false);
+                        }}
                     >
                         Disconnect from Spotify
                     </button>
@@ -260,7 +188,7 @@ const ConvertSpotify = ({ color }: { color: string }) => {
                     <button
                         className={`btn btn-xs sm:btn-sm md:btn-md lg:btn-lg text-white hover:opacity-80`}
                         style={{ backgroundColor: color }}
-                        onClick={() => redirectToSpotifyAuth()}
+                        onClick={() => redirectToSpotifyAuthorize()}
                     >
                         Connect with Spotify
                     </button>
