@@ -1,13 +1,8 @@
 amqp==5.2.0
 asgiref==3.8.1
 billiard==4.2.0
-<<<<<<< HEAD
-boto3==1.34.149
-botocore==1.34.149
-=======
 boto3==1.34.151
 botocore==1.34.151
->>>>>>> feature/converter/youtube
 Brotli==1.1.0
 celery==5.4.0
 certifi==2024.7.4
@@ -57,7 +52,4 @@ wcwidth==0.2.13
 websockets==12.0
 whitenoise==6.7.0
 yt-dlp==2024.7.25
-<<<<<<< HEAD
-=======
 ytmusicapi==1.8.0
->>>>>>> feature/converter/youtube
