@@ -22,6 +22,10 @@ def _get_track_id(link):
     return link.split("watch?v=")[1].split("&")[0]
 
 
+def get_auth_header(token):
+    return {"Authorization": "Bearer " + token}
+
+
 def get_youtube_playlist_data(link):
     """Get playlist data from YouTube playlist link
 

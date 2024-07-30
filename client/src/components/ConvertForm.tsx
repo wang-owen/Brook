@@ -3,9 +3,13 @@ import { ThemeContext } from "../layouts/MainLayout";
 
 const ConvertForm = ({
     convertSubmit,
+    platform,
+    body,
     platformColor,
 }: {
-    convertSubmit: (event: React.FormEvent, link: string) => any;
+    convertSubmit: (event: React.FormEvent, platform: string, body: any) => any;
+    platform: string;
+    body: any;
     platformColor: string;
 }) => {
     const { theme } = useContext(ThemeContext);
@@ -27,7 +31,9 @@ const ConvertForm = ({
 
     return (
         <form
-            onSubmit={(event) => convertSubmit(event, link)}
+            onSubmit={(event) =>
+                convertSubmit(event, platform, { ...body, link: link })
+            }
             className="w-full flex flex-col justify-center items-center gap-12"
         >
             <div className={formClass} style={{ borderColor: platformColor }}>
