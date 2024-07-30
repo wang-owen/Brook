@@ -62,13 +62,13 @@ const convert = async (platform: string, body: any) => {
             render() {
                 return (
                     <div>
-                        Successfully converted playlist{" "}
+                        Successfully converted{" "}
                         <a
                             className="underline text-blue-500"
                             href={data.url}
                             target="_blank"
                         >
-                            Link
+                            playlist
                         </a>
                     </div>
                 );
