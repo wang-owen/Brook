@@ -11,7 +11,6 @@ import BrewPage from "./pages/BrewPage";
 import ConvertPage from "./pages/ConvertPage";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
-import PublicPage from "./pages/PublicPage";
 
 interface LoginContextProps {
     loggedIn: boolean;
@@ -64,7 +63,6 @@ const App = () => {
                     path="/convert/spotify"
                     element={<ConvertPage platform="Spotify" />}
                 />
-                <Route path="/public" element={<PublicPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/login" element={<LoginPage />} />
             </Route>

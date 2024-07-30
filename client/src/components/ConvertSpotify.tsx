@@ -100,20 +100,18 @@ const ConvertSpotify = ({ color }: { color: string }) => {
         localStorage.setItem("refresh_token", response.refreshToken);
     };
 
-    async function getUserID() {
-        let accessToken = localStorage.getItem("access_token");
-
-        const response = await fetch("https://api.spotify.com/v1/me", {
-            headers: {
-                Authorization: "Bearer " + accessToken,
-            },
-        });
-
-        const data = await response.json();
-        return data.id;
-    }
-
+    const [userId, setUserId] = useState();
     useEffect(() => {
+        async function getUserID() {
+            const response = await fetch("https://api.spotify.com/v1/me", {
+                headers: {
+                    Authorization: "Bearer " + currentToken.access_token,
+                },
+            });
+            const data = await response.json();
+            setUserId(data.id);
+        }
+
         // On page load, try to fetch auth code from current browser search URL
         const args = new URLSearchParams(window.location.search);
         const code = args.get("code");
@@ -132,6 +130,7 @@ const ConvertSpotify = ({ color }: { color: string }) => {
             window.history.replaceState({}, document.title, updatedUrl);
 
             setIsAuthenticated(true);
+            getUserID();
         } else if (
             // Check if token is expired
             currentToken.expires &&
@@ -154,6 +153,7 @@ const ConvertSpotify = ({ color }: { color: string }) => {
             new Date().getTime() < new Date(currentToken.expires).getTime()
         ) {
             isAuthenticated === false ? setIsAuthenticated(true) : null;
+            getUserID();
         } else {
             isAuthenticated === true ? setIsAuthenticated(false) : null;
         }
@@ -168,7 +168,7 @@ const ConvertSpotify = ({ color }: { color: string }) => {
                         platform="Spotify"
                         body={{
                             access_token: currentToken.access_token,
-                            user_id: getUserID(),
+                            user_id: userId,
                         }}
                         platformColor={color}
                     />
