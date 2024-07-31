@@ -20,7 +20,6 @@ Brook offers a variety of tools regarding music streaming services.
 - [x] **[FIXED]** Downloads that take over 30 seconds initiate a Heroku timeout (not an issue when running locally)
 
 ## ⌛ Work in progress
-- Playlist conversion for YouTube
 - Integrate Apple Music
 
 ## 📝 To-do
