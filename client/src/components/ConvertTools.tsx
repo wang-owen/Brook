@@ -64,7 +64,7 @@ const convert = async (platform: string, body: any) => {
                     <div>
                         Successfully converted{" "}
                         <a
-                            className="underline text-blue-500"
+                            className="underline"
                             href={data.url}
                             target="_blank"
                         >
