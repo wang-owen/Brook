@@ -11,6 +11,7 @@ import BrewPage from "./pages/BrewPage";
 import ConvertPage from "./pages/ConvertPage";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
+import PrivacyPage from "./pages/PrivacyPage";
 
 interface LoginContextProps {
     loggedIn: boolean;
@@ -51,6 +52,7 @@ const App = () => {
         createRoutesFromElements(
             <Route path="/" element={<MainLayout />}>
                 <Route index element={<BrewPage />} />
+                <Route path="/brew" element={<BrewPage />} />
                 <Route
                     path="/convert"
                     element={<ConvertPage platform={null} />}
@@ -65,6 +67,7 @@ const App = () => {
                 />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/legal/privacy" element={<PrivacyPage />} />
             </Route>
         )
     );

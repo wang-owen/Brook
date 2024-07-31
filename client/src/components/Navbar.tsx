@@ -39,7 +39,7 @@ const Navbar = () => {
     return (
         <nav className="navbar bg-zinc-950 absolute animate-fadeInFromTop z-50">
             <div className="flex-1">
-                <a className="btn btn-ghost text-xl">Brook</a>
+                <NavLink to="/" className="btn btn-ghost text-xl">Brook</NavLink>
             </div>
             <div className="flex-none">
                 <ul className="menu menu-horizontal px-1 gap-3">

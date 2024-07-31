@@ -1,0 +1,25 @@
+h1 {
+    font-size: x-large;
+    font-weight: bold;
+}
+
+h2 {
+    font-size: larger;
+    font-weight: bold;
+}
+
+h3 {
+    font-size: large;
+    font-weight: bold;
+}
+
+p {
+    line-height: normal;
+}
+
+ul {
+    list-style-type: disc;
+    padding-left: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
