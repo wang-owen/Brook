@@ -107,6 +107,7 @@ const ConvertYouTube = ({ color }: { color: string }) => {
             // Remove code from URL so we can refresh correctly.
             const url = new URL(window.location.href);
             url.searchParams.delete("code");
+            url.searchParams.delete("state");
 
             const updatedUrl = url.search
                 ? url.href
