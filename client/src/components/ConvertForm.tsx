@@ -43,7 +43,7 @@ const ConvertForm = ({
                         className="bg-transparent text-white w-full border-none focus:outline-none"
                         type="url"
                         name="link"
-                        placeholder="YouTube Playlist URL"
+                        placeholder="Playlist URL"
                         onChange={(event) => setLink(event.target.value)}
                         onFocus={() => setInputHover(true)}
                         onBlur={() => setInputHover(false)}
