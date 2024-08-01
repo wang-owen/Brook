@@ -108,6 +108,7 @@ const ConvertYouTube = ({ color }: { color: string }) => {
             const url = new URL(window.location.href);
             url.searchParams.delete("code");
             url.searchParams.delete("state");
+            url.searchParams.delete("scope");
 
             const updatedUrl = url.search
                 ? url.href
