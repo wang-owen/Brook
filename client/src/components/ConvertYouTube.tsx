@@ -112,7 +112,7 @@ const ConvertYouTube = ({ color }: { color: string }) => {
 
             const updatedUrl = url.search
                 ? url.href
-                : url.href.replace("?", "");
+                : url.href.replace("#", "");
             window.history.replaceState({}, document.title, updatedUrl);
 
             setIsAuthenticated(true);
@@ -151,7 +151,9 @@ const ConvertYouTube = ({ color }: { color: string }) => {
                         convertSubmit={convertSubmit}
                         platform="YouTube"
                         body={{
-                            access_token: currentToken.access_token,
+                            access_token: localStorage.getItem(
+                                "youtube_access_token"
+                            ),
                         }}
                         platformColor={color}
                     />
