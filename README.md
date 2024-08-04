@@ -11,21 +11,13 @@ Brook offers a variety of tools regarding music streaming services.
 > ⚠️ This web app has not been tested for mobile devices
 ---
 
-## 🪲 Known issues
-- [ ] After authenticating with YouTube/Spotify, refresh needed for conversion to work (only occurs on cloud hosted app)
-- [ ] Invalid link error when using shared YouTube link (YouTube updated share link, doesn't include "watch" keyword)
-- [x] **[FIXED]** Saved playlists will be duplicated if downloaded from main form
-- [x] **[FIXED]** Spotify bug where some songs are not downloaded and/or saved to duplicate file names
-- [x] **[FIXED]** CloudAMQP instance downloads files successfully, but files cannot be found on Heroku filesystem, resulting in Server Error 500 when attempting to fetch
-- [x] **[FIXED]** Downloads that take over 30 seconds initiate a Heroku timeout (not an issue when running locally)
-
 ## 📝 To-do
-- [ ] Integrate Apple Music
-- [ ] Integrate Amazon Music
-- [ ] Refactor database so tracks have a many-to-many relationship with playlists instead of Foreign Key (saves database space)
-- [ ] Add a download ETA to toast
-- [ ] Disable queueing more downloads as one is occurring
-- [ ] Implement "Public playlists" page, where users can opt to share their saved playlists publically
+- Integrate Apple Music
+- Integrate Amazon Music
+- Refactor database so tracks have a many-to-many relationship with playlists instead of Foreign Key (saves database space)
+- Add a download ETA to toast
+- Disable queueing more downloads as one is occurring
+- Implement "Public playlists" page, where users can opt to share their saved playlists publically
 
 ## ✍️ Contributing
 1. Fork this repository
