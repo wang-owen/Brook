@@ -8,7 +8,6 @@ Brook offers a variety of tools regarding music streaming services.
 
 💻 *Try it here:* [brook.wangowen.com](https://brook.wangowen.com)
 
-
 > ⚠️ This web app has not been tested for mobile devices
 ---
 
@@ -19,9 +18,6 @@ Brook offers a variety of tools regarding music streaming services.
 - [x] **[FIXED]** CloudAMQP instance downloads files successfully, but files cannot be found on Heroku filesystem, resulting in Server Error 500 when attempting to fetch
 - [x] **[FIXED]** Downloads that take over 30 seconds initiate a Heroku timeout (not an issue when running locally)
 
-## ⌛ Work in progress
-- Integrate Apple Music
-
 ## 📝 To-do
 - [ ] Integrate Apple Music
 - [ ] Integrate Amazon Music
@@ -29,7 +25,6 @@ Brook offers a variety of tools regarding music streaming services.
 - [ ] Add a download ETA to toast
 - [ ] Disable queueing more downloads as one is occurring
 - [ ] Implement "Public playlists" page, where users can opt to share their saved playlists publically
-- [ ] Desktop app that automatically manages file transfers?
 
 ## ✍️ Contributing
 1. Fork this repository
