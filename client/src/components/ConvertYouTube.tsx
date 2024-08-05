@@ -151,9 +151,7 @@ const ConvertYouTube = ({ color }: { color: string }) => {
                         convertSubmit={convertSubmit}
                         platform="YouTube"
                         body={{
-                            access_token: localStorage.getItem(
-                                "youtube_access_token"
-                            ),
+                            access_token: currentToken.access_token,
                         }}
                         platformColor={color}
                     />
