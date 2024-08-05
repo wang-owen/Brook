@@ -100,18 +100,18 @@ const ConvertSpotify = ({ color }: { color: string }) => {
         localStorage.setItem("refresh_token", response.refreshToken);
     };
 
-    const [userId, setUserId] = useState();
-    useEffect(() => {
-        async function getUserID() {
-            const response = await fetch("https://api.spotify.com/v1/me", {
-                headers: {
-                    Authorization: "Bearer " + currentToken.access_token,
-                },
-            });
-            const data = await response.json();
-            setUserId(data.id);
-        }
+    const getBody = async () => {
+        const response = await fetch("https://api.spotify.com/v1/me", {
+            headers: {
+                Authorization: "Bearer " + currentToken.access_token,
+            },
+        });
+        const data = await response.json();
 
+        return { access_token: currentToken.access_token, user_id: data.id };
+    };
+
+    useEffect(() => {
         // On page load, try to fetch auth code from current browser search URL
         const args = new URLSearchParams(window.location.search);
         const code = args.get("code");
@@ -130,7 +130,6 @@ const ConvertSpotify = ({ color }: { color: string }) => {
             window.history.replaceState({}, document.title, updatedUrl);
 
             setIsAuthenticated(true);
-            getUserID();
         } else if (
             // Check if token is expired
             currentToken.expires &&
@@ -153,7 +152,6 @@ const ConvertSpotify = ({ color }: { color: string }) => {
             new Date().getTime() < new Date(currentToken.expires).getTime()
         ) {
             isAuthenticated === false ? setIsAuthenticated(true) : null;
-            getUserID();
         } else {
             isAuthenticated === true ? setIsAuthenticated(false) : null;
         }
@@ -164,13 +162,10 @@ const ConvertSpotify = ({ color }: { color: string }) => {
             {isAuthenticated ? (
                 <div className="flex w-full justify-center">
                     <ConvertForm
-                        convertSubmit={convertSubmit}
                         platform="Spotify"
-                        body={{
-                            access_token: currentToken.access_token,
-                            user_id: userId,
-                        }}
                         platformColor={color}
+                        convertSubmit={convertSubmit}
+                        getBody={getBody}
                     />
                     <button
                         className={`btn btn-sm text-white hover:opacity-80 absolute bottom-24`}

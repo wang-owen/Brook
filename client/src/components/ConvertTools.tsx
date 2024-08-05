@@ -90,7 +90,8 @@ const convert = async (platform: string, body: any) => {
 export const convertSubmit = async (
     event: React.FormEvent,
     platform: string,
-    body: any
+    getBody: () => Promise<any>,
+    link: string
 ) => {
     event.preventDefault();
     // Clear input field
@@ -98,5 +99,5 @@ export const convertSubmit = async (
     if (inputElement) {
         (inputElement as HTMLInputElement).value = "";
     }
-    return convert(platform, body);
+    return convert(platform, { ...(await getBody()), link: link });
 };

@@ -2,15 +2,20 @@ import { useState, useContext } from "react";
 import { ThemeContext } from "../layouts/MainLayout";
 
 const ConvertForm = ({
-    convertSubmit,
     platform,
-    body,
     platformColor,
+    convertSubmit,
+    getBody,
 }: {
-    convertSubmit: (event: React.FormEvent, platform: string, body: any) => any;
     platform: string;
-    body: any;
     platformColor: string;
+    convertSubmit: (
+        event: React.FormEvent,
+        platform: string,
+        getBody: () => Promise<any>,
+        link: string
+    ) => any;
+    getBody: () => Promise<any>;
 }) => {
     const { theme } = useContext(ThemeContext);
 
@@ -31,9 +36,7 @@ const ConvertForm = ({
 
     return (
         <form
-            onSubmit={(event) =>
-                convertSubmit(event, platform, { ...body, link: link })
-            }
+            onSubmit={(event) => convertSubmit(event, platform, getBody, link)}
             className="w-full flex flex-col justify-center items-center gap-12"
         >
             <div className={formClass} style={{ borderColor: platformColor }}>
