@@ -53,6 +53,7 @@ const convert = async (platform: string, body: any) => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify(body),
+            credentials: "include",
         }
     );
 
