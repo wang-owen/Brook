@@ -97,6 +97,10 @@ const ConvertYouTube = ({ color }: { color: string }) => {
         currentToken.save(response.accessToken);
     };
 
+    const getBody = async () => {
+        return { access_token: currentToken.access_token };
+    };
+
     useEffect(() => {
         const args = new URLSearchParams(window.location.search);
         const code = args.get("code");
@@ -150,9 +154,7 @@ const ConvertYouTube = ({ color }: { color: string }) => {
                     <ConvertForm
                         convertSubmit={convertSubmit}
                         platform="YouTube"
-                        body={{
-                            access_token: currentToken.access_token,
-                        }}
+                        getBody={getBody}
                         platformColor={color}
                     />
                     <button
