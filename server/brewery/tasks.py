@@ -1,7 +1,7 @@
+import boto3
 from django.conf import settings
 from celery import shared_task
 from celery.result import AsyncResult
-import boto3
 from . import util
 
 s3 = boto3.client(
@@ -23,6 +23,9 @@ def check_task_status(task_id):
 @shared_task
 def task_brew(function_name, *args, **kwargs):
     func = getattr(util, function_name)
-    path = func(*args, **kwargs)
-    s3.upload_file(path, "brook", path.name)
-    return path.name
+    result = func(*args, **kwargs)
+
+    if result:
+        s3.upload_file(result, "brook", result.name)
+        return result.name
+    return
