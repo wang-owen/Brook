@@ -120,7 +120,7 @@ const ConvertSpotify = ({ platformColor }: { platformColor: string }) => {
         <ConvertSection
             isAuthenticated={isAuthenticated}
             setIsAuthenticated={setIsAuthenticated}
-            platform="YouTube"
+            platform="Spotify"
             platformColor={platformColor}
             currentToken={currentToken}
             getBody={getBody}
