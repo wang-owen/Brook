@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { TokenHandler, convertSubmit } from "./ConvertTools";
-import ConvertForm from "./ConvertForm";
+import { TokenHandler, convertSubmit, onPageLoad } from "./ConvertTools";
+import ConvertSection from "./ConvertSection";
 
 const ConvertSpotify = ({ color }: { color: string }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -107,73 +107,26 @@ const ConvertSpotify = ({ color }: { color: string }) => {
     };
 
     useEffect(() => {
-        // On page load, try to fetch auth code from current browser search URL
-        const args = new URLSearchParams(window.location.search);
-        const code = args.get("code");
-
-        // If we find a code, we're in a callback, do a token exchange
-        if (code) {
-            getToken(code).then((token) => currentToken.save(token));
-
-            // Remove code from URL so we can refresh correctly.
-            const url = new URL(window.location.href);
-            url.searchParams.delete("code");
-
-            const updatedUrl = url.search
-                ? url.href
-                : url.href.replace("?", "");
-            window.history.replaceState({}, document.title, updatedUrl);
-
-            setIsAuthenticated(true);
-        } else if (
-            // Check if token is expired
-            currentToken.expires &&
-            new Date().getTime() > new Date(currentToken.expires).getTime()
-        ) {
-            refreshToken();
-        }
-
-        history.replaceState(
-            null,
-            "",
-            `${window.location.origin}/convert/spotify`
+        onPageLoad(
+            "Spotify",
+            getToken,
+            currentToken,
+            setIsAuthenticated,
+            refreshToken
         );
-        localStorage.setItem("convertPlatform", "Spotify");
     }, []);
 
     return (
-        <>
-            {isAuthenticated ? (
-                <div className="flex w-full justify-center">
-                    <ConvertForm
-                        platform="Spotify"
-                        platformColor={color}
-                        convertSubmit={convertSubmit}
-                        getBody={getBody}
-                    />
-                    <button
-                        className={`btn btn-sm text-white hover:opacity-80 absolute bottom-24`}
-                        style={{ backgroundColor: color }}
-                        onClick={() => {
-                            currentToken.clear();
-                            setIsAuthenticated(false);
-                        }}
-                    >
-                        Disconnect from Spotify
-                    </button>
-                </div>
-            ) : (
-                <div className="flex justify-center w-full">
-                    <button
-                        className={`btn btn-xs sm:btn-sm md:btn-md lg:btn-lg text-white hover:opacity-80`}
-                        style={{ backgroundColor: color }}
-                        onClick={() => redirectToSpotifyAuthorize()}
-                    >
-                        Connect with Spotify
-                    </button>
-                </div>
-            )}
-        </>
+        <ConvertSection
+            isAuthenticated={isAuthenticated}
+            setIsAuthenticated={setIsAuthenticated}
+            platform="YouTube"
+            color={color}
+            convertSubmit={convertSubmit}
+            getBody={getBody}
+            currentToken={currentToken}
+            redirect={redirectToSpotifyAuthorize}
+        />
     );
 };
 

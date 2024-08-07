@@ -48,7 +48,7 @@ export const TokenHandler = (
     };
 };
 
-const convert = async (platform: string, body: any) => {
+const convert = async (platform: string, body: Object) => {
     const toastID = toast.loading("Converting playlist...");
 
     const response = await fetch(
@@ -106,4 +106,49 @@ export const convertSubmit = async (
         (inputElement as HTMLInputElement).value = "";
     }
     return convert(platform, { ...(await getBody()), link: link });
+};
+
+export const onPageLoad = (
+    platform: string,
+    getToken: (code: string) => Promise<void>,
+    currentToken: any,
+    setIsAuthenticated: React.Dispatch<SetStateAction<boolean>>,
+    refreshToken: () => Promise<void>
+) => {
+    const args = new URLSearchParams(window.location.search);
+    const code = args.get("code");
+
+    if (code) {
+        getToken(code).then((token: any) => currentToken.save(token));
+
+        // Remove code from URL so we can refresh correctly.
+        const url = new URL(window.location.href);
+        url.searchParams.delete("code");
+        url.searchParams.delete("state");
+        url.searchParams.delete("scope");
+
+        const updatedUrl = url.search
+            ? url.href
+            : url.href.replace("#", "").replace("?", "");
+        window.history.replaceState({}, document.title, updatedUrl);
+
+        setIsAuthenticated(true);
+    } else if (currentToken.access_token) {
+        if (
+            // Check if token is expired
+            currentToken.expires &&
+            new Date().getTime() > new Date(currentToken.expires).getTime()
+        ) {
+            refreshToken();
+        } else {
+            setIsAuthenticated(true);
+        }
+    }
+
+    history.replaceState(
+        null,
+        "",
+        `${window.location.origin}/convert/${platform.toLowerCase()}`
+    );
+    localStorage.setItem("convertPlatform", platform);
 };
