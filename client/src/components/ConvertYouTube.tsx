@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { TokenHandler, convertSubmit } from "./ConvertTools";
-import ConvertForm from "./ConvertForm";
+import { TokenHandler, onPageLoad } from "./ConvertTools";
+import ConvertSection from "./ConvertSection";
 
-const ConvertYouTube = ({ color }: { color: string }) => {
+const ConvertYouTube = ({ platformColor }: { platformColor: string }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     const currentToken = TokenHandler("YouTube", setIsAuthenticated);
@@ -52,7 +52,7 @@ const ConvertYouTube = ({ color }: { color: string }) => {
     };
 
     const getToken = async (code: string) => {
-        const payload = {
+        const response = await fetch(tokenEndpoint, {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
@@ -65,19 +65,13 @@ const ConvertYouTube = ({ color }: { color: string }) => {
                 redirect_uri: redirectUri,
                 grant_type: "authorization_code",
             }),
-        };
+        });
 
-        const body = await fetch(tokenEndpoint, payload);
-        const response = await body.json();
-
-        return response;
+        return await response.json();
     };
 
-    const getRefreshToken = async () => {
-        // refresh token that has been previously stored
-        const refreshToken = currentToken.refresh_token;
-
-        const payload = {
+    const refreshToken = async () => {
+        const response = await fetch(tokenEndpoint, {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
@@ -86,93 +80,43 @@ const ConvertYouTube = ({ color }: { color: string }) => {
             body: new URLSearchParams({
                 client_id: clientId,
                 client_secret: clientSecret,
-                refresh_token: refreshToken,
+                refresh_token: currentToken.refresh_token,
                 grant_type: "refresh_token",
             }),
-        };
+        });
 
-        const body = await fetch(tokenEndpoint, payload);
-        const response = await body.json();
-
-        currentToken.save(response.accessToken);
-    };
-
-    useEffect(() => {
-        const args = new URLSearchParams(window.location.search);
-        const code = args.get("code");
-
-        if (code) {
-            getToken(code).then((token) => currentToken.save(token));
-
-            // Remove code from URL so we can refresh correctly.
-            const url = new URL(window.location.href);
-            url.searchParams.delete("code");
-
-            const updatedUrl = url.search
-                ? url.href
-                : url.href.replace("?", "");
-            window.history.replaceState({}, document.title, updatedUrl);
-
-            setIsAuthenticated(true);
-        } else if (
-            // Check if token is expired
-            currentToken.expires &&
-            new Date().getTime() > new Date(currentToken.expires).getTime()
-        ) {
-            getRefreshToken();
-        } else {
-            history.replaceState(
-                null,
-                "",
-                `${window.location.origin}/convert/youtube`
-            );
-            window.localStorage.setItem("convertPlatform", "YouTube");
-        }
-
-        // Check if token is expired
-        if (
-            currentToken.access_token &&
-            currentToken.expires &&
-            new Date().getTime() < new Date(currentToken.expires).getTime()
-        ) {
+        if (response.ok) {
+            currentToken.save(await response.json());
             isAuthenticated === false ? setIsAuthenticated(true) : null;
         } else {
             isAuthenticated === true ? setIsAuthenticated(false) : null;
         }
+    };
+
+    const getBody = async () => {
+        return { access_token: currentToken.access_token };
+    };
+
+    useEffect(() => {
+        onPageLoad(
+            "YouTube",
+            setIsAuthenticated,
+            currentToken,
+            getToken,
+            refreshToken
+        );
     }, []);
 
     return (
-        <>
-            {isAuthenticated ? (
-                <div className="flex w-full justify-center">
-                    <ConvertForm
-                        convertSubmit={convertSubmit}
-                        platform="YouTube"
-                        body={{
-                            access_token: currentToken.access_token,
-                        }}
-                        platformColor={color}
-                    />
-                    <button
-                        className={`btn btn-sm text-white hover:opacity-80 absolute bottom-24`}
-                        style={{ backgroundColor: color }}
-                        onClick={() => currentToken.clear()}
-                    >
-                        Disconnect from YouTube
-                    </button>
-                </div>
-            ) : (
-                <div className="flex justify-center w-full">
-                    <button
-                        className={`btn btn-xs sm:btn-sm md:btn-md lg:btn-lg text-white hover:opacity-80`}
-                        style={{ backgroundColor: color }}
-                        onClick={() => redirectToYouTubeAuthorize()}
-                    >
-                        Connect with YouTube
-                    </button>
-                </div>
-            )}
-        </>
+        <ConvertSection
+            isAuthenticated={isAuthenticated}
+            setIsAuthenticated={setIsAuthenticated}
+            platform="YouTube"
+            platformColor={platformColor}
+            currentToken={currentToken}
+            getBody={getBody}
+            redirect={redirectToYouTubeAuthorize}
+        />
     );
 };
 

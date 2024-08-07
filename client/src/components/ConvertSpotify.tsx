@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { TokenHandler, convertSubmit } from "./ConvertTools";
-import ConvertForm from "./ConvertForm";
+import { TokenHandler, onPageLoad } from "./ConvertTools";
+import ConvertSection from "./ConvertSection";
 
-const ConvertSpotify = ({ color }: { color: string }) => {
+const ConvertSpotify = ({ platformColor }: { platformColor: string }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     const currentToken = TokenHandler("Spotify", setIsAuthenticated);
@@ -55,7 +55,7 @@ const ConvertSpotify = ({ color }: { color: string }) => {
         // stored in the previous step
         let codeVerifier = localStorage.getItem("code_verifier");
 
-        const payload = {
+        const response = await fetch(tokenEndpoint, {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
@@ -68,19 +68,13 @@ const ConvertSpotify = ({ color }: { color: string }) => {
                 redirect_uri: redirectUri,
                 code_verifier: codeVerifier,
             }),
-        };
+        });
 
-        const body = await fetch(tokenEndpoint, payload);
-        const response = await body.json();
-
-        return response;
+        return await response.json();
     };
 
-    const getRefreshToken = async () => {
-        // refresh token that has been previously stored
-        const refreshToken = localStorage.getItem("refresh_token");
-
-        const payload = {
+    const refreshToken = async () => {
+        const response = await fetch(tokenEndpoint, {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
@@ -88,113 +82,50 @@ const ConvertSpotify = ({ color }: { color: string }) => {
             // @ts-ignore
             body: new URLSearchParams({
                 grant_type: "refresh_token",
-                refresh_token: refreshToken,
+                refresh_token: currentToken.refresh_token,
                 client_id: clientId,
             }),
-        };
+        });
 
-        const body = await fetch(tokenEndpoint, payload);
-        const response = await body.json();
-
-        localStorage.setItem("access_token", response.accessToken);
-        localStorage.setItem("refresh_token", response.refreshToken);
-    };
-
-    const [userId, setUserId] = useState();
-    useEffect(() => {
-        async function getUserID() {
-            const response = await fetch("https://api.spotify.com/v1/me", {
-                headers: {
-                    Authorization: "Bearer " + currentToken.access_token,
-                },
-            });
-            const data = await response.json();
-            setUserId(data.id);
-        }
-
-        // On page load, try to fetch auth code from current browser search URL
-        const args = new URLSearchParams(window.location.search);
-        const code = args.get("code");
-
-        // If we find a code, we're in a callback, do a token exchange
-        if (code) {
-            getToken(code).then((token) => currentToken.save(token));
-
-            // Remove code from URL so we can refresh correctly.
-            const url = new URL(window.location.href);
-            url.searchParams.delete("code");
-
-            const updatedUrl = url.search
-                ? url.href
-                : url.href.replace("?", "");
-            window.history.replaceState({}, document.title, updatedUrl);
-
-            setIsAuthenticated(true);
-            getUserID();
-        } else if (
-            // Check if token is expired
-            currentToken.expires &&
-            new Date().getTime() > new Date(currentToken.expires).getTime()
-        ) {
-            getRefreshToken();
-        } else {
-            history.replaceState(
-                null,
-                "",
-                `${window.location.origin}/convert/spotify`
-            );
-            window.localStorage.setItem("convertPlatform", "Spotify");
-        }
-
-        // Check if token is expired
-        if (
-            currentToken.access_token &&
-            currentToken.expires &&
-            new Date().getTime() < new Date(currentToken.expires).getTime()
-        ) {
+        if (response.ok) {
+            currentToken.save(await response.json());
             isAuthenticated === false ? setIsAuthenticated(true) : null;
-            getUserID();
         } else {
             isAuthenticated === true ? setIsAuthenticated(false) : null;
         }
+    };
+
+    const getBody = async () => {
+        const response = await fetch("https://api.spotify.com/v1/me", {
+            headers: {
+                Authorization: "Bearer " + currentToken.access_token,
+            },
+        });
+        const data = await response.json();
+
+        return { access_token: currentToken.access_token, user_id: data.id };
+    };
+
+    useEffect(() => {
+        onPageLoad(
+            "Spotify",
+            setIsAuthenticated,
+            currentToken,
+            getToken,
+            refreshToken
+        );
     }, []);
 
     return (
-        <>
-            {isAuthenticated ? (
-                <div className="flex w-full justify-center">
-                    <ConvertForm
-                        convertSubmit={convertSubmit}
-                        platform="Spotify"
-                        body={{
-                            access_token: currentToken.access_token,
-                            user_id: userId,
-                        }}
-                        platformColor={color}
-                    />
-                    <button
-                        className={`btn btn-sm text-white hover:opacity-80 absolute bottom-24`}
-                        style={{ backgroundColor: color }}
-                        onClick={() => {
-                            currentToken.clear();
-                            setIsAuthenticated(false);
-                        }}
-                    >
-                        Disconnect from Spotify
-                    </button>
-                </div>
-            ) : (
-                <div className="flex justify-center w-full">
-                    <button
-                        className={`btn btn-xs sm:btn-sm md:btn-md lg:btn-lg text-white hover:opacity-80`}
-                        style={{ backgroundColor: color }}
-                        onClick={() => redirectToSpotifyAuthorize()}
-                    >
-                        Connect with Spotify
-                    </button>
-                </div>
-            )}
-        </>
+        <ConvertSection
+            isAuthenticated={isAuthenticated}
+            setIsAuthenticated={setIsAuthenticated}
+            platform="Spotify"
+            platformColor={platformColor}
+            currentToken={currentToken}
+            getBody={getBody}
+            redirect={redirectToSpotifyAuthorize}
+        />
     );
 };
 

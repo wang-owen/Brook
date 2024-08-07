@@ -22,9 +22,15 @@ export const TokenHandler = (
 
         save: function (response: any) {
             const { access_token, refresh_token, expires_in } = response;
-            localStorage.setItem(`${_platform}_access_token`, access_token);
-            localStorage.setItem(`${_platform}_refresh_token`, refresh_token);
-            localStorage.setItem(`${_platform}_expires_in`, expires_in);
+            if (access_token)
+                localStorage.setItem(`${_platform}_access_token`, access_token);
+            if (refresh_token)
+                localStorage.setItem(
+                    `${_platform}_refresh_token`,
+                    refresh_token
+                );
+            if (expires_in)
+                localStorage.setItem(`${_platform}_expires_in`, expires_in);
 
             const now = new Date();
             const expiry = new Date(now.getTime() + expires_in * 1000);
@@ -42,7 +48,7 @@ export const TokenHandler = (
     };
 };
 
-const convert = async (platform: string, body: any) => {
+const convert = async (platform: string, body: Object) => {
     const toastID = toast.loading("Converting playlist...");
 
     const response = await fetch(
@@ -64,7 +70,7 @@ const convert = async (platform: string, body: any) => {
                     <div>
                         Successfully converted{" "}
                         <a
-                            className="underline text-blue-500"
+                            className="underline"
                             href={data.url}
                             target="_blank"
                         >
@@ -90,7 +96,8 @@ const convert = async (platform: string, body: any) => {
 export const convertSubmit = async (
     event: React.FormEvent,
     platform: string,
-    body: any
+    getBody: () => Promise<any>,
+    link: string
 ) => {
     event.preventDefault();
     // Clear input field
@@ -98,5 +105,50 @@ export const convertSubmit = async (
     if (inputElement) {
         (inputElement as HTMLInputElement).value = "";
     }
-    return convert(platform, body);
+    return convert(platform, { ...(await getBody()), link: link });
+};
+
+export const onPageLoad = (
+    platform: string,
+    setIsAuthenticated: React.Dispatch<SetStateAction<boolean>>,
+    currentToken: any,
+    getToken: (code: string) => Promise<void>,
+    refreshToken: () => Promise<void>
+) => {
+    const args = new URLSearchParams(window.location.search);
+    const code = args.get("code");
+
+    if (code) {
+        getToken(code).then((token: any) => currentToken.save(token));
+
+        // Remove code from URL so we can refresh correctly.
+        const url = new URL(window.location.href);
+        url.searchParams.delete("code");
+        url.searchParams.delete("state");
+        url.searchParams.delete("scope");
+
+        const updatedUrl = url.search
+            ? url.href
+            : url.href.replace("#", "").replace("?", "");
+        window.history.replaceState({}, document.title, updatedUrl);
+
+        setIsAuthenticated(true);
+    } else if (currentToken.access_token) {
+        if (
+            // Check if token is expired
+            currentToken.expires &&
+            new Date().getTime() > new Date(currentToken.expires).getTime()
+        ) {
+            refreshToken();
+        } else {
+            setIsAuthenticated(true);
+        }
+    }
+
+    history.replaceState(
+        null,
+        "",
+        `${window.location.origin}/convert/${platform.toLowerCase()}`
+    );
+    localStorage.setItem("convertPlatform", platform);
 };

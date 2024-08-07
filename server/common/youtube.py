@@ -19,7 +19,9 @@ def _get_playlist_id(link):
 
 
 def _get_track_id(link):
-    return link.split("watch?v=")[1].split("&")[0]
+    if "watch?v=" in link:
+        return link.split("watch?v=")[1].split("&")[0]
+    return link.split("?")[1].split("&")[0]
 
 
 def get_auth_header(token):
@@ -46,11 +48,18 @@ def get_youtube_playlist_data(link):
             "key": YOUTUBE_API_KEY,
         },
     )
-    playlist_name = response.json()["items"][0]["snippet"]["title"]
-    playlist_owner = response.json()["items"][0]["snippet"]["channelTitle"]
-    playlist_thumbnail = response.json()["items"][0]["snippet"]["thumbnails"][
-        "standard"
-    ]["url"]
+
+    if not response.ok:
+        return
+
+    try:
+        playlist_name = response.json()["items"][0]["snippet"]["title"]
+        playlist_owner = response.json()["items"][0]["snippet"]["channelTitle"]
+        playlist_thumbnail = response.json()["items"][0]["snippet"]["thumbnails"][
+            "standard"
+        ]["url"]
+    except IndexError:
+        return
 
     request_url = "https://www.googleapis.com/youtube/v3/playlistItems"
     tracks = []
@@ -115,8 +124,15 @@ def get_youtube_track_data(link):
             "key": YOUTUBE_API_KEY,
         },
     )
-    track_title = response.json()["items"][0]["snippet"]["title"]
-    track_artist = response.json()["items"][0]["snippet"]["channelTitle"]
+
+    if not response.ok:
+        return
+
+    try:
+        track_title = response.json()["items"][0]["snippet"]["title"]
+        track_artist = response.json()["items"][0]["snippet"]["channelTitle"]
+    except IndexError:
+        return
 
     return {
         "playlist_id": track_id,
