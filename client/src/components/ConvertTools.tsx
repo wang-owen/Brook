@@ -22,9 +22,15 @@ export const TokenHandler = (
 
         save: function (response: any) {
             const { access_token, refresh_token, expires_in } = response;
-            localStorage.setItem(`${_platform}_access_token`, access_token);
-            localStorage.setItem(`${_platform}_refresh_token`, refresh_token);
-            localStorage.setItem(`${_platform}_expires_in`, expires_in);
+            if (access_token)
+                localStorage.setItem(`${_platform}_access_token`, access_token);
+            if (refresh_token)
+                localStorage.setItem(
+                    `${_platform}_refresh_token`,
+                    refresh_token
+                );
+            if (expires_in)
+                localStorage.setItem(`${_platform}_expires_in`, expires_in);
 
             const now = new Date();
             const expiry = new Date(now.getTime() + expires_in * 1000);
