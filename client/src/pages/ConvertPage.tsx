@@ -13,12 +13,16 @@ const ConvertPage = ({ platform }: { platform: string | null }) => {
     const platformColors = new Map();
     platformColors.set("YouTube", "#ff0000");
     platformColors.set("Spotify", "#108954");
-    // platformColors.set("Apple", "#e6335d");
-    // platformColors.set("Amazon", "#05a0d1");
 
     const authButtons = new Map([
-        ["YouTube", <ConvertYouTube color={platformColors.get("YouTube")} />],
-        ["Spotify", <ConvertSpotify color={platformColors.get("Spotify")} />],
+        [
+            "YouTube",
+            <ConvertYouTube platformColor={platformColors.get("YouTube")} />,
+        ],
+        [
+            "Spotify",
+            <ConvertSpotify platformColor={platformColors.get("Spotify")} />,
+        ],
     ]);
 
     return (

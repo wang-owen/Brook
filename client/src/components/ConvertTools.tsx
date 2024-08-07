@@ -110,9 +110,9 @@ export const convertSubmit = async (
 
 export const onPageLoad = (
     platform: string,
-    getToken: (code: string) => Promise<void>,
-    currentToken: any,
     setIsAuthenticated: React.Dispatch<SetStateAction<boolean>>,
+    currentToken: any,
+    getToken: (code: string) => Promise<void>,
     refreshToken: () => Promise<void>
 ) => {
     const args = new URLSearchParams(window.location.search);

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { TokenHandler, convertSubmit, onPageLoad } from "./ConvertTools";
+import { TokenHandler, onPageLoad } from "./ConvertTools";
 import ConvertSection from "./ConvertSection";
 
-const ConvertSpotify = ({ color }: { color: string }) => {
+const ConvertSpotify = ({ platformColor }: { platformColor: string }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     const currentToken = TokenHandler("Spotify", setIsAuthenticated);
@@ -109,9 +109,9 @@ const ConvertSpotify = ({ color }: { color: string }) => {
     useEffect(() => {
         onPageLoad(
             "Spotify",
-            getToken,
-            currentToken,
             setIsAuthenticated,
+            currentToken,
+            getToken,
             refreshToken
         );
     }, []);
@@ -121,10 +121,9 @@ const ConvertSpotify = ({ color }: { color: string }) => {
             isAuthenticated={isAuthenticated}
             setIsAuthenticated={setIsAuthenticated}
             platform="YouTube"
-            color={color}
-            convertSubmit={convertSubmit}
-            getBody={getBody}
+            platformColor={platformColor}
             currentToken={currentToken}
+            getBody={getBody}
             redirect={redirectToSpotifyAuthorize}
         />
     );

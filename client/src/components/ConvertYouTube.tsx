@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { TokenHandler, convertSubmit, onPageLoad } from "./ConvertTools";
+import { TokenHandler, onPageLoad } from "./ConvertTools";
 import ConvertSection from "./ConvertSection";
 
-const ConvertYouTube = ({ color }: { color: string }) => {
+const ConvertYouTube = ({ platformColor }: { platformColor: string }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     const currentToken = TokenHandler("YouTube", setIsAuthenticated);
@@ -100,9 +100,9 @@ const ConvertYouTube = ({ color }: { color: string }) => {
     useEffect(() => {
         onPageLoad(
             "YouTube",
-            getToken,
-            currentToken,
             setIsAuthenticated,
+            currentToken,
+            getToken,
             refreshToken
         );
     }, []);
@@ -112,10 +112,9 @@ const ConvertYouTube = ({ color }: { color: string }) => {
             isAuthenticated={isAuthenticated}
             setIsAuthenticated={setIsAuthenticated}
             platform="YouTube"
-            color={color}
-            convertSubmit={convertSubmit}
-            getBody={getBody}
+            platformColor={platformColor}
             currentToken={currentToken}
+            getBody={getBody}
             redirect={redirectToYouTubeAuthorize}
         />
     );
