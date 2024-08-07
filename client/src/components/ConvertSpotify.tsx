@@ -55,7 +55,7 @@ const ConvertSpotify = ({ color }: { color: string }) => {
         // stored in the previous step
         let codeVerifier = localStorage.getItem("code_verifier");
 
-        const payload = {
+        const response = await fetch(tokenEndpoint, {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
@@ -68,19 +68,13 @@ const ConvertSpotify = ({ color }: { color: string }) => {
                 redirect_uri: redirectUri,
                 code_verifier: codeVerifier,
             }),
-        };
+        });
 
-        const body = await fetch(tokenEndpoint, payload);
-        const response = await body.json();
-
-        return response;
+        return await response.json();
     };
 
-    const getRefreshToken = async () => {
-        // refresh token that has been previously stored
-        const refreshToken = localStorage.getItem("refresh_token");
-
-        const payload = {
+    const refreshToken = async () => {
+        const response = await fetch(tokenEndpoint, {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
@@ -88,16 +82,17 @@ const ConvertSpotify = ({ color }: { color: string }) => {
             // @ts-ignore
             body: new URLSearchParams({
                 grant_type: "refresh_token",
-                refresh_token: refreshToken,
+                refresh_token: currentToken.refresh_token,
                 client_id: clientId,
             }),
-        };
+        });
 
-        const body = await fetch(tokenEndpoint, payload);
-        const response = await body.json();
-
-        localStorage.setItem("access_token", response.accessToken);
-        localStorage.setItem("refresh_token", response.refreshToken);
+        if (response.ok) {
+            currentToken.save(await response.json());
+            isAuthenticated === false ? setIsAuthenticated(true) : null;
+        } else {
+            isAuthenticated === true ? setIsAuthenticated(false) : null;
+        }
     };
 
     const getBody = async () => {
@@ -135,26 +130,15 @@ const ConvertSpotify = ({ color }: { color: string }) => {
             currentToken.expires &&
             new Date().getTime() > new Date(currentToken.expires).getTime()
         ) {
-            getRefreshToken();
-        } else {
-            history.replaceState(
-                null,
-                "",
-                `${window.location.origin}/convert/spotify`
-            );
-            window.localStorage.setItem("convertPlatform", "Spotify");
+            refreshToken();
         }
 
-        // Check if token is expired
-        if (
-            currentToken.access_token &&
-            currentToken.expires &&
-            new Date().getTime() < new Date(currentToken.expires).getTime()
-        ) {
-            isAuthenticated === false ? setIsAuthenticated(true) : null;
-        } else {
-            isAuthenticated === true ? setIsAuthenticated(false) : null;
-        }
+        history.replaceState(
+            null,
+            "",
+            `${window.location.origin}/convert/spotify`
+        );
+        localStorage.setItem("convertPlatform", "Spotify");
     }, []);
 
     return (
