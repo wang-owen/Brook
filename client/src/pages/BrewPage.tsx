@@ -80,7 +80,6 @@ const BrewPage = () => {
                             autoClose: 5000,
                         });
                     } catch (err) {
-                        console.error("Error", err);
                         toast.update(toastID, {
                             render: "Invalid link",
                             type: "error",

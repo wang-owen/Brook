@@ -1,4 +1,4 @@
-import os, sys, requests
+import os, sys, requests, json
 from dotenv import load_dotenv
 from .headers import *
 
@@ -50,6 +50,9 @@ def get_youtube_playlist_data(link):
     )
 
     if not response.ok:
+        if response.json().get("kind") == "youtube#playlistListResponse":
+            # Playlists is private
+            return
         return
 
     try:
