@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { TokenHandler, convertSubmit } from "./ConvertTools";
-import ConvertForm from "./ConvertForm";
+import { TokenHandler, convertSubmit, onPageLoad } from "./ConvertTools";
+import ConvertSection from "./ConvertSection";
 
 const ConvertYouTube = ({ color }: { color: string }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -98,70 +98,26 @@ const ConvertYouTube = ({ color }: { color: string }) => {
     };
 
     useEffect(() => {
-        const args = new URLSearchParams(window.location.search);
-        const code = args.get("code");
-
-        if (code) {
-            getToken(code).then((token) => currentToken.save(token));
-
-            // Remove code from URL so we can refresh correctly.
-            const url = new URL(window.location.href);
-            url.searchParams.delete("code");
-            url.searchParams.delete("state");
-            url.searchParams.delete("scope");
-
-            const updatedUrl = url.search
-                ? url.href
-                : url.href.replace("#", "");
-            window.history.replaceState({}, document.title, updatedUrl);
-
-            setIsAuthenticated(true);
-        } else if (
-            // Check if token is expired
-            currentToken.expires &&
-            new Date().getTime() > new Date(currentToken.expires).getTime()
-        ) {
-            refreshToken();
-        }
-
-        history.replaceState(
-            null,
-            "",
-            `${window.location.origin}/convert/youtube`
+        onPageLoad(
+            "YouTube",
+            getToken,
+            currentToken,
+            setIsAuthenticated,
+            refreshToken
         );
-        localStorage.setItem("convertPlatform", "YouTube");
     }, []);
 
     return (
-        <>
-            {isAuthenticated ? (
-                <div className="flex w-full justify-center">
-                    <ConvertForm
-                        convertSubmit={convertSubmit}
-                        platform="YouTube"
-                        getBody={getBody}
-                        platformColor={color}
-                    />
-                    <button
-                        className={`btn btn-sm text-white hover:opacity-80 absolute bottom-24`}
-                        style={{ backgroundColor: color }}
-                        onClick={() => currentToken.clear()}
-                    >
-                        Disconnect from YouTube
-                    </button>
-                </div>
-            ) : (
-                <div className="flex justify-center w-full">
-                    <button
-                        className={`btn btn-xs sm:btn-sm md:btn-md lg:btn-lg text-white hover:opacity-80`}
-                        style={{ backgroundColor: color }}
-                        onClick={() => redirectToYouTubeAuthorize()}
-                    >
-                        Connect with YouTube
-                    </button>
-                </div>
-            )}
-        </>
+        <ConvertSection
+            isAuthenticated={isAuthenticated}
+            setIsAuthenticated={setIsAuthenticated}
+            platform="YouTube"
+            color={color}
+            convertSubmit={convertSubmit}
+            getBody={getBody}
+            currentToken={currentToken}
+            redirect={redirectToYouTubeAuthorize}
+        />
     );
 };
 
