@@ -3,7 +3,6 @@ import { ThemeContext } from "../layouts/MainLayout";
 import { FaGithub } from "react-icons/fa";
 import { CgWebsite } from "react-icons/cg";
 import { MdOutlineLightMode, MdOutlineDarkMode } from "react-icons/md";
-import { NavLink } from "react-router-dom";
 
 const Footer = ({ toggleTheme }: { toggleTheme: () => void }) => {
     const { theme } = useContext(ThemeContext);
@@ -21,9 +20,6 @@ const Footer = ({ toggleTheme }: { toggleTheme: () => void }) => {
                     <MdOutlineDarkMode size={25} />
                 </label>
             </aside>
-            <NavLink to="/legal/privacy" className="self-center">
-                Privacy policy
-            </NavLink>
             <nav className="grid-flow-col gap-4 md:place-self-center md:justify-self-end">
                 <a href="https://wangowen.com" target="_blank">
                     <CgWebsite className="size-8 hover:opacity-50 duration-200" />
