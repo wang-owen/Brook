@@ -1,5 +1,6 @@
 import { SetStateAction } from "react";
 import { toast } from "react-toastify";
+import InvalidLinkToast from "./InvalidLinkToast";
 
 export const TokenHandler = (
     platform: string,
@@ -84,12 +85,7 @@ const convert = async (platform: string, body: Object) => {
             autoClose: 5000,
         });
     } else {
-        toast.update(toastID, {
-            render: "Invalid link",
-            type: "error",
-            isLoading: false,
-            autoClose: 5000,
-        });
+        InvalidLinkToast(toastID);
     }
 };
 
