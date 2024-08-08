@@ -1,8 +1,8 @@
 amqp==5.2.0
 asgiref==3.8.1
 billiard==4.2.0
-boto3==1.34.155
-botocore==1.34.155
+boto3==1.34.157
+botocore==1.34.157
 Brotli==1.1.0
 celery==5.4.0
 certifi==2024.7.4
