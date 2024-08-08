@@ -50,19 +50,13 @@ def get_youtube_playlist_data(link):
     )
 
     if not response.ok:
-        if response.json().get("kind") == "youtube#playlistListResponse":
-            # Playlists is private
-            return
         return
 
-    try:
-        playlist_name = response.json()["items"][0]["snippet"]["title"]
-        playlist_owner = response.json()["items"][0]["snippet"]["channelTitle"]
-        playlist_thumbnail = response.json()["items"][0]["snippet"]["thumbnails"][
-            "standard"
-        ]["url"]
-    except IndexError:
-        return
+    playlist_name = response.json()["items"][0]["snippet"]["title"]
+    playlist_owner = response.json()["items"][0]["snippet"]["channelTitle"]
+    playlist_thumbnail = response.json()["items"][0]["snippet"]["thumbnails"][
+        "standard"
+    ]["url"]
 
     request_url = "https://www.googleapis.com/youtube/v3/playlistItems"
     tracks = []
@@ -131,11 +125,8 @@ def get_youtube_track_data(link):
     if not response.ok:
         return
 
-    try:
-        track_title = response.json()["items"][0]["snippet"]["title"]
-        track_artist = response.json()["items"][0]["snippet"]["channelTitle"]
-    except IndexError:
-        return
+    track_title = response.json()["items"][0]["snippet"]["title"]
+    track_artist = response.json()["items"][0]["snippet"]["channelTitle"]
 
     return {
         "playlist_id": track_id,

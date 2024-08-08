@@ -62,21 +62,18 @@ def get_spotify_playlist_data(link):
     if not response.ok:
         return
 
-    try:
-        # Add each track name and artist to list
-        for item in response.json()["tracks"]["items"]:
-            name = item["track"]["name"]
-            artist = item["track"]["artists"][0]["name"]
-            tracks.append(
-                {
-                    "track_id": item["track"]["id"],
-                    "name": name,
-                    "artist": artist,
-                    "platform": SPOTIFY,
-                }
-            )
-    except IndexError:
-        return
+    # Add each track name and artist to list
+    for item in response.json()["tracks"]["items"]:
+        name = item["track"]["name"]
+        artist = item["track"]["artists"][0]["name"]
+        tracks.append(
+            {
+                "track_id": item["track"]["id"],
+                "name": name,
+                "artist": artist,
+                "platform": SPOTIFY,
+            }
+        )
 
     return {
         "playlist_id": playlist_id,
@@ -108,11 +105,8 @@ def get_spotify_track_data(link):
     if not response.ok:
         return
 
-    try:
-        name = response.json()["name"]
-        artist = response.json()["artists"][0]["name"]
-    except IndexError:
-        return
+    name = response.json()["name"]
+    artist = response.json()["artists"][0]["name"]
 
     return {
         "track_id": track_id,
