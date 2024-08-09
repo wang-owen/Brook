@@ -34,7 +34,6 @@ def get_brew_status(request, task_id):
 
 @api_view(["POST"])
 def brew(request):
-    settings.S3.download_file("brook", "cookies.txt", "cookies.txt")
     data = request.data
     link = data.get("link")
     file_format = data.get("fileFormat", "m4a")
