@@ -26,6 +26,8 @@ MUSIC_DIR = Path("Music")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+YT_DLP_COOKIES = os.environ.get("YT_DLP_COOKES", "cookies.txt")
+
 AUTH_USER_MODEL = "users.User"
 
 # Quick-start development settings - unsuitable for production
