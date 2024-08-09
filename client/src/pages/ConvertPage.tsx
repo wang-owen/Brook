@@ -31,7 +31,7 @@ const ConvertPage = ({ platform }: { platform: string | null }) => {
                 <div
                     className={`${
                         theme === "light" ? "text-black" : "text-white"
-                    } font-semibold text-7xl m-12`}
+                    } font-semibold text-6xl lg:text-7xl m-12 text-center`}
                 >
                     Convert to{" "}
                     <div className="dropdown dropdown-top dropdown-hover">
