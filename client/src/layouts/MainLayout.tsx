@@ -25,21 +25,38 @@ const MainLayout = () => {
             }}
         >
             <ThemeContext.Provider value={{ theme, toggleTheme }}>
-                <Navbar />
-                <Outlet />
-                <Footer toggleTheme={toggleTheme} />
+                {import.meta.env.VITE_DEBUG != 1 ? (
+                    <>
+                        <Navbar />
+                        <Outlet />
+                        <Footer toggleTheme={toggleTheme} />
+                    </>
+                ) : (
+                    <div className="h-screen flex flex-col leading-10 items-center justify-center">
+                        <div
+                            className={`text-6xl ${
+                                theme === "light" && "text-black"
+                            }`}
+                        >
+                            🛠️ Site under maintenance
+                        </div>
+                        <div
+                            className={`text-normal ${
+                                theme === "light" && "text-black"
+                            }`}
+                        >
+                            Try it locally{" "}
+                            <a
+                                href="https://github.com/wang-owen/Brook"
+                                className="underline hover:opacity-75"
+                            >
+                                here
+                            </a>
+                        </div>
+                    </div>
+                )}
             </ThemeContext.Provider>
             <ToastContainer newestOnTop />
-            {/* <div className="h-screen flex items-center justify-center">
-                <h1
-                    className={`animate-pulse text-4xl ${
-                        theme === "light" && "text-black"
-                    }`}
-                >
-                    🚫 Site will be brought back online as recruiting season approaches (costs money to host online)
-                </h1>
-            </div> */}
-            {/* <Footer toggleTheme={toggleTheme} /> */}
         </div>
     );
 };
