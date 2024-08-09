@@ -66,7 +66,7 @@ S3 = boto3.client(
     aws_access_key_id=AWS_ACCESS_KEY_ID,
     aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
 )
-S3.download_file("brook", "cookies.txt", "cookies.txt")
+S3.download_file("brook", "cookies1.txt", "cookies1.txt")
 
 # Django settings
 # SECURITY WARNING: don't run with debug turned on in production!
