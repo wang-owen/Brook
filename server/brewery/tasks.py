@@ -1,4 +1,3 @@
-import boto3
 from django.conf import settings
 from celery import shared_task
 from celery.result import AsyncResult
@@ -20,6 +19,6 @@ def task_brew(function_name, *args, **kwargs):
     result = func(*args, **kwargs)
 
     if result:
-        settings.S3.upload_file(result, "brook", result.name)
+        settings.S3.upload_file(result, "brook/Music", result.name)
         return result.name
     return
