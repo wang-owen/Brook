@@ -26,8 +26,6 @@ MUSIC_DIR = Path("Music")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-YT_DLP_COOKIES = os.environ.get("YT_DLP_COOKES", "cookies.txt")
-
 AUTH_USER_MODEL = "users.User"
 
 # Quick-start development settings - unsuitable for production
@@ -68,7 +66,6 @@ S3 = boto3.client(
     aws_access_key_id=AWS_ACCESS_KEY_ID,
     aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
 )
-S3.download_file("brook", "cookies.txt", "cookies.txt")
 
 # Django settings
 # SECURITY WARNING: don't run with debug turned on in production!
