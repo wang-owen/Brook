@@ -9,7 +9,6 @@ Brook offers a variety of tools regarding music streaming services.
 ---
 
 ## 📝 To-do
-- Implement mobile-friendly layout
 - Integrate Apple Music
 - Integrate Amazon Music
 - Refactor database so tracks have a many-to-many relationship with playlists instead of Foreign Key (saves database space)
