@@ -110,7 +110,7 @@ const Navbar = () => {
             {showMenu && (
                 <div className="absolute top-16 w-full">
                     <ul className="menu flex items-end">
-                        <div className="border p-2 rounded-lg">{navItems}</div>
+                        <div className="border p-2 bg-base-200 rounded-lg">{navItems}</div>
                     </ul>
                 </div>
             )}
