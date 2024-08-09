@@ -7,7 +7,7 @@ import { MdOutlineLightMode, MdOutlineDarkMode } from "react-icons/md";
 const Footer = ({ toggleTheme }: { toggleTheme: () => void }) => {
     const { theme } = useContext(ThemeContext);
     return (
-        <footer className="footer p-4 bg-zinc-950 animate-fadeInFromBottom z-50 justify-between">
+        <footer className="footer p-4 bg-zinc-950 animate-fadeInFromBottom z-50 flex justify-between">
             <aside className="items-center grid-flow-col">
                 <label className="flex cursor-pointer gap-2 p-2">
                     <MdOutlineLightMode size={25} />

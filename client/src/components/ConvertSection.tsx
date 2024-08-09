@@ -1,6 +1,7 @@
 import { useState, useContext, SetStateAction } from "react";
 import { ThemeContext } from "../layouts/MainLayout";
 import { convertSubmit } from "./ConvertTools";
+import { formInputClass, inputBarClass } from "./FormClasses";
 
 const ConvertSection = ({
     isAuthenticated,
@@ -23,18 +24,8 @@ const ConvertSection = ({
 
     const [link, setLink] = useState("");
     const [inputHover, setInputHover] = useState(false);
-    const formClass = `bg-zinc-900 rounded-lg p-3 py-2 duration-1000 border ${
-        inputHover
-            ? theme === "light"
-                ? "w-1/2 shadow-2xl shadow-black"
-                : "w-1/2 shadow-2xl shadow-white"
-            : "w-1/4 2xl:w-1/5"
-    }`;
-    const inputBar = `absolute h-0 mt-9 ${
-        theme === "light" ? "black" : "white"
-    } border-b-2 hover:w-full duration-1000 ease-in-out ${
-        inputHover ? "w-full" : "w-0"
-    }`;
+    const formClass = formInputClass(inputHover, theme);
+    const inputBar = inputBarClass(inputHover);
 
     return isAuthenticated ? (
         <div className="flex w-full justify-center">

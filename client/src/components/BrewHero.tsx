@@ -1,10 +1,15 @@
 import { useContext, useState } from "react";
 import { ThemeContext } from "../layouts/MainLayout";
+import { formInputClass, inputBarClass } from "./FormClasses";
 
 const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
     const { theme } = useContext(ThemeContext);
 
     const [link, setLink] = useState("");
+
+    const [inputHover, setInputHover] = useState(false);
+    const formClass = formInputClass(inputHover, theme);
+    const inputBar = inputBarClass(inputHover);
 
     const brewSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -15,20 +20,6 @@ const BrewHero = ({ brew }: { brew: (link: string) => void }) => {
         }
         return brew(link);
     };
-
-    const [inputHover, setInputHover] = useState(false);
-    const formClass = `bg-zinc-900 rounded-lg p-3 py-2 duration-1000 border ${
-        theme === "light" ? "border-black" : "border-white"
-    } ${
-        inputHover
-            ? theme === "light"
-                ? "w-1/2 shadow-2xl shadow-black border-white"
-                : "w-1/2 shadow-2xl shadow-white border-black"
-            : "w-1/4 2xl:w-1/5"
-    }`;
-    const inputBar = `absolute h-0 mt-9 border-white border-b-2 hover:w-full duration-1000 ease-in-out ${
-        inputHover ? "w-full" : "w-0"
-    }`;
 
     return (
         <div className="flex items-center gap-16 w-full">

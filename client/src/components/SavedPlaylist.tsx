@@ -96,7 +96,7 @@ const SavedPlaylist = ({
     const { theme } = useContext(ThemeContext);
     return (
         <div
-            className={`card w-96 hover:shadow-2xl image-full hover:scale-105 ${
+            className={`card w-72 lg:w-96 hover:shadow-2xl image-full hover:scale-105 ${
                 theme === "light" ? "hover:shadow-black" : "hover:shadow-white"
             } duration-200`}
         >

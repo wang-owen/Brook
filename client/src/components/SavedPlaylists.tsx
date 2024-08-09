@@ -41,7 +41,7 @@ const SavedPlaylists = ({
     return (
         <>
             <section>
-                <div className="grid grid-cols-3 2xl:grid-cols-4 gap-8 justify-evenly justify-items-center items-center content-center animate-fadeInFromLeft">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 justify-evenly justify-items-center items-center content-center animate-fadeInFromLeft">
                     {playlists.map((playlist) => (
                         <SavedPlaylist
                             key={playlist.playlist_id}
