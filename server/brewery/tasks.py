@@ -18,7 +18,9 @@ def task_brew(function_name, *args, **kwargs):
     func = getattr(util, function_name)
     result = func(*args, **kwargs)
 
+    object_name = f"Music/{result.name}"
+
     if result:
-        settings.S3.upload_file(result, "brook/Music", result.name)
-        return result.name
+        settings.S3.upload_file(result, "brook", object_name)
+        return object_name
     return
