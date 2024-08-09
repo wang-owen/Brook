@@ -195,6 +195,8 @@ def download_youtube_track(link, file_format, dir_):
         dir_ (str): directory to download tracks to
     """
     ydl_opts = {
+        "username": settings.YT_USERNAME,
+        "password": settings.YT_PASSWORD,
         "outtmpl": f"{dir_}/%(title)s [%(id)s].%(ext)s",
         "format": f"ba[ext={file_format}]",
         "restrictfilenames": True,
@@ -241,6 +243,8 @@ def download_youtube_playlist(link, file_format, dir_):
     playlist_dir = Path(dir_) / playlist_name
 
     ydl_opts = {
+        "username": settings.YT_USERNAME,
+        "password": settings.YT_PASSWORD,
         "outtmpl": f"{playlist_dir}/%(title)s [%(id)s].%(ext)s",
         "format": f"ba[ext={file_format}]",
         "writethumbnail": True,
@@ -286,6 +290,8 @@ def _download_youtube_search(name, artist, track_id, file_format, dir_):
     path = Path(dir_) / f"{legal_name} [{track_id}].{file_format}"
 
     ydl_opts = {
+        "username": settings.YT_USERNAME,
+        "password": settings.YT_PASSWORD,
         "outtmpl": f"{dir_}/{legal_name} [{track_id}].%(ext)s",
         "format": f"ba[ext={file_format}]",
         "restrictfilenames": True,
