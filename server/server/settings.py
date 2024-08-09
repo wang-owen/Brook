@@ -26,9 +26,6 @@ MUSIC_DIR = Path("Music")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-YT_USERNAME = os.environ.get("YT_USERNAME")
-YT_PASSWORD = os.environ.get("YT_PASSWORD")
-
 AUTH_USER_MODEL = "users.User"
 
 # Quick-start development settings - unsuitable for production
