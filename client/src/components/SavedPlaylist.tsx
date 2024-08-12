@@ -102,8 +102,8 @@ const SavedPlaylist = ({
         >
             <figure>
                 <img
-                    src={playlist.thumbnail.toString()}
-                    key={playlist.thumbnail.toString()}
+                    src={playlist.thumbnail?.toString()}
+                    key={playlist.thumbnail?.toString()}
                     alt={`${playlist.name} thumbnail`}
                 />
             </figure>
