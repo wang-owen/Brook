@@ -25,7 +25,7 @@ const SavedPlaylist = ({
 }) => {
     const download = async () => {
         // Update position of playlist
-        onUpdate(brew(playlist.link.toString()));
+        onUpdate(await brew(playlist.link.toString()));
     };
 
     const update = async () => {

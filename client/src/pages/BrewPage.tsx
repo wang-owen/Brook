@@ -141,25 +141,7 @@ const BrewPage = () => {
                             ...playlists,
                         ]);
                     } else {
-                        setTimeout(
-                            () =>
-                                setPlaylists([
-                                    {
-                                        playlist_id: p.playlist_id,
-                                        name: p.name,
-                                        owner: p.owner,
-                                        link: p.link,
-                                        platform: p.platform,
-                                        thumbnail: p.thumbnail,
-                                    },
-                                    ...playlists.filter(
-                                        (playlist) =>
-                                            playlist.playlist_id !==
-                                            p.playlist_id
-                                    ),
-                                ]),
-                            100
-                        );
+                        return p;
                     }
                 }
             }
@@ -252,7 +234,7 @@ const BrewPage = () => {
                             playlist.playlist_id !== updatedPlaylist.playlist_id
                     ),
                 ]),
-            100 // thumbnail doesn't update unless delay, temp fix
+            1000 // thumbnail doesn't update unless delay, temp fix
         );
     };
 
