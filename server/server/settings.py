@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
-import os
+import os, boto3
 from pathlib import Path
 import dj_database_url
 from dotenv import load_dotenv
@@ -21,6 +21,7 @@ from django.db.utils import OperationalError
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv()
+
 MUSIC_DIR = Path("Music")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -59,6 +60,13 @@ WORKER_CONCURRENCY = 50
 # Boto3 settings
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
+
+S3 = boto3.client(
+    "s3",
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+)
+S3.download_file("brook", "cookies.txt", "cookies.txt")
 
 # Django settings
 # SECURITY WARNING: don't run with debug turned on in production!

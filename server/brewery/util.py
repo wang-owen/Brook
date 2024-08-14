@@ -72,15 +72,14 @@ def brew(
                 return download_track(link, file_format, platform)
         except (KeyError, IndexError):
             # Invalid link
-            return False
+            return
     elif new_tracks:
         try:
             return download_new_tracks(new_tracks, playlist_name, platform, file_format)
         except (KeyError, IndexError):
             # Invalid link
-            return False
-
-    return False
+            return
+    return
 
 
 def get_file(path):
@@ -196,6 +195,7 @@ def download_youtube_track(link, file_format, dir_):
         dir_ (str): directory to download tracks to
     """
     ydl_opts = {
+        "cookiefile": "cookies.txt",
         "outtmpl": f"{dir_}/%(title)s [%(id)s].%(ext)s",
         "format": f"ba[ext={file_format}]",
         "restrictfilenames": True,
@@ -228,13 +228,21 @@ def download_youtube_playlist(link, file_format, dir_):
         file_format (str): file format to download tracks in
         dir_ (str): directory to download tracks to
     """
-    playlist_name = youtube.get_youtube_playlist_data(link)["name"]
+    data = youtube.get_youtube_playlist_data(link)
+
+    # Playlist is private
+    if not data:
+        return
+
+    playlist_name = data["name"]
+
     # Remove illegal filename characters from playlist name
     for char in ILLEGAL_CHARS:
         playlist_name = playlist_name.replace(char, "-")
     playlist_dir = Path(dir_) / playlist_name
 
     ydl_opts = {
+        "cookiefile": "cookies.txt",
         "outtmpl": f"{playlist_dir}/%(title)s [%(id)s].%(ext)s",
         "format": f"ba[ext={file_format}]",
         "writethumbnail": True,
@@ -280,6 +288,7 @@ def _download_youtube_search(name, artist, track_id, file_format, dir_):
     path = Path(dir_) / f"{legal_name} [{track_id}].{file_format}"
 
     ydl_opts = {
+        "cookiefile": "cookies.txt",
         "outtmpl": f"{dir_}/{legal_name} [{track_id}].%(ext)s",
         "format": f"ba[ext={file_format}]",
         "restrictfilenames": True,
@@ -300,6 +309,10 @@ def _download_youtube_search(name, artist, track_id, file_format, dir_):
         "playlist_items": "1",
     }
 
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        ydl.extract_info(f"{name} {artist}", download=True)
+        return Path(path)
+
 
 def download_spotify_track(link, file_format, dir_):
     """Download Spotify track from link
@@ -310,6 +323,9 @@ def download_spotify_track(link, file_format, dir_):
         dir_ (str): directory to download tracks to
     """
     data = spotify.get_spotify_track_data(link)
+    if not data:
+        return
+
     return _download_youtube_search(
         data["name"], data["artist"], data["track_id"], file_format, dir_
     )
@@ -324,6 +340,9 @@ def download_spotify_playlist(link, file_format, dir_):
         dir_ (str): directory to download tracks to
     """
     data = spotify.get_spotify_playlist_data(link)
+    if not data:
+        return
+
     playlist_name = data["name"]
     # Remove illegal filename characters from playlist name
     for char in ILLEGAL_CHARS:

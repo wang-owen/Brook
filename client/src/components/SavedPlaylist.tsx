@@ -25,7 +25,7 @@ const SavedPlaylist = ({
 }) => {
     const download = async () => {
         // Update position of playlist
-        onUpdate(brew(playlist.link.toString()));
+        onUpdate(await brew(playlist.link.toString()));
     };
 
     const update = async () => {
@@ -96,14 +96,14 @@ const SavedPlaylist = ({
     const { theme } = useContext(ThemeContext);
     return (
         <div
-            className={`card w-96 hover:shadow-2xl image-full hover:scale-105 ${
+            className={`card w-72 lg:w-96 hover:shadow-2xl image-full hover:scale-105 ${
                 theme === "light" ? "hover:shadow-black" : "hover:shadow-white"
             } duration-200`}
         >
             <figure>
                 <img
-                    src={playlist.thumbnail.toString()}
-                    key={playlist.thumbnail.toString()}
+                    src={playlist.thumbnail?.toString()}
+                    key={playlist.thumbnail?.toString()}
                     alt={`${playlist.name} thumbnail`}
                 />
             </figure>

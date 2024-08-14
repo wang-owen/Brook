@@ -42,32 +42,6 @@ def get_auth_header(token):
     return {"Authorization": "Bearer " + token}
 
 
-def get_spotify_track_data(link):
-    """Get track data from Spotify track link
-
-    Args:
-        link (str): link to Spotify track
-
-    Returns:
-        dict: dictionary containing track id, name, artist, and platform
-    """
-    request_url = "https://api.spotify.com/v1/tracks/"
-    track_id = _get_track_id(link)
-    response = requests.get(
-        request_url + track_id,
-        headers=get_auth_header(_get_token()),
-    )
-    name = response.json()["name"]
-    artist = response.json()["artists"][0]["name"]
-
-    return {
-        "track_id": track_id,
-        "name": name,
-        "artist": artist,
-        "platform": SPOTIFY,
-    }
-
-
 def get_spotify_playlist_data(link):
     """Get playlist data from Spotify playlist link
 
@@ -84,6 +58,9 @@ def get_spotify_playlist_data(link):
         request_url + playlist_id,
         headers=get_auth_header(_get_token()),
     )
+
+    if not response.ok:
+        return
 
     # Add each track name and artist to list
     for item in response.json()["tracks"]["items"]:
@@ -106,4 +83,34 @@ def get_spotify_playlist_data(link):
         "platform": SPOTIFY,
         "thumbnail": response.json()["images"][0]["url"],
         "tracks": tracks,
+    }
+
+
+def get_spotify_track_data(link):
+    """Get track data from Spotify track link
+
+    Args:
+        link (str): link to Spotify track
+
+    Returns:
+        dict: dictionary containing track id, name, artist, and platform
+    """
+    request_url = "https://api.spotify.com/v1/tracks/"
+    track_id = _get_track_id(link)
+    response = requests.get(
+        request_url + track_id,
+        headers=get_auth_header(_get_token()),
+    )
+
+    if not response.ok:
+        return
+
+    name = response.json()["name"]
+    artist = response.json()["artists"][0]["name"]
+
+    return {
+        "track_id": track_id,
+        "name": name,
+        "artist": artist,
+        "platform": SPOTIFY,
     }

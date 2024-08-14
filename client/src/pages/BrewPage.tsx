@@ -7,6 +7,7 @@ import BrewHero from "../components/BrewHero";
 import SavedPlaylists from "../components/SavedPlaylists";
 import Playlist from "../interfaces/Playlist";
 import { LoginContext } from "../App";
+import InvalidLinkToast from "../components/InvalidLinkToast";
 
 const BrewPage = () => {
     const { loggedIn } = useContext(LoginContext);
@@ -80,24 +81,13 @@ const BrewPage = () => {
                             autoClose: 5000,
                         });
                     } catch (err) {
-                        console.error("Error", err);
-                        toast.update(toastID, {
-                            render: "Invalid link",
-                            type: "error",
-                            isLoading: false,
-                            autoClose: 5000,
-                        });
+                        InvalidLinkToast(toastID);
                     }
 
                     return true;
                 }
                 if (status === "FAILURE") {
-                    toast.update(toastID, {
-                        render: "Invalid link",
-                        type: "error",
-                        isLoading: false,
-                        autoClose: 5000,
-                    });
+                    InvalidLinkToast(toastID);
                     return false;
                 }
             }
@@ -151,35 +141,12 @@ const BrewPage = () => {
                             ...playlists,
                         ]);
                     } else {
-                        setTimeout(
-                            () =>
-                                setPlaylists([
-                                    {
-                                        playlist_id: p.playlist_id,
-                                        name: p.name,
-                                        owner: p.owner,
-                                        link: p.link,
-                                        platform: p.platform,
-                                        thumbnail: p.thumbnail,
-                                    },
-                                    ...playlists.filter(
-                                        (playlist) =>
-                                            playlist.playlist_id !==
-                                            p.playlist_id
-                                    ),
-                                ]),
-                            100
-                        );
+                        return p;
                     }
                 }
             }
         } else {
-            toast.update(toastID, {
-                render: "Invalid link",
-                type: "error",
-                isLoading: false,
-                autoClose: 5000,
-            });
+            InvalidLinkToast(toastID);
         }
     };
 
@@ -252,7 +219,7 @@ const BrewPage = () => {
         } else if (response.status === 409) {
             toast.error("Playlist already exists");
         } else {
-            toast.error("Invalid link");
+            InvalidLinkToast();
         }
     };
 
@@ -267,7 +234,7 @@ const BrewPage = () => {
                             playlist.playlist_id !== updatedPlaylist.playlist_id
                     ),
                 ]),
-            100 // thumbnail doesn't update unless delay, temp fix
+            1000 // thumbnail doesn't update unless delay, temp fix
         );
     };
 
