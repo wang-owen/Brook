@@ -1,7 +1,7 @@
 # Brook
 
-Brook offers a variety of tools regarding music streaming services.
-* Download tracks and entire playlists from popular streaming services
+Brook offers a variety of tools for YouTube and Spotify.
+* Download tracks and entire playlists from YouTube and Spotify
 * Saved playlists track any changes made to the playlist (e.g. added/removed tracks, name change, thumbnail change etc.)
 * When saved playlists are "updated", a zip file containing any new tracks are downloaded.
 * Convert (transfer) your playlists between music streaming services
@@ -9,8 +9,6 @@ Brook offers a variety of tools regarding music streaming services.
 ---
 
 ## 📝 To-do
-- Integrate Apple Music
-- Integrate Amazon Music
 - Refactor database so tracks have a many-to-many relationship with playlists instead of Foreign Key (saves database space)
 - Add a download ETA to toast
 - Disable queueing more downloads as one is occurring
