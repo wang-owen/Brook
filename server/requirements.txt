@@ -1,8 +1,8 @@
 amqp==5.2.0
 asgiref==3.8.1
 billiard==4.2.1
-boto3==1.35.25
-botocore==1.35.25
+boto3==1.35.29
+botocore==1.35.29
 Brotli==1.1.0
 celery==5.4.0
 certifi==2024.8.30
@@ -32,7 +32,7 @@ kombu==5.4.2
 mutagen==1.47.0
 packaging==24.1
 pathspec==0.12.1
-prompt_toolkit==3.0.47
+prompt_toolkit==3.0.48
 psycopg2-binary==2.9.9
 pycryptodomex==3.20.0
 python-dateutil==2.9.0.post0
@@ -51,5 +51,5 @@ vine==5.1.0
 wcwidth==0.2.13
 websockets==13.1
 whitenoise==6.7.0
-yt-dlp==2024.8.6
+yt-dlp==2024.9.27
 ytmusicapi==1.8.1
