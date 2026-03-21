@@ -1,11 +1,15 @@
-import shutil, yt_dlp
-from datetime import datetime
+import logging
+import shutil
+from datetime import datetime, timezone
 from pathlib import Path
-from django.http import FileResponse
+import yt_dlp
+from django.http import FileResponse, HttpResponse
 from django.conf import settings
 from .tasks import task_brew
 from common import utils, youtube, spotify
-from common.headers import *
+from common.headers import YOUTUBE, SPOTIFY
+
+logger = logging.getLogger(__name__)
 
 
 ILLEGAL_CHARS = [
@@ -71,18 +75,24 @@ def brew(
             elif content_type == utils.TRACK:
                 return download_track(link, file_format, platform)
         except (KeyError, IndexError):
-            # Invalid link
+            logger.exception("Failed to process link: %s", link)
             return
     elif new_tracks:
         try:
             return download_new_tracks(new_tracks, playlist_name, platform, file_format)
         except (KeyError, IndexError):
-            # Invalid link
+            logger.exception("Failed to download new tracks for: %s", playlist_name)
             return
     return
 
 
 def get_file(path):
+    # Validate path is within MUSIC_DIR to prevent path traversal
+    resolved = Path(path).resolve()
+    music_root = (settings.BASE_DIR / MUSIC_DIR).resolve()
+    if not str(resolved).startswith(str(music_root)):
+        return HttpResponse(status=403)
+
     try:
         # Determine whether file is a zip or audio file
         if "zip" in path:
@@ -96,16 +106,15 @@ def get_file(path):
         )
         response["Content-Disposition"] = f"attachment; filename={path.split('/')[-1]}"
         return response
-    except FileNotFoundError as e:
-        print(e)
-        return FileResponse(status=404)
+    except FileNotFoundError:
+        return HttpResponse(status=404)
 
 
 def download_playlist(link, file_format, platform):
     dir_ = (
         settings.BASE_DIR
         / PLAYLISTS_DIR
-        / datetime.utcnow().strftime("%Y-%m-%d %H-%M-%S")
+        / datetime.now(timezone.utc).strftime("%Y-%m-%d %H-%M-%S")
     )
     if dir_.exists():
         return False
@@ -129,7 +138,7 @@ def download_track(link, file_format, platform, dir_=None):
         dir_ = (
             settings.BASE_DIR
             / TRACKS_DIR
-            / datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
+            / datetime.now(timezone.utc).strftime("%Y-%m-%d_%H-%M-%S")
         )
         if dir_.exists():
             return False
@@ -150,7 +159,7 @@ def download_new_tracks(new_tracks, playlist_name, platform, file_format):
     dir_ = (
         settings.BASE_DIR
         / PLAYLISTS_DIR
-        / datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
+        / datetime.now(timezone.utc).strftime("%Y-%m-%d_%H-%M-%S")
     )
     if dir_.exists():
         return False
@@ -186,37 +195,36 @@ def download_new_tracks_task(new_tracks, platform, file_format, dir_):
     return Path(path)
 
 
+def _make_ydl_opts(dir_, file_format, outtmpl=None, **extra):
+    """Build common yt-dlp options."""
+    if outtmpl is None:
+        outtmpl = f"{dir_}/%(title)s [%(id)s].%(ext)s"
+    opts = {
+        "cookiefile": "cookies.txt",
+        "outtmpl": outtmpl,
+        "format": f"ba[ext={file_format}]/ba",
+        "writethumbnail": True,
+        "embedthumbnail": True,
+        "ignoreerrors": True,
+        "postprocessors": [
+            {"key": "FFmpegExtractAudio", "preferredcodec": file_format},
+            {"key": "FFmpegMetadata", "add_metadata": True},
+            {"key": "EmbedThumbnail"},
+        ],
+    }
+    opts.update(extra)
+    return opts
+
+
 def download_youtube_track(link, file_format, dir_):
-    """Download YouTube track or playlist from link
+    """Download YouTube track from link
 
     Args:
-        link (str): link to YouTube track or playlist
+        link (str): link to YouTube track
         file_format (str): file format to download tracks in
         dir_ (str): directory to download tracks to
     """
-    ydl_opts = {
-        "cookiefile": "cookies.txt",
-        "outtmpl": f"{dir_}/%(title)s [%(id)s].%(ext)s",
-        "format": f"ba[ext={file_format}]/ba",
-        "restrictfilenames": True,
-        "writethumbnail": True,
-        "embedthumbnail": True,
-        "noplaylist": True,
-        "ignoreerrors": True,
-        "postprocessors": [
-            {
-                "key": "FFmpegExtractAudio",
-                "preferredcodec": file_format,
-            },
-            {
-                "key": "FFmpegMetadata",
-                "add_metadata": True,
-            },
-            {
-                "key": "EmbedThumbnail",
-            },
-        ],
-    }
+    ydl_opts = _make_ydl_opts(dir_, file_format, restrictfilenames=True, noplaylist=True)
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(link, download=True)
@@ -248,27 +256,7 @@ def download_youtube_playlist(link, file_format, dir_):
         playlist_name = playlist_name.replace(char, "-")
     playlist_dir = Path(dir_) / playlist_name
 
-    ydl_opts = {
-        "cookiefile": "cookies.txt",
-        "outtmpl": f"{playlist_dir}/%(title)s [%(id)s].%(ext)s",
-        "format": f"ba[ext={file_format}]/ba",
-        "writethumbnail": True,
-        "embedthumbnail": True,
-        "ignoreerrors": True,
-        "postprocessors": [
-            {
-                "key": "FFmpegExtractAudio",
-                "preferredcodec": file_format,
-            },
-            {
-                "key": "FFmpegMetadata",
-                "add_metadata": True,
-            },
-            {
-                "key": "EmbedThumbnail",
-            },
-        ],
-    }
+    ydl_opts = _make_ydl_opts(playlist_dir, file_format)
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([link])
 
@@ -298,31 +286,15 @@ def _download_youtube_search(name, artist, track_id, file_format, dir_):
         legal_name = legal_name.replace(char, "-")
     path = Path(dir_) / f"{legal_name} [{track_id}].{file_format}"
 
-    ydl_opts = {
-        "cookiefile": "cookies.txt",
-        "outtmpl": f"{dir_}/{legal_name} [{track_id}].%(ext)s",
-        "format": f"ba[ext={file_format}]/ba",
-        "restrictfilenames": True,
-        "writethumbnail": True,
-        "embedthumbnail": True,
-        "noplaylist": True,
-        "ignoreerrors": True,
-        "postprocessors": [
-            {
-                "key": "FFmpegExtractAudio",
-                "preferredcodec": file_format,
-            },
-            {
-                "key": "FFmpegMetadata",
-                "add_metadata": True,
-            },
-            {
-                "key": "EmbedThumbnail",
-            },
-        ],
-        "default_search": "https://music.youtube.com/search?q=",
-        "playlist_items": "1",
-    }
+    ydl_opts = _make_ydl_opts(
+        dir_,
+        file_format,
+        outtmpl=f"{dir_}/{legal_name} [{track_id}].%(ext)s",
+        restrictfilenames=True,
+        noplaylist=True,
+        default_search="https://music.youtube.com/search?q=",
+        playlist_items="1",
+    )
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.extract_info(f"{name} {artist}", download=True)

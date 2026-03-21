@@ -1,18 +1,19 @@
-import os, sys, requests, base64
+import logging
+import os
+import requests
+import base64
 from dotenv import load_dotenv
-from .headers import *
+from .headers import SPOTIFY
 
+logger = logging.getLogger(__name__)
 
 # Load API keys from .env file
 load_dotenv()
 
-# Verify API keys
-try:
-    SPOTIFY_CLIENT_ID = os.environ["SPOTIFY_CLIENT_ID"]
-    SPOTIFY_CLIENT_SECRET = os.environ["SPOTIFY_CLIENT_SECRET"]
-except KeyError:
-    print("ERROR: Missing Spotify API keys")
-    sys.exit(1)
+SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID", "")
+SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET", "")
+if not SPOTIFY_CLIENT_ID or not SPOTIFY_CLIENT_SECRET:
+    logger.warning("Missing Spotify API keys")
 
 
 def _get_playlist_id(link):
@@ -24,7 +25,7 @@ def _get_track_id(link):
 
 
 def _get_token():
-    auth_string = SPOTIFY_CLIENT_ID + ":" + SPOTIFY_CLIENT_SECRET  # type: ignore
+    auth_string = SPOTIFY_CLIENT_ID + ":" + SPOTIFY_CLIENT_SECRET
     auth_bytes = auth_string.encode("utf-8")
     auth_base64 = str(base64.b64encode(auth_bytes), "utf-8")
 
@@ -35,7 +36,10 @@ def _get_token():
     }
     data = {"grant_type": "client_credentials"}
     response = requests.post(url, headers=headers, data=data)
-    return response.json()["access_token"]
+    token_data = response.json()
+    if "access_token" not in token_data:
+        raise RuntimeError(f"Failed to get Spotify token: {token_data}")
+    return token_data["access_token"]
 
 
 def get_auth_header(token):
@@ -63,25 +67,31 @@ def get_spotify_playlist_data(link):
         return
 
     # Add each track name and artist to list
-    for item in response.json()["tracks"]["items"]:
-        name = item["track"]["name"]
-        artist = item["track"]["artists"][0]["name"]
+    for item in response.json().get("tracks", {}).get("items", []):
+        track = item.get("track")
+        if not track:
+            continue
+        artists = track.get("artists", [])
+        name = track.get("name", "")
+        artist = artists[0]["name"] if artists else "Unknown"
         tracks.append(
             {
-                "track_id": item["track"]["id"],
+                "track_id": track.get("id", ""),
                 "name": name,
                 "artist": artist,
                 "platform": SPOTIFY,
             }
         )
 
+    data = response.json()
+    images = data.get("images", [])
     return {
         "playlist_id": playlist_id,
         "link": link,
-        "name": response.json()["name"],
-        "owner": response.json()["owner"]["display_name"],
+        "name": data.get("name", ""),
+        "owner": data.get("owner", {}).get("display_name", "Unknown"),
         "platform": SPOTIFY,
-        "thumbnail": response.json()["images"][0]["url"],
+        "thumbnail": images[0]["url"] if images else "",
         "tracks": tracks,
     }
 
@@ -105,8 +115,10 @@ def get_spotify_track_data(link):
     if not response.ok:
         return
 
-    name = response.json()["name"]
-    artist = response.json()["artists"][0]["name"]
+    data = response.json()
+    name = data.get("name", "")
+    artists = data.get("artists", [])
+    artist = artists[0]["name"] if artists else "Unknown"
 
     return {
         "track_id": track_id,

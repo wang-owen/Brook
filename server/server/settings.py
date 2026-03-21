@@ -15,7 +15,6 @@ from pathlib import Path
 import dj_database_url
 from dotenv import load_dotenv
 import django_on_heroku
-from django.db.utils import OperationalError
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,10 +31,12 @@ AUTH_USER_MODEL = "users.User"
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get(
-    "DJANGO_SECRET_KEY",
-    "django-insecure-5g#u9i(y8)lyfr72n+!_h_-52@hmz8qf78sehklmp#^r&9z&f7",
-)
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    if "DYNO" in os.environ:
+        raise RuntimeError("DJANGO_SECRET_KEY must be set in production")
+    # Use an insecure key for local development only
+    SECRET_KEY = "django-insecure-dev-only-key-do-not-use-in-production"
 
 # Heroku settings
 IS_HEROKU_APP = "DYNO" in os.environ and not "CI" in os.environ
@@ -57,17 +58,22 @@ RESULT_BACKEND = None
 WORKER_PREFETCH_MULTIPLIER = 1
 WORKER_CONCURRENCY = 50
 
-# Boto3 settings
-if not os.environ.get("USE_SQLITE", 0):
-    AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "")
-    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
+# YouTube OAuth settings (for proxying token exchange)
+YOUTUBE_CLIENT_ID = os.environ.get("YOUTUBE_CLIENT_ID", "")
+YOUTUBE_CLIENT_SECRET = os.environ.get("YOUTUBE_CLIENT_SECRET", "")
 
+# Boto3 settings
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
+S3_BUCKET_NAME = "brook"
+
+if not os.environ.get("USE_SQLITE", 0):
     S3 = boto3.client(
         "s3",
         aws_access_key_id=AWS_ACCESS_KEY_ID,
         aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
     )
-    S3.download_file("brook", "cookies.txt", "cookies.txt")
+    S3.download_file(S3_BUCKET_NAME, "cookies.txt", "cookies.txt")
 
 # Django settings
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -167,26 +173,18 @@ elif os.environ.get("USE_SQLITE", 0):
         }
     }
 else:
-    try:
-        DATABASES = {
-            "default": {
-                "ENGINE": os.environ.get(
-                    "DATABASE_ENGINE", "django.db.backends.sqlite3"
-                ),
-                "NAME": os.environ.get("DATABASE_NAME", BASE_DIR / "db.sqlite3"),
-                "USER": os.environ.get("DATABASE_USER"),
-                "PASSWORD": os.environ.get("DATABASE_PASSWORD"),
-                "HOST": os.environ.get("DATABASE_HOST"),
-                "PORT": os.environ.get("DATABASE_PORT"),
-            }
+    DATABASES = {
+        "default": {
+            "ENGINE": os.environ.get(
+                "DATABASE_ENGINE", "django.db.backends.sqlite3"
+            ),
+            "NAME": os.environ.get("DATABASE_NAME", BASE_DIR / "db.sqlite3"),
+            "USER": os.environ.get("DATABASE_USER"),
+            "PASSWORD": os.environ.get("DATABASE_PASSWORD"),
+            "HOST": os.environ.get("DATABASE_HOST"),
+            "PORT": os.environ.get("DATABASE_PORT"),
         }
-    except OperationalError:
-        DATABASES = {
-            "default": {
-                "ENGINE": "django.db.backends.sqlite3",
-                "NAME": BASE_DIR / "db.sqlite3",
-            }
-        }
+    }
 
 
 # Password validation

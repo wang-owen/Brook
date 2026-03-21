@@ -22,6 +22,29 @@ export const LoginContext = createContext<LoginContextProps>({
     setLoggedIn: () => {},
 });
 
+const router = createBrowserRouter(
+    createRoutesFromElements(
+        <Route path="/" element={<MainLayout />}>
+            <Route index element={<BrewPage />} />
+            <Route path="/brew" element={<BrewPage />} />
+            <Route
+                path="/convert"
+                element={<ConvertPage platform={null} />}
+            />
+            <Route
+                path="/convert/youtube"
+                element={<ConvertPage platform="YouTube" />}
+            />
+            <Route
+                path="/convert/spotify"
+                element={<ConvertPage platform="Spotify" />}
+            />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/login" element={<LoginPage />} />
+        </Route>
+    )
+);
+
 const App = () => {
     const [loggedIn, setLoggedIn] = useState(false);
 
@@ -45,30 +68,8 @@ const App = () => {
             }
         };
         fetchLoggedIn();
-    });
+    }, []);
 
-    const router = createBrowserRouter(
-        createRoutesFromElements(
-            <Route path="/" element={<MainLayout />}>
-                <Route index element={<BrewPage />} />
-                <Route path="/brew" element={<BrewPage />} />
-                <Route
-                    path="/convert"
-                    element={<ConvertPage platform={null} />}
-                />
-                <Route
-                    path="/convert/youtube"
-                    element={<ConvertPage platform="YouTube" />}
-                />
-                <Route
-                    path="/convert/spotify"
-                    element={<ConvertPage platform="Spotify" />}
-                />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/login" element={<LoginPage />} />
-            </Route>
-        )
-    );
     return (
         <LoginContext.Provider value={{ loggedIn, setLoggedIn }}>
             <RouterProvider router={router} />

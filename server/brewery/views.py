@@ -1,3 +1,5 @@
+import logging
+import requests as http_requests
 from django.http import Http404
 from django.conf import settings
 from rest_framework import status, permissions
@@ -9,6 +11,8 @@ from common import utils
 from brewery.models import Playlist
 from brewery.serializers import PlaylistSerializer, TrackSerializer
 from .tasks import check_task_status
+
+logger = logging.getLogger(__name__)
 
 
 @api_view(["GET"])
@@ -33,12 +37,15 @@ def get_brew_status(request, task_id):
     return Response({"status": "PENDING"}, status=status.HTTP_200_OK)
 
 
+ALLOWED_FILE_FORMATS = {"m4a", "mp3", "wav", "opus", "flac"}
+
+
 @api_view(["POST"])
 def brew(request):
     data = request.data
     link = data.get("link")
     file_format = data.get("fileFormat", "m4a")
-    if not data or not link or not file_format:
+    if not data or not link or not file_format or file_format not in ALLOWED_FILE_FORMATS:
         return Response(
             {"message": "Link not provided"},
             status=status.HTTP_400_BAD_REQUEST,
@@ -111,14 +118,11 @@ class PlaylistList(APIView):
 
     # List all watched playlists by user
     def get(self, request, *args, **kwargs):
-        playlists = [
-            PlaylistSerializer(playlist).data
-            for playlist in Playlist.objects.filter(watcher=self.request.user).order_by(
-                "-last_modified"
-            )
-        ]
+        queryset = Playlist.objects.filter(
+            watcher=self.request.user
+        ).order_by("-last_modified")
         return Response(
-            playlists,
+            PlaylistSerializer(queryset, many=True).data,
             status=status.HTTP_200_OK,
         )
 
@@ -140,29 +144,29 @@ class PlaylistList(APIView):
                 if playlist_serializer.is_valid():
                     playlist = playlist_serializer.save()
                 else:
-                    print(playlist_serializer.errors)
+                    logger.warning("Playlist serializer errors: %s", playlist_serializer.errors)
                     return Response(
                         playlist_serializer.errors, status=status.HTTP_400_BAD_REQUEST
                     )
 
-                if trackData := playlist_data.get("tracks"):
-                    for track in trackData:
-                        trackSeralizer = TrackSerializer(
+                if track_data := playlist_data.get("tracks"):
+                    for track in track_data:
+                        track_serializer = TrackSerializer(
                             data={"playlist": playlist.pk, **track}  # type: ignore
                         )
-                        if trackSeralizer.is_valid():
-                            trackSeralizer.save()
+                        if track_serializer.is_valid():
+                            track_serializer.save()
                         else:
-                            print(trackSeralizer.errors)
+                            logger.warning("Track serializer errors: %s", track_serializer.errors)
                             return Response(
-                                trackSeralizer.errors,
+                                track_serializer.errors,
                                 status=status.HTTP_400_BAD_REQUEST,
                             )
 
                 return Response(playlist_data, status=status.HTTP_201_CREATED)
 
         # Link is not a playlist
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class PlaylistDetail(APIView):
@@ -208,7 +212,7 @@ class PlaylistDetail(APIView):
         if playlist_serializer.is_valid():
             playlist_serializer.save()
         else:
-            print(playlist_serializer.errors)
+            logger.warning("Playlist serializer errors: %s", playlist_serializer.errors)
             return Response(
                 playlist_serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
@@ -233,32 +237,94 @@ class PlaylistDetail(APIView):
         return Response({"message": "Playlist removed"}, status=status.HTTP_200_OK)
 
 
+@api_view(["POST"])
+def get_s3_presigned_url(request):
+    object_key = request.data.get("object_key")
+    if not object_key:
+        return Response(
+            {"message": "object_key is required"}, status=status.HTTP_400_BAD_REQUEST
+        )
+    try:
+        url = settings.S3.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": settings.S3_BUCKET_NAME, "Key": object_key},
+            ExpiresIn=120,
+        )
+        return Response({"url": url}, status=status.HTTP_200_OK)
+    except Exception:
+        return Response(
+            {"message": "Failed to generate URL"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+@api_view(["POST"])
+def youtube_oauth_token(request):
+    """Proxy YouTube OAuth token exchange to keep client_secret on the server."""
+    data = request.data
+    code = data.get("code")
+    redirect_uri = data.get("redirect_uri")
+    grant_type = data.get("grant_type", "authorization_code")
+
+    if not redirect_uri:
+        return Response(
+            {"message": "redirect_uri is required"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    params = {
+        "client_id": settings.YOUTUBE_CLIENT_ID,
+        "client_secret": settings.YOUTUBE_CLIENT_SECRET,
+        "redirect_uri": redirect_uri,
+        "grant_type": grant_type,
+    }
+
+    if grant_type == "authorization_code":
+        if not code:
+            return Response(
+                {"message": "code is required"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        params["code"] = code
+    elif grant_type == "refresh_token":
+        refresh_token = data.get("refresh_token")
+        if not refresh_token:
+            return Response(
+                {"message": "refresh_token is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        params["refresh_token"] = refresh_token
+
+    response = http_requests.post(
+        "https://oauth2.googleapis.com/token",
+        data=params,
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    return Response(response.json(), status=response.status_code)
+
+
 def update_playlist_tracks(playlist, tracks):
+    incoming_ids = {t.get("track_id") for t in tracks}
+    existing_ids = set(playlist.tracks.values_list("track_id", flat=True))
+
     # Delete any removed tracks
-    for track in playlist.tracks.all():
-        present = False
-        for track2 in tracks:
-            if track.track_id == track2.get("track_id"):
-                present = True
-                break
-        if not present:
-            track.delete()
-            print(f"{track.name} removed from tracklist.")
+    removed = existing_ids - incoming_ids
+    if removed:
+        playlist.tracks.filter(track_id__in=removed).delete()
+        logger.info("Removed %d tracks from playlist %s", len(removed), playlist.name)
 
     # Add any new tracks
-    new_tracks = []
-    for track in tracks:
-        if not playlist.tracks.filter(track_id=track["track_id"]).exists():
-            print(f"\"{track['name']}\" added to tracklist.")
-            new_tracks.append(track)
-            track_serializer = TrackSerializer(
-                data={"playlist": playlist.pk, **track},
+    new_ids = incoming_ids - existing_ids
+    new_tracks = [t for t in tracks if t.get("track_id") in new_ids]
+    for track in new_tracks:
+        track_serializer = TrackSerializer(
+            data={"playlist": playlist.pk, **track},
+        )
+        if track_serializer.is_valid():
+            track_serializer.save()
+        else:
+            logger.warning("Track serializer errors: %s", track_serializer.errors)
+            return Response(
+                track_serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
-            if track_serializer.is_valid():
-                track_serializer.save()
-            else:
-                print(track_serializer.errors)
-                return Response(
-                    track_serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                )
+    if new_tracks:
+        logger.info("Added %d new tracks to playlist %s", len(new_tracks), playlist.name)
     return new_tracks

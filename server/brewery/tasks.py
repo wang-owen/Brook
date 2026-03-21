@@ -13,8 +13,19 @@ def check_task_status(task_id):
     }
 
 
+ALLOWED_BREW_FUNCTIONS = {
+    "download_youtube_track",
+    "download_youtube_playlist",
+    "download_spotify_track",
+    "download_spotify_playlist",
+    "download_new_tracks_task",
+}
+
+
 @shared_task
 def task_brew(function_name, *args, **kwargs):
+    if function_name not in ALLOWED_BREW_FUNCTIONS:
+        raise ValueError(f"Function not allowed: {function_name}")
     func = getattr(util, function_name)
     result = func(*args, **kwargs)
 

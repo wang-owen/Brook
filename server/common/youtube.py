@@ -1,17 +1,17 @@
-import os, sys, requests, json
+import logging
+import os
+import requests
 from dotenv import load_dotenv
-from .headers import *
+from .headers import YOUTUBE
 
+logger = logging.getLogger(__name__)
 
 # Load API keys from .env file
 load_dotenv()
 
-# Verify API keys
-try:
-    YOUTUBE_API_KEY = os.environ["YOUTUBE_API_KEY"]
-except KeyError:
-    print("ERROR: Missing YouTube API keys")
-    sys.exit(1)
+YOUTUBE_API_KEY = os.environ.get("YOUTUBE_API_KEY", "")
+if not YOUTUBE_API_KEY:
+    logger.warning("Missing YouTube API key")
 
 
 def _get_playlist_id(link):
@@ -52,11 +52,16 @@ def get_youtube_playlist_data(link):
     if not response.ok:
         return
 
-    playlist_name = response.json()["items"][0]["snippet"]["title"]
-    playlist_owner = response.json()["items"][0]["snippet"]["channelTitle"]
-    playlist_thumbnail = response.json()["items"][0]["snippet"]["thumbnails"][
-        "standard"
-    ]["url"]
+    data = response.json()
+    items = data.get("items", [])
+    if not items:
+        return
+
+    snippet = items[0].get("snippet", {})
+    playlist_name = snippet.get("title", "")
+    playlist_owner = snippet.get("channelTitle", "Unknown")
+    thumbnails = snippet.get("thumbnails", {})
+    playlist_thumbnail = thumbnails.get("standard", thumbnails.get("default", {})).get("url", "")
 
     request_url = "https://www.googleapis.com/youtube/v3/playlistItems"
     tracks = []
@@ -125,8 +130,14 @@ def get_youtube_track_data(link):
     if not response.ok:
         return
 
-    track_title = response.json()["items"][0]["snippet"]["title"]
-    track_artist = response.json()["items"][0]["snippet"]["channelTitle"]
+    data = response.json()
+    items = data.get("items", [])
+    if not items:
+        return
+
+    snippet = items[0].get("snippet", {})
+    track_title = snippet.get("title", "")
+    track_artist = snippet.get("channelTitle", "Unknown")
 
     return {
         "playlist_id": track_id,
