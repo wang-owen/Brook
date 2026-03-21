@@ -1,8 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import Cookies from "js-cookie";
 import { Id, toast } from "react-toastify";
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import BrewHero from "../components/BrewHero";
 import SavedPlaylists from "../components/SavedPlaylists";
 import Playlist from "../interfaces/Playlist";
@@ -37,26 +35,21 @@ const BrewPage = () => {
           if (import.meta.env.VITE_DEBUG) {
             url = `${import.meta.env.VITE_API_URL}/download/${data.path}`;
           } else {
-            // Download file from AWS S3 bucket
-            const s3 = new S3Client({
-              region: "us-east-1",
-              credentials: {
-                accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID,
-                secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY,
-              },
-            });
-
-            const bucketName = "brook";
-            const objectKey = data.path;
-
-            const command = new GetObjectCommand({
-              Bucket: bucketName,
-              Key: objectKey,
-            });
-
-            url = await getSignedUrl(s3, command, {
-              expiresIn: 120,
-            });
+            // Get presigned URL from backend
+            const presignedResponse = await fetch(
+              `${import.meta.env.VITE_API_URL}/s3-presigned-url/`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-CSRFToken": Cookies.get("csrftoken") || "",
+                },
+                body: JSON.stringify({ object_key: data.path }),
+                credentials: "include",
+              }
+            );
+            const presignedData = await presignedResponse.json();
+            url = presignedData.url;
           }
 
           try {

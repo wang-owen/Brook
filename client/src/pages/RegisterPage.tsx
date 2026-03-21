@@ -1,6 +1,7 @@
 import { useState, useContext, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 import { FaUser, FaKey } from "react-icons/fa6";
 import { IoMdMail } from "react-icons/io";
 import { LoginContext } from "../App";
@@ -17,13 +18,16 @@ const RegisterPage = () => {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        "X-CSRFToken": Cookies.get("csrftoken") || "",
                     },
                     body: JSON.stringify(credentials),
+                    credentials: "include",
                 }),
                 await fetch(`${import.meta.env.VITE_API_URL}/login/`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        "X-CSRFToken": Cookies.get("csrftoken") || "",
                     },
                     body: JSON.stringify(credentials),
                     credentials: "include",

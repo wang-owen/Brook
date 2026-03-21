@@ -1,6 +1,7 @@
 import { useState, useContext, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 import { FaUser, FaKey } from "react-icons/fa6";
 import { LoginContext } from "../App";
 
@@ -14,6 +15,7 @@ const LoginPage = () => {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "X-CSRFToken": Cookies.get("csrftoken") || "",
             },
             body: JSON.stringify(credentials),
             credentials: "include",

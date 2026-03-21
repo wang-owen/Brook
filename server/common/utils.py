@@ -1,4 +1,8 @@
-from .headers import *
+from .headers import (
+    PLAYLIST, PLAYLIST_URLS, TRACK, TRACK_URLS,
+    YOUTUBE, YOUTUBE_URLS, SPOTIFY, SPOTIFY_URLS,
+    AMAZON, AMAZON_URLS,
+)
 from . import youtube
 from . import spotify
 

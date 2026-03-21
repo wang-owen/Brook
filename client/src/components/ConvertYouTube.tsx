@@ -8,12 +8,11 @@ const ConvertYouTube = ({ platformColor }: { platformColor: string }) => {
     const currentToken = TokenHandler("YouTube", setIsAuthenticated);
 
     const clientId = import.meta.env.VITE_YOUTUBE_CLIENT_ID;
-    const clientSecret = import.meta.env.VITE_YOUTUBE_CLIENT_SECRET;
     const redirectUri = `${window.location.origin}/convert/youtube`;
 
     const authorizationEndpoint =
         "https://accounts.google.com/o/oauth2/v2/auth";
-    const tokenEndpoint = "https://oauth2.googleapis.com/token";
+    const tokenEndpoint = `${import.meta.env.VITE_API_URL}/youtube-oauth-token/`;
     const scope = "https://www.googleapis.com/auth/youtubepartner";
 
     const redirectToYouTubeAuthorize = async () => {
@@ -55,13 +54,10 @@ const ConvertYouTube = ({ platformColor }: { platformColor: string }) => {
         const response = await fetch(tokenEndpoint, {
             method: "POST",
             headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
+                "Content-Type": "application/json",
             },
-            // @ts-ignore
-            body: new URLSearchParams({
+            body: JSON.stringify({
                 code,
-                client_id: clientId,
-                client_secret: clientSecret,
                 redirect_uri: redirectUri,
                 grant_type: "authorization_code",
             }),
@@ -74,12 +70,10 @@ const ConvertYouTube = ({ platformColor }: { platformColor: string }) => {
         const response = await fetch(tokenEndpoint, {
             method: "POST",
             headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
+                "Content-Type": "application/json",
             },
-            // @ts-ignore
-            body: new URLSearchParams({
-                client_id: clientId,
-                client_secret: clientSecret,
+            body: JSON.stringify({
+                redirect_uri: redirectUri,
                 refresh_token: currentToken.refresh_token,
                 grant_type: "refresh_token",
             }),

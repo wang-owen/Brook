@@ -60,13 +60,12 @@ const ConvertSpotify = ({ platformColor }: { platformColor: string }) => {
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
             },
-            // @ts-ignore
             body: new URLSearchParams({
                 client_id: clientId,
                 grant_type: "authorization_code",
                 code,
                 redirect_uri: redirectUri,
-                code_verifier: codeVerifier,
+                code_verifier: codeVerifier || "",
             }),
         });
 
@@ -79,10 +78,9 @@ const ConvertSpotify = ({ platformColor }: { platformColor: string }) => {
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
             },
-            // @ts-ignore
             body: new URLSearchParams({
                 grant_type: "refresh_token",
-                refresh_token: currentToken.refresh_token,
+                refresh_token: currentToken.refresh_token || "",
                 client_id: clientId,
             }),
         });
