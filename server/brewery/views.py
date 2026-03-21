@@ -27,7 +27,8 @@ def get_brew_status(request, task_id):
         )
     if task_status == "SUCCESS":
         return Response(
-            {"status": "SUCCESS", "path": task.get("result")}, status=status.HTTP_200_OK
+            {"status": "SUCCESS", "path": task.get("result")},
+            status=status.HTTP_200_OK,
         )
     return Response({"status": "PENDING"}, status=status.HTTP_200_OK)
 
@@ -65,11 +66,8 @@ def brew(request):
 
                 if serializer.is_valid():
                     playlist = serializer.save()
-                else:
-                    print(serializer.errors)
-                    return Response(
-                        serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                    )
+                    update_playlist_tracks(playlist, playlist_data["tracks"])
+
             return Response(
                 {
                     "task_id": task_id,
@@ -251,6 +249,7 @@ def update_playlist_tracks(playlist, tracks):
     new_tracks = []
     for track in tracks:
         if not playlist.tracks.filter(track_id=track["track_id"]).exists():
+            print(f"\"{track['name']}\" added to tracklist.")
             new_tracks.append(track)
             track_serializer = TrackSerializer(
                 data={"playlist": playlist.pk, **track},
