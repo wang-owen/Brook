@@ -60,22 +60,28 @@ const BrewPage = () => {
           }
 
           try {
-            // Trigger download
-            window.location.href = url;
+            // Trigger download via fetch to avoid navigating away from the app
+            const downloadResponse = await fetch(url);
+            if (!downloadResponse.ok) {
+              throw new Error(`Download failed: ${downloadResponse.status}`);
+            }
+            const blob = await downloadResponse.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const filename =
+              data.path.split("/").pop() || "download";
+            const a = document.createElement("a");
+            a.href = blobUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(blobUrl);
             // Update toast
             toast.update(toastID, {
               render() {
                 return (
                   <div>
                     {String.fromCodePoint(0x1f3a7)} Music downloaded!
-                    <button
-                      className="m-2 px-2 border rounded-md"
-                      onClick={() => {
-                        window.location.href = url;
-                      }}
-                    >
-                      Retry
-                    </button>
                   </div>
                 );
               },

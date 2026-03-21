@@ -98,7 +98,7 @@ def get_file(path):
         return response
     except FileNotFoundError as e:
         print(e)
-        return False
+        return FileResponse(status=404)
 
 
 def download_playlist(link, file_format, platform):
@@ -197,13 +197,17 @@ def download_youtube_track(link, file_format, dir_):
     ydl_opts = {
         "cookiefile": "cookies.txt",
         "outtmpl": f"{dir_}/%(title)s [%(id)s].%(ext)s",
-        "format": f"ba[ext={file_format}]",
+        "format": f"ba[ext={file_format}]/ba",
         "restrictfilenames": True,
         "writethumbnail": True,
         "embedthumbnail": True,
         "noplaylist": True,
         "ignoreerrors": True,
         "postprocessors": [
+            {
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": file_format,
+            },
             {
                 "key": "FFmpegMetadata",
                 "add_metadata": True,
@@ -215,9 +219,12 @@ def download_youtube_track(link, file_format, dir_):
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        path = ydl.prepare_filename(ydl.extract_info(link, download=True))
+        info = ydl.extract_info(link, download=True)
+        if info is None:
+            raise RuntimeError(f"Failed to download: {link}")
+        path = Path(ydl.prepare_filename(info)).with_suffix(f".{file_format}")
 
-        return Path(path)
+        return path
 
 
 def download_youtube_playlist(link, file_format, dir_):
@@ -244,11 +251,15 @@ def download_youtube_playlist(link, file_format, dir_):
     ydl_opts = {
         "cookiefile": "cookies.txt",
         "outtmpl": f"{playlist_dir}/%(title)s [%(id)s].%(ext)s",
-        "format": f"ba[ext={file_format}]",
+        "format": f"ba[ext={file_format}]/ba",
         "writethumbnail": True,
         "embedthumbnail": True,
         "ignoreerrors": True,
         "postprocessors": [
+            {
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": file_format,
+            },
             {
                 "key": "FFmpegMetadata",
                 "add_metadata": True,
@@ -290,13 +301,17 @@ def _download_youtube_search(name, artist, track_id, file_format, dir_):
     ydl_opts = {
         "cookiefile": "cookies.txt",
         "outtmpl": f"{dir_}/{legal_name} [{track_id}].%(ext)s",
-        "format": f"ba[ext={file_format}]",
+        "format": f"ba[ext={file_format}]/ba",
         "restrictfilenames": True,
         "writethumbnail": True,
         "embedthumbnail": True,
         "noplaylist": True,
         "ignoreerrors": True,
         "postprocessors": [
+            {
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": file_format,
+            },
             {
                 "key": "FFmpegMetadata",
                 "add_metadata": True,
