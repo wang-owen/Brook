@@ -32,7 +32,7 @@ def task_brew(function_name, *args, **kwargs):
     object_name = f"Music/{result.name}"
 
     if result:
-        if not settings.DEBUG:
+        if settings.USE_S3 and settings.S3:
             settings.S3.upload_file(result, "brook", object_name)
             return object_name
         return str(result)

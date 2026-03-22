@@ -25,7 +25,7 @@ const MainLayout = () => {
             }}
         >
             <ThemeContext.Provider value={{ theme, toggleTheme }}>
-                {import.meta.env.VITE_DEBUG != 1 ? (
+                {import.meta.env.VITE_MAINTENANCE !== "true" ? (
                     <>
                         <Navbar />
                         <Outlet />

@@ -239,6 +239,11 @@ class PlaylistDetail(APIView):
 
 @api_view(["POST"])
 def get_s3_presigned_url(request):
+    if not settings.S3:
+        return Response(
+            {"message": "S3 is not configured"},
+            status=status.HTTP_501_NOT_IMPLEMENTED,
+        )
     object_key = request.data.get("object_key")
     if not object_key:
         return Response(
