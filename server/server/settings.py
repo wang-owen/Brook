@@ -10,11 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
-import os, boto3
+import os
 from pathlib import Path
 import dj_database_url
 from dotenv import load_dotenv
-import django_on_heroku
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -42,7 +41,7 @@ if not SECRET_KEY:
 IS_HEROKU_APP = "DYNO" in os.environ and not "CI" in os.environ
 
 # Celery settings
-CELERY_BROKER_URL = os.environ.get("CLOUDAMQP_URL")
+CELERY_BROKER_URL = os.environ.get("CLOUDAMQP_URL", "amqp://localhost")
 CELERY_IMPORTS = "brewery.tasks"
 CELERY_RESULT_BACKEND = "django-db"
 CELERY_CACHE_BACKEND = "django-cache"
@@ -67,13 +66,19 @@ AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
 S3_BUCKET_NAME = "brook"
 
-if not os.environ.get("USE_SQLITE", 0):
+USE_S3 = os.environ.get("USE_S3", "0") == "1"
+
+if USE_S3:
+    import boto3
+
     S3 = boto3.client(
         "s3",
         aws_access_key_id=AWS_ACCESS_KEY_ID,
         aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
     )
     S3.download_file(S3_BUCKET_NAME, "cookies.txt", "cookies.txt")
+else:
+    S3 = None
 
 # Django settings
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -224,7 +229,10 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = Path.joinpath(BASE_DIR, "staticfiles")
 STATICFILES_DIRS = (Path.joinpath(BASE_DIR, STATIC_URL),)
-django_on_heroku.settings(locals())
+if IS_HEROKU_APP:
+    import django_on_heroku
+
+    django_on_heroku.settings(locals())
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

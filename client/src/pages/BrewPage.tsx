@@ -32,7 +32,7 @@ const BrewPage = () => {
         status = data.status;
         if (status === "SUCCESS") {
           let url: string;
-          if (import.meta.env.VITE_DEBUG) {
+          if (import.meta.env.VITE_USE_LOCAL_DOWNLOADS === "true") {
             url = `${import.meta.env.VITE_API_URL}/download/${data.path}`;
           } else {
             // Get presigned URL from backend
