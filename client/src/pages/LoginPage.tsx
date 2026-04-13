@@ -42,36 +42,39 @@ const LoginPage = () => {
     };
 
     return (
-        <section className="h-screen flex justify-center items-center">
-            <div className="border border-black rounded-lg">
+        <section className="min-h-screen pt-14 flex justify-center items-center">
+            <div className="w-full max-w-sm mx-auto p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+                <h1 className="text-2xl font-semibold mb-6 text-center">
+                    Login
+                </h1>
                 <form onSubmit={loginSubmit}>
-                    <label className="input input-bordered flex items-center gap-2 m-2">
-                        <FaUser />
+                    <div className="relative mb-4">
+                        <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={14} />
                         <input
                             type="username"
                             id="username"
                             name="username"
-                            className="grow"
+                            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-transparent placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600 transition-shadow"
                             placeholder="Username"
                             onChange={loginChange}
                             required
                         />
-                    </label>
-                    <label className="input input-bordered flex items-center gap-2 m-2">
-                        <FaKey />
+                    </div>
+                    <div className="relative mb-4">
+                        <FaKey className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={14} />
                         <input
                             type="password"
                             id="password"
                             name="password"
-                            className="grow"
-                            placeholder="●●●●●●●●"
+                            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-transparent placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600 transition-shadow"
+                            placeholder="Password"
                             onChange={loginChange}
                             required
                         />
-                    </label>
+                    </div>
                     <button
                         type="submit"
-                        className="btn btn-primary m-2 w-1/3 float-right"
+                        className="w-full py-2.5 rounded-lg bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-medium hover:opacity-80 transition-opacity"
                     >
                         Login
                     </button>
