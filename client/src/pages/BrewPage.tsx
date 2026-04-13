@@ -35,7 +35,6 @@ const BrewPage = () => {
           if (import.meta.env.VITE_USE_LOCAL_DOWNLOADS === "true") {
             url = `${import.meta.env.VITE_API_URL}/download/${data.path}`;
           } else {
-            // Get presigned URL from backend
             const presignedResponse = await fetch(
               `${import.meta.env.VITE_API_URL}/s3-presigned-url/`,
               {
@@ -53,7 +52,6 @@ const BrewPage = () => {
           }
 
           try {
-            // Trigger download via fetch to avoid navigating away from the app
             const downloadResponse = await fetch(url);
             if (!downloadResponse.ok) {
               throw new Error(`Download failed: ${downloadResponse.status}`);
@@ -69,7 +67,6 @@ const BrewPage = () => {
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(blobUrl);
-            // Update toast
             toast.update(toastID, {
               render() {
                 return (
@@ -92,7 +89,6 @@ const BrewPage = () => {
           return false;
         }
       }
-      // Poll server every 2.5 seconds
       await new Promise((resolve) => setTimeout(resolve, 2500));
     }
   };
@@ -121,7 +117,6 @@ const BrewPage = () => {
         data = await response.json();
       }
       if (data.task_id) {
-        // Wait for brew result
         const brewSuccess = await pollTaskStatus(data.task_id, toastID);
         if (
           brewSuccess &&
@@ -222,7 +217,6 @@ const BrewPage = () => {
   };
 
   const handlePlaylistUpdate = async (updatedPlaylist: Playlist) => {
-    // Update the playlist in state
     setTimeout(
       () =>
         setPlaylists([
@@ -231,12 +225,11 @@ const BrewPage = () => {
             (playlist) => playlist.playlist_id !== updatedPlaylist.playlist_id
           ),
         ]),
-      1000 // thumbnail doesn't update unless delay, temp fix
+      1000
     );
   };
 
   const handlePlaylistRemove = async (removedPlaylistID: string) => {
-    // Remove the playlist from state
     const updatedPlaylists = playlists.filter(
       (playlist) => playlist.playlist_id !== removedPlaylistID
     );
@@ -254,24 +247,22 @@ const BrewPage = () => {
   }, [loggedIn]);
 
   return (
-    <section className="min-h-screen flex justify-center items-center">
-      <div className="w-full">
-        <div className="min-h-[50vh] flex items-center">
-          <BrewHero brew={brew} />
-        </div>
-        <div className="p-8">
-          {loggedIn ? (
-            <SavedPlaylists
-              playlists={playlists}
-              pollTaskStatus={pollTaskStatus}
-              brew={brew}
-              watchPlaylist={watchPlaylist}
-              handlePlaylistUpdate={handlePlaylistUpdate}
-              handlePlaylistRemove={handlePlaylistRemove}
-            />
-          ) : null}
-        </div>
+    <section className="min-h-screen pt-14">
+      <div className="min-h-[60vh] flex items-center">
+        <BrewHero brew={brew} />
       </div>
+      {loggedIn && (
+        <div className="max-w-6xl mx-auto px-4 pb-8">
+          <SavedPlaylists
+            playlists={playlists}
+            pollTaskStatus={pollTaskStatus}
+            brew={brew}
+            watchPlaylist={watchPlaylist}
+            handlePlaylistUpdate={handlePlaylistUpdate}
+            handlePlaylistRemove={handlePlaylistRemove}
+          />
+        </div>
+      )}
     </section>
   );
 };
