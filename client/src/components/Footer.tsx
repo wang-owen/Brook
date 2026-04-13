@@ -7,27 +7,35 @@ import { MdOutlineLightMode, MdOutlineDarkMode } from "react-icons/md";
 const Footer = ({ toggleTheme }: { toggleTheme: () => void }) => {
     const { theme } = useContext(ThemeContext);
     return (
-        <footer className="footer p-4 bg-zinc-950 animate-fadeInFromBottom z-50 flex justify-between">
-            <aside className="items-center grid-flow-col">
-                <label className="flex cursor-pointer gap-2 p-2">
-                    <MdOutlineLightMode size={25} />
-                    <input
-                        type="checkbox"
-                        className="toggle theme-controller"
-                        onChange={toggleTheme}
-                        checked={theme === "dark"}
-                    />
-                    <MdOutlineDarkMode size={25} />
-                </label>
-            </aside>
-            <nav className="grid-flow-col gap-4 md:place-self-center md:justify-self-end">
-                <a href="https://wangowen.com" target="_blank">
-                    <CgWebsite className="size-8 hover:opacity-50 duration-200" />
-                </a>
-                <a href="https://github.com/wang-owen/Brook" target="_blank">
-                    <FaGithub className="size-8 hover:opacity-50 duration-200" />
-                </a>
-            </nav>
+        <footer className="border-t border-neutral-200 dark:border-neutral-800 py-4 px-4">
+            <div className="max-w-6xl mx-auto flex items-center justify-between">
+                <button
+                    onClick={toggleTheme}
+                    className="p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-500 dark:text-neutral-400"
+                >
+                    {theme === "dark" ? (
+                        <MdOutlineLightMode size={20} />
+                    ) : (
+                        <MdOutlineDarkMode size={20} />
+                    )}
+                </button>
+                <div className="flex items-center gap-4">
+                    <a
+                        href="https://wangowen.com"
+                        target="_blank"
+                        className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+                    >
+                        <CgWebsite size={20} />
+                    </a>
+                    <a
+                        href="https://github.com/wang-owen/Brook"
+                        target="_blank"
+                        className="text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+                    >
+                        <FaGithub size={20} />
+                    </a>
+                </div>
+            </div>
         </footer>
     );
 };
