@@ -45,7 +45,12 @@ def brew(request):
     data = request.data
     link = data.get("link")
     file_format = data.get("fileFormat", "m4a")
-    if not data or not link or not file_format or file_format not in ALLOWED_FILE_FORMATS:
+    if (
+        not data
+        or not link
+        or not file_format
+        or file_format not in ALLOWED_FILE_FORMATS
+    ):
         return Response(
             {"message": "Link not provided"},
             status=status.HTTP_400_BAD_REQUEST,
@@ -118,9 +123,9 @@ class PlaylistList(APIView):
 
     # List all watched playlists by user
     def get(self, request, *args, **kwargs):
-        queryset = Playlist.objects.filter(
-            watcher=self.request.user
-        ).order_by("-last_modified")
+        queryset = Playlist.objects.filter(watcher=self.request.user).order_by(
+            "-last_modified"
+        )
         return Response(
             PlaylistSerializer(queryset, many=True).data,
             status=status.HTTP_200_OK,
@@ -144,7 +149,9 @@ class PlaylistList(APIView):
                 if playlist_serializer.is_valid():
                     playlist = playlist_serializer.save()
                 else:
-                    logger.warning("Playlist serializer errors: %s", playlist_serializer.errors)
+                    logger.warning(
+                        "Playlist serializer errors: %s", playlist_serializer.errors
+                    )
                     return Response(
                         playlist_serializer.errors, status=status.HTTP_400_BAD_REQUEST
                     )
@@ -157,7 +164,9 @@ class PlaylistList(APIView):
                         if track_serializer.is_valid():
                             track_serializer.save()
                         else:
-                            logger.warning("Track serializer errors: %s", track_serializer.errors)
+                            logger.warning(
+                                "Track serializer errors: %s", track_serializer.errors
+                            )
                             return Response(
                                 track_serializer.errors,
                                 status=status.HTTP_400_BAD_REQUEST,
@@ -327,9 +336,9 @@ def update_playlist_tracks(playlist, tracks):
             track_serializer.save()
         else:
             logger.warning("Track serializer errors: %s", track_serializer.errors)
-            return Response(
-                track_serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response(track_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     if new_tracks:
-        logger.info("Added %d new tracks to playlist %s", len(new_tracks), playlist.name)
+        logger.info(
+            "Added %d new tracks to playlist %s", len(new_tracks), playlist.name
+        )
     return new_tracks
